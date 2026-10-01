@@ -511,6 +511,27 @@ body.nosmooth .caret,body.nosmooth .words{transition:none}
 .lch.off{opacity:.55;border-style:dashed}
 #lessonList .head #lcBack{margin-right:12px;align-self:center;flex:none}
 .typer.hdev,.typer.hdev .c{font-family:'Noto Sans Devanagari','Mangal','Nirmala UI','Kohinoor Devanagari',var(--sans),sans-serif;letter-spacing:0}
+
+/* profile v8 */
+.phero{display:flex;gap:18px;align-items:center;flex-wrap:wrap;margin-bottom:18px}
+.phero .ava{width:84px;height:84px;font-size:34px;flex:none}
+.phero .pi{flex:1;min-width:220px}
+.phero h2{margin:0;font-size:24px;line-height:1.2}
+.phero .un{color:var(--muted);font-weight:600}
+.phero .bio{color:var(--text);margin:4px 0 8px}
+.pchips{display:flex;flex-wrap:wrap;gap:8px}
+.pchip{background:var(--soft);border:1px solid var(--border);border-radius:999px;padding:4px 12px;font-size:13px;font-weight:600}
+.pchip.miss{border-style:dashed;color:var(--err);cursor:pointer;background:transparent}
+.pmeter{flex:1 1 100%;margin-top:4px}
+.pmeter .bar{height:8px;border-radius:99px;background:var(--soft);border:1px solid var(--border);overflow:hidden}
+.pmeter .bar i{display:block;height:100%;background:var(--accent);border-radius:99px;transition:width .3s}
+.pmeter p{font-size:13px;color:var(--muted);margin:6px 0 0}
+.psec{font-size:13px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);border-bottom:1px solid var(--border);padding-bottom:6px;margin-top:6px;display:flex;justify-content:space-between;gap:10px}
+.psec span{text-transform:none;letter-spacing:0;font-weight:600;color:var(--err)}
+.req{color:var(--err);font-style:normal}
+.lbask{max-width:560px;margin:8px auto;padding:10px 4px}
+.lbask h3{margin:0 0 4px}.lbask .form{margin-top:12px}
+@media(max-width:700px){.two{grid-template-columns:1fr}.form{grid-template-columns:1fr}.phero .ava{width:64px;height:64px;font-size:26px}}
 </style>
 </head>
 <body>
@@ -664,28 +685,32 @@ window.TYPEADDA_CONFIG={
 <!-- PROFILE -->
 <section id="v-profile" class="view">
   <div class="head"><div><h2>Profile</h2><p class="muted">Your location decides which local leaderboards you appear on. College and ID card are in the separate box below.</p></div></div>
+  <div class="card phero" id="pHero"></div>
   <div class="two">
     <div class="stack">
       <div class="card">
-        <h3 style="margin-bottom:14px">Your details</h3>
+        <h3 style="margin-bottom:14px">Edit profile</h3>
         <div class="form">
           <div class="full" style="display:flex;gap:14px;align-items:center;flex-wrap:wrap"><span id="pAva"></span><div><input type="file" id="picFile" accept="image/*" hidden><button class="btn sec" type="button" id="picBtn">Change photo</button> <button class="ghost" type="button" id="picDel">Remove</button><p class="note" id="picMsg"></p></div></div>
+          <div class="psec full">Personal</div>
           <label class="full"><span id="pUserLab">Username</span><input id="pUser" maxlength="20" autocapitalize="off" placeholder="e.g. rahul_typist (shown on leaderboard; if empty, your name is shown)"></label>
           <label class="full" id="pEmailBox" hidden><span id="pEmailLab">Email</span><input id="pEmail" type="email" maxlength="80" autocapitalize="off" placeholder="you@example.com"><span class="note" id="pEmailNote"></span></label>
           <label class="full">Full name<input id="pName" maxlength="40" placeholder="Shown on the leaderboard if you do not set a username"></label>
+          <div class="psec full">About you</div>
           <label class="full">Short bio<input id="pBio" maxlength="120" placeholder="One line about you"></label>
           <label class="full">About me<textarea id="pAbout" rows="4" maxlength="500" placeholder="Tell others about yourself: your goals, your college, what you are practising for..."></textarea></label>
           <div class="full"><b style="font-size:14px">Social links</b><p class="note" style="margin-bottom:8px">Optional. Shown with icons on your public profile.</p><div class="sgrid" id="pSoc"></div></div>
-          <label>Country<select id="pCountry"></select></label>
-          <label>State<span id="pStateBox"></span></label>
-          <label>District<input id="pDistrict" list="dlist" maxlength="40" placeholder="e.g. Patna"></label>
+          <div class="psec full">Location <span>Required: decides your Country / State / District rank</span></div>
+          <label>Country <em class="req">*</em><select id="pCountry"></select></label>
+          <label>State <em class="req">*</em><span id="pStateBox"></span></label>
+          <label class="full">District <em class="req">*</em><input id="pDistrict" list="dlist" maxlength="40" placeholder="e.g. Patna"></label>
         </div>
         <datalist id="dlist"></datalist>
         <p class="note" id="pAcct"></p>
 <div id="pPw" hidden style="margin:12px 0"><b>Password</b><p class="note" id="pPwNote"></p><input class="field" id="pwOld" type="password" placeholder="Current password" hidden><input class="field" id="pwNew" type="password" placeholder="New password (min 6 characters)"><div class="ractions"><button class="btn sec" id="pwSave">Set password</button><span class="note" id="pwMsg"></span></div></div><div class="ractions"><button class="btn" id="pSave">Save profile</button><button class="btn sec" id="pView">View my public profile</button><button class="ghost" id="pLogout" hidden>Log out</button><span class="note" id="pMsg"></span></div>
       </div>
       <div class="card" id="pColBox">
-        <h3 style="margin-bottom:6px">College &amp; rank verification</h3>
+        <h3 style="margin-bottom:6px">College / Institute <em class="req">*</em></h3>
         <p class="muted" id="vStatus" style="margin-bottom:12px"></p>
         <div id="vForm">
           <label style="position:relative;display:block;margin-bottom:12px">Select your college / institute / university<input class="field" id="pCollege" maxlength="90" placeholder="Search your college, institute or university" autocomplete="off" style="max-width:none"><div class="clist" id="cList" hidden></div></label>
@@ -4837,6 +4862,112 @@ Sub.listen(Board.user||null);
 
   // paint remembered state right now (before first frame)
   try{applyRoleUI();updateChip()}catch(e){}
+}
+
+/* ===== v8: professional profile + one-time location prompt on leaderboard ===== */
+{
+  const FIELDS=[['country','Country'],['state','State'],['district','District'],['college','College / Institute']];
+  const miss=()=>FIELDS.filter(([k])=>!String(P[k]||'').trim());
+  const SCOPE_NEEDS={country:['country'],state:['country','state'],district:['country','state','district'],college:['college']};
+  P.lbAsked=P.lbAsked||{};
+
+  // ---- profile hero + completion ----
+  function renderHero(){
+    const h=$('#pHero');if(!h)return;
+    const un=P.username?'@'+P.username:'',nm=P.name||P.username||'Your name';
+    const ver=Board.verified&&Board.verified.get(Board.uid),isVer=!!(ver&&ver.ok);
+    const items=[['name',!!(P.name||'').trim()],['country',!!P.country],['state',!!P.state],['district',!!P.district],['college',!!P.college],['photo',!!P.thumb]];
+    const done=items.filter(x=>x[1]).length,pct=Math.round(done/items.length*100),m=miss();
+    h.innerHTML='';
+    h.insertAdjacentHTML('beforeend',avaHTML(P.thumb,nm,'lg'));
+    const pi=mk('div','pi');pi.appendChild(mk('h2','',nm));
+    if(un)pi.appendChild(mk('div','un',un));
+    if(P.bio)pi.appendChild(mk('div','bio',P.bio));
+    const ch=mk('div','pchips');
+    const loc=[P.district,P.state,P.country].filter(Boolean).join(', ');
+    if(loc)ch.appendChild(mk('span','pchip','📍 '+loc));
+    const col=isVer?ver.college:P.college;
+    if(col){const c=mk('span','pchip','🎓 '+col);if(isVer)c.appendChild(mk('span','badge','verified'));ch.appendChild(c)}
+    m.forEach(([k,l])=>{const c=mk('span','pchip miss','+ Add '+l);c.onclick=()=>{const t=k==='college'?$('#pCollege'):k==='country'?$('#pCountry'):k==='state'?$('#pState'):$('#pDistrict');if(t){t.scrollIntoView({behavior:'smooth',block:'center'});setTimeout(()=>t.focus(),300)}};ch.appendChild(c)});
+    pi.appendChild(ch);h.appendChild(pi);
+    const mt=mk('div','pmeter');mt.innerHTML='<div class="bar"><i style="width:'+pct+'%"></i></div>';
+    mt.appendChild(mk('p','',pct===100?'Profile complete ✔ You appear on all local leaderboards.':'Profile '+pct+'% complete. '+(m.length?'Add '+m.map(x=>x[1]).join(', ')+' to appear on local ranks.':'')));
+    h.appendChild(mt);
+  }
+  renderProfile=(function(prev){return function(){const r=prev.apply(this,arguments);try{renderHero()}catch(e){}return r}})(renderProfile);
+  // keep hero fresh after save
+  {const ps=$('#pSave').onclick;$('#pSave').onclick=async function(){
+    await ps.apply(this,arguments);
+    const m=miss();if(m.length&&!isStaff())$('#pMsg').textContent=($('#pMsg').textContent+' Still missing: '+m.map(x=>x[1]).join(', ')+'.').trim();
+    renderHero()}}
+
+  // ---- leaderboard: one-time inline prompt ----
+  function askBox(scope,needs){
+    const t=$('#bTable');t.innerHTML='';
+    const box=mk('div','lbask');
+    const label={country:'Country',state:'State',district:'District',college:'College'}[scope];
+    box.appendChild(mk('h3','','Set your '+label.toLowerCase()+' to see your '+label+' rank'));
+    box.appendChild(mk('p','note','Add it once here. Later you can change it only from your Profile.'));
+    const f=mk('div','form'),vals={};
+    const fld=(txt,el)=>{const l=mk('label','',txt);l.appendChild(el);f.appendChild(l);return el};
+    if(needs.includes('country')){
+      const c=mk('select','field');c.innerHTML='<option value="">Select country</option>'+COUNTRIES.map(x=>`<option${x===P.country?' selected':''}>${esc(x)}</option>`).join('');
+      c.style.maxWidth='none';fld('Country *',c);vals.country=c;
+    }
+    let stBox,dl;
+    const buildState=()=>{
+      if(!needs.includes('state'))return;
+      const country=vals.country?vals.country.value:P.country;stBox.innerHTML='';
+      let el;
+      if(country==='India'){el=mk('select','field');el.innerHTML='<option value="">Select state</option>'+STATES.map(x=>`<option${x===P.state?' selected':''}>${esc(x)}</option>`).join('')}
+      else{el=mk('input','field');el.maxLength=40;el.placeholder='State or region';el.value=P.state||''}
+      el.style.maxWidth='none';el.onchange=el.oninput=()=>{vals.state=el;if(dl)dl.innerHTML=(DISTRICTS[el.value]||[]).map(d=>`<option value="${esc(d)}">`).join('')};
+      stBox.appendChild(el);vals.state=el;
+    };
+    if(needs.includes('state')){stBox=mk('span');const l=mk('label','','State *');l.appendChild(stBox);f.appendChild(l)}
+    if(needs.includes('district')){
+      const d=mk('input','field');d.maxLength=40;d.placeholder='e.g. Patna';d.style.maxWidth='none';d.value=P.district||'';
+      dl=mk('datalist');dl.id='lbDl';d.setAttribute('list','lbDl');dl.innerHTML=(DISTRICTS[(vals.state&&vals.state.value)||P.state]||[]).map(x=>`<option value="${esc(x)}">`).join('');
+      fld('District *',d);f.appendChild(dl);vals.district=d;
+    }
+    if(needs.includes('college')){
+      const c=mk('input','field');c.maxLength=90;c.placeholder='Search your college, institute or university';c.style.maxWidth='none';c.value=P.college||'';
+      const l=mk('datalist');l.id='lbCl';l.innerHTML=allColleges().map(n=>`<option value="${esc(n)}">`).join('');c.setAttribute('list','lbCl');
+      fld('College / Institute *',c);f.appendChild(l);f.lastChild.className='full';vals.college=c;
+    }
+    if(vals.country)vals.country.onchange=()=>{buildState()};
+    buildState();
+    box.appendChild(f);
+    const msg=mk('span','note'),ra=mk('div','ractions'),sv=mk('button','btn','Save and show my rank');
+    ra.append(sv,msg);box.appendChild(ra);t.appendChild(box);
+    sv.onclick=async()=>{
+      const out={};
+      for(const k of needs){const v=(vals[k]?vals[k].value:'').trim();if(!v){msg.textContent='Please fill '+({country:'country',state:'state',district:'district',college:'college'}[k])+'.';return}out[k]=v}
+      if(out.college&&!allColleges().some(n=>norm(n)===norm(out.college))){msg.textContent='Choose your college from the suggestions. If it is not listed, request it from Profile.';return}
+      if(out.country&&out.country!==P.country&&!needs.includes('state')){/* country changed: state no longer matches */P.state=''}
+      Object.assign(P,out);
+      if(out.college){const m=allColleges().find(n=>norm(n)===norm(out.college));P.college=m||out.college}
+      P.lbAsked=P.lbAsked||{};P.lbAsked[scope]=true;needs.forEach(k=>P.lbAsked[k]=true);
+      store.set('profile',P);try{updateChip()}catch(e){}
+      if(P.name||P.username){try{await Board.submit()}catch(e){}}
+      toast('Saved. You can change this later from Profile.');renderBoard();
+    };
+  }
+  renderBoard=(function(prev){return function(){
+    prev.apply(this,arguments);
+    try{
+      const sc=BS.scope,needs=SCOPE_NEEDS[sc];if(!needs||isStaff())return;
+      const lack=needs.filter(k=>!String(P[k]||'').trim());if(!lack.length)return;
+      const already=lack.some(k=>P.lbAsked&&P.lbAsked[k])||(P.lbAsked&&P.lbAsked[sc]);
+      if(!already){askBox(sc,sc==='college'?['college']:needs.filter(k=>lack.includes(k)||k==='country'&&false));return}
+      // asked before: change is only possible from Profile
+      const t=$('#bTable');t.innerHTML='';const e=mk('div','empty','Your '+lack.map(k=>k).join(', ')+' is empty. Update it from your Profile to see this rank. ');
+      const b=mk('button','btn sec','Open Profile');b.style.marginTop='10px';b.onclick=()=>show('profile');e.appendChild(mk('br'));e.appendChild(b);t.appendChild(e);
+    }catch(e){console.warn(e)}}})(renderBoard);
+
+  // first visit nudge (once per session) for logged-in students with missing details
+  Board.whenReady(()=>{try{if(Board.uid&&!isStaff()&&miss().length&&!sessionStorage.getItem('typeadda:nudge')){sessionStorage.setItem('typeadda:nudge','1');setTimeout(()=>toast('Complete your profile: add '+miss().map(x=>x[1]).join(', ')),1500)}}catch(e){}});
+  try{if(view==='profile')renderHero()}catch(e){}
 }
 </script>
 </body>
