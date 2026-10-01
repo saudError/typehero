@@ -349,7 +349,7 @@ body.nosmooth .caret,body.nosmooth .words{transition:none}
 .lrow .top{display:flex;align-items:center;gap:14px;padding-bottom:12px}
 .lrow .no{width:32px;height:32px;border:2px solid #cfd4dc;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;flex:none}
 .lrow.done .no{border-color:#fff}
-.lrow .mid{flex:1;min-width:0}.lrow .t{font-weight:800;font-size:19px}
+.lrow .mid{flex:1;min-width:0}.lrow .t{font-weight:800;font-size:19px;font-family:'Noto Sans Devanagari','Mangal','Nirmala UI',var(--sans),sans-serif}
 .lrow .m{font-size:12px;margin-top:4px;display:flex;gap:14px;flex-wrap:wrap;opacity:.9}
 .lrow .act{padding:9px 20px;border-radius:8px;font-weight:800;border:0;flex:none;cursor:pointer}
 .act.start{background:#3b96e0;color:#fff}.act.resume{background:#ffcf40;color:#5a4300}.act.restart{background:#fff;color:#3f9a3b}.act.lock{background:#bcdcf7;color:#fff;cursor:not-allowed}
@@ -421,6 +421,61 @@ body.nosmooth .caret,body.nosmooth .words{transition:none}
 .certchap .ct{font-weight:800;font-size:17px;color:#1B3A9E}
 .certchap .cs2{font-size:13px;color:#666;margin-top:3px}
 .certchap.lock{opacity:.8;border-left-color:#aaa}.certchap.lock .ct{color:#555}
+
+/* ===== Admin panel: clean sidebar layout ===== */
+#v-admin .head{background:var(--accent);background-image:radial-gradient(circle at 92% 0%,rgba(255,255,255,.28),transparent 55%);color:var(--accent-t);border-radius:18px;padding:22px 26px;margin:6px 0 20px;align-items:center}
+#v-admin .head h2{margin:0 0 4px;font-size:26px;color:inherit}
+#v-admin .head p.muted{color:inherit;opacity:.85;margin:0;max-width:640px}
+#aList.adm{display:grid;grid-template-columns:230px minmax(0,1fr);gap:18px 24px;align-items:start}
+#aList.adm>*{grid-column:2;min-width:0}
+#aList.adm>.abar{grid-column:1;grid-row:1/span 60;position:sticky;top:12px;display:flex;flex-direction:column;gap:3px;background:var(--card);border:1px solid var(--border);border-radius:16px;padding:10px;box-shadow:0 4px 18px rgba(20,30,60,.06)}
+#aList.adm>.abar button{display:flex;align-items:center;justify-content:space-between;text-align:left;width:100%;background:transparent;border:0;border-radius:10px;padding:11px 14px;font-size:15px;font-weight:600;color:var(--muted);cursor:pointer;transition:background .15s,color .15s}
+#aList.adm>.abar button:hover{background:var(--soft);color:var(--text)}
+#aList.adm>.abar button.on{background:var(--accent);color:var(--accent-t);box-shadow:0 3px 10px rgba(27,58,158,.25)}
+#v-admin .abar button .bd{background:var(--err);color:#fff;border-radius:10px;padding:1px 8px;font-size:12px;margin-left:8px}
+#v-admin .card{border-radius:16px;padding:24px;box-shadow:0 4px 18px rgba(20,30,60,.06)}
+#v-admin .card>h3:first-child{font-size:19px;margin:0 0 14px!important;padding-bottom:12px;border-bottom:1px solid var(--border)}
+#v-admin .card h4{margin:18px 0 6px;font-size:15px}
+#v-admin .card>p.muted{margin:0 0 14px}
+#v-admin .form input,#v-admin .form select,#v-admin .form textarea,#v-admin .field{border-radius:10px;padding:10px 12px;transition:border-color .15s,box-shadow .15s}
+#v-admin .form input:focus,#v-admin .form select:focus,#v-admin .form textarea:focus,#v-admin .field:focus{outline:0;border-color:var(--accent);box-shadow:0 0 0 3px rgba(27,58,158,.15)}
+#v-admin .form label{font-size:13px;color:var(--muted);font-weight:700}
+#v-admin .btn{border-radius:10px;padding:10px 20px}
+#v-admin .ghost{border-radius:10px;padding:8px 14px}
+#v-admin .ractions{margin-top:16px}
+#v-admin .frow{padding:14px 4px}
+#v-admin .frow b{font-size:15px}
+#v-admin .crow{padding:10px 12px;border:1px solid var(--border);border-radius:10px;margin-bottom:8px;background:var(--soft)}
+#v-admin table{border-collapse:separate;border-spacing:0;border:1px solid var(--border);border-radius:12px;overflow:hidden}
+#v-admin th{background:var(--soft);text-transform:uppercase;letter-spacing:.04em;font-size:12px}
+#v-admin tbody tr:hover td{background:var(--soft)}
+#v-admin tbody tr:last-child td{border-bottom:0}
+.atiles{grid-template-columns:repeat(auto-fit,minmax(170px,1fr))!important;gap:14px!important}
+.atile{display:flex;align-items:center;gap:14px;padding:16px!important;border-radius:14px!important;background:var(--card)!important;transition:transform .15s,box-shadow .15s}
+.atile:hover{transform:translateY(-2px);box-shadow:0 8px 20px rgba(20,30,60,.10)}
+.atile b{font-size:28px!important;line-height:1.1}
+.atile .ai{font-style:normal;font-size:22px;width:46px;height:46px;border-radius:12px;display:grid;place-items:center;flex:none}
+.atile .c1{background:rgba(27,58,158,.14)}.atile .c2{background:rgba(30,142,90,.16)}.atile .c3{background:rgba(240,150,30,.18)}
+.atile .c4{background:rgba(130,80,220,.16)}.atile .c5{background:rgba(20,160,190,.16)}.atile .c6{background:rgba(230,70,140,.15)}.atile .c7{background:rgba(215,38,61,.14)}
+@media(max-width:860px){
+  #aList.adm{grid-template-columns:1fr}
+  #aList.adm>*{grid-column:1}
+  #aList.adm>.abar{grid-row:auto;flex-direction:row;overflow-x:auto;top:0;z-index:5;padding:8px;border-radius:14px;scrollbar-width:none}
+  #aList.adm>.abar button{width:auto;white-space:nowrap;flex:none;padding:9px 14px}
+  #v-admin .head{padding:18px}
+  #v-admin .card{padding:18px}
+}
+
+/* v6: lesson course chooser */
+.lchoose{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:20px;margin-top:8px}
+.lch{display:flex;flex-direction:column;justify-content:center;align-items:flex-start;gap:14px;min-height:160px;padding:22px;border:3px solid #4285f4;border-radius:8px;background:var(--card);text-align:left;cursor:pointer;transition:transform .15s,box-shadow .15s}
+.lch:hover{transform:translateY(-3px);box-shadow:0 10px 22px rgba(66,133,244,.25)}
+.lch .lt{font-size:26px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;color:#4285f4;line-height:1.15}
+.lch .la{font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:#4285f4}
+.lch .lp{font-size:12px;color:var(--muted)}
+.lch.off{opacity:.55;border-style:dashed}
+#lessonList .head #lcBack{margin-right:12px;align-self:center;flex:none}
+.typer.hdev,.typer.hdev .c{font-family:'Noto Sans Devanagari','Mangal','Nirmala UI','Kohinoor Devanagari',var(--sans),sans-serif;letter-spacing:0}
 </style>
 </head>
 <body>
@@ -2813,7 +2868,7 @@ renderAdmin=(function(prev){return function(){
   const lk={};SOC.forEach(([k,t])=>{lk[k]=inp(t+' link',(SITE.links||{})[k],'https://...')});
   const a=mk('div','ractions'),sv=mk('button','btn','Save site settings'),rl=mk('button','ghost','Remove logo and icon');
   sv.onclick=async()=>{const links={};SOC.forEach(([k])=>{const v=lk[k].value.trim();if(v)links[k]=v});
-    if(await dset('site/config',{name:nm.value.trim()||'TypeAdda',logo:sd.logo!==undefined?sd.logo:(SITE.logo||''),icon:sd.icon!==undefined?sd.icon:(SITE.icon||''),about:ta.value.trim(),links,showColleges:SITE.showColleges!==false,showEvents:SITE.showEvents!==false,showCollegeRank:SITE.showCollegeRank!==false,seo:SITE.seo||{},ts:Date.now()})){sd={};toast('Site settings saved')}};
+    if(await dset('site/config',{name:nm.value.trim()||'TypeAdda',logo:sd.logo!==undefined?sd.logo:(SITE.logo||''),icon:sd.icon!==undefined?sd.icon:(SITE.icon||''),about:ta.value.trim(),links,showColleges:SITE.showColleges!==false,showEvents:SITE.showEvents!==false,showCollegeRank:SITE.showCollegeRank!==false,seo:SITE.seo||{},lessonAbout:SITE.lessonAbout||{},lessonOff:SITE.lessonOff||{},ts:Date.now()})){sd={};toast('Site settings saved')}};
   rl.onclick=()=>{sd={logo:'',icon:''};renderAdmin();toast('Press Save to apply')};
   a.append(sv,rl);s.append(f,a);l.appendChild(s)}})(renderAdmin);
 applySite();
@@ -3386,8 +3441,8 @@ let AT=store.get('adminTab','dash'),seoD=null;
 function adminDash(){
   const c=mk('div','card');c.appendChild(mk('h3','','📊 Overview'));c.firstChild.style.marginBottom='12px';
   const g=mk('div','atiles');
-  [[Board.users.size,'users'],[[...Board.verified.values()].filter(v=>v.ok).length,'verified students'],[Board.reqs.size,'ID cards waiting'],[Board.scores.size,'on leaderboard'],[Board.colleges.size,'colleges listed'],[Board.events.size,'events'],[Board.blocked.size,'blocked users']]
-   .forEach(([n,t])=>{const d=mk('div','atile');d.innerHTML='<b>'+n+'</b><span>'+t+'</span>';g.appendChild(d)});
+  [[Board.users.size,'users','👥','c1'],[[...Board.verified.values()].filter(v=>v.ok).length,'verified students','✅','c2'],[Board.reqs.size,'ID cards waiting','🪪','c3'],[Board.scores.size,'on leaderboard','🏆','c4'],[Board.colleges.size,'colleges listed','🏫','c5'],[Board.events.size,'events','📅','c6'],[Board.blocked.size,'blocked users','🚫','c7']]
+   .forEach(([n,t,ic,cl])=>{const d=mk('div','atile');d.innerHTML='<i class="ai '+cl+'">'+ic+'</i><div><b>'+n+'</b><span>'+t+'</span></div>';g.appendChild(d)});
   c.appendChild(g);return c}
 function adminFeatures(){
   const c=mk('div','card');c.appendChild(mk('h3','','🎛️ Show / hide features'));c.firstChild.style.marginBottom='4px';
@@ -3433,20 +3488,20 @@ function adminSEO(extra){
 renderAdmin=(function(prev){return function(){
   const l=$('#aList'),ae=document.activeElement;
   if(l.contains(ae)&&/INPUT|TEXTAREA|SELECT/.test(ae.tagName))return;
-  prev();if(!Board.admin||isCollAdmin())return;
-  const S={dash:[],ver:[],site:[],seo:[],col:[],usr:[],txt:[],mail:[]};
+  l.classList.remove('adm');prev();if(!Board.admin||isCollAdmin())return;
+  const S={dash:[],ver:[],site:[],seo:[],col:[],usr:[],txt:[],mail:[],les:[]};
   [...l.children].forEach(c=>{const h=(c.querySelector('h3')||{}).textContent||'';
     if(h.startsWith('📝'))S.txt.push(c);else if(h.startsWith('👤'))S.usr.push(c);else if(h.startsWith('🎨'))S.site.push(c);
     else if(h.startsWith('🏫')||h.includes('College logins'))S.col.push(c);
     else if(h.startsWith('🌐')){const b=c.querySelector('button');if(b&&/Page is/.test(b.textContent))b.remove();c.querySelector('h3').textContent='🗺️ Sitemap for Google';S.seo.push(c)}
     else S.ver.push(c)});
-  S.dash=[adminDash(),adminFeatures()];S.seo=[adminSEO()].concat(S.seo);S.mail=[adminMail()];
+  S.dash=[adminDash(),adminFeatures()];S.les=[adminLessons()];S.seo=[adminSEO()].concat(S.seo);S.mail=[adminMail()];
   if(!S[AT])AT='dash';
-  const tabs=[['dash','📊 Dashboard'],['ver','🪪 Verification',Board.reqs.size],['site','🎨 Site & About'],['seo','🔎 SEO'],['col','🏫 Colleges'],['usr','👤 Users'],['mail','✉️ Email'],['txt','📝 Typing texts']];
+  const tabs=[['dash','📊 Dashboard'],['ver','🪪 Verification',Board.reqs.size],['site','🎨 Site & About'],['seo','🔎 SEO'],['col','🏫 Colleges'],['usr','👤 Users'],['mail','✉️ Email'],['les','📚 Lessons'],['txt','📝 Typing texts']];
   l.innerHTML='';const bar=mk('div','seg abar');
   tabs.forEach(([id,t,n])=>{const b=mk('button',id===AT?'on':'',t);if(n)b.appendChild(mk('span','bd',n));b.onclick=()=>{AT=id;store.set('adminTab',id);renderAdmin()};bar.appendChild(b)});
-  l.appendChild(bar);S[AT].forEach(c=>l.appendChild(c));
-  $('#aHead').textContent='Admin panel';const hp=$('#v-admin .head p.muted');if(hp)hp.textContent='Manage verification, features, site settings, SEO, colleges and users from one place.';
+  l.appendChild(bar);S[AT].forEach(c=>l.appendChild(c));l.classList.add('adm');
+  $('#aHead').textContent=({dash:'Dashboard',ver:'Verification',site:'Site & About',seo:'SEO',col:'Colleges',usr:'Users',mail:'Email',les:'Lessons',txt:'Typing texts'})[AT]||'Admin panel';const hp=$('#v-admin .head p.muted');if(hp)hp.textContent=({dash:'A quick look at your site, and the switches for what visitors can see.',ver:'Check student ID cards and approve or reject them.',site:'Site name, logo, icon and the About page.',seo:'How your site appears on Google.',col:'Colleges, college logins and public college pages.',usr:'Everyone who registered. Block or unblock users.',mail:'Welcome and congratulations emails: Gmail or company SMTP.',les:'Choose what each lesson course card says, and show or hide a course.',txt:'Add or remove the texts used in typing tests.'})[AT]||'';
 }})(renderAdmin);
 applySEO();applyRoleUI();
 
@@ -3735,6 +3790,402 @@ if(document.fonts&&document.fonts.ready)document.fonts.ready.then(()=>{const f=w
 Board.init();
 if(Colleges.pending){show('colleges')}
 if(/room=[A-Za-z0-9]{4}/.test(location.hash)){show('games');Games.open('room');const c=location.hash.match(/room=([A-Za-z0-9]{4})/)[1].toUpperCase();$('#rmCode').value=c}
+
+
+/* ================= v6: course chooser + Hindi step-by-step lessons ================= */
+/*PURE-START*/
+const COURSES=[
+  {id:'en',title:'English',def:'General typing'},
+  {id:'kruti',title:'Hindi Krutidev',lay:'kruti',def:'Kruti Dev 010 Hindi typing'},
+  {id:'gail',title:'Remington Gail Hindi',lay:'gail',def:'Remington Gail Hindi typing'},
+  {id:'mangal',title:'Hindi Mangal',lay:'mangal',def:'Mangal (InScript) Hindi typing'}
+];
+const QCH={};HK.ROWS.forEach((r,i)=>r.forEach((c,j)=>{QCH[c]=HK.QWERTY[i][j]}));
+const KNAME=c=>{const q=QCH[c]||'';return /[a-z]/.test(q)?q.toUpperCase():q};
+/* tuple: [id, title, physical keys, flag]  flag: 'r' review, 'S' shifted keys */
+const HC=[
+ ['Starting Out: Home Row',[
+  ['h1','Index fingers: F and J','KeyF KeyJ'],['h2','Middle fingers: D and K','KeyD KeyK'],
+  ['h3','Ring fingers: S and L','KeyS KeyL'],['h4','Pinky fingers: A and ;','KeyA Semicolon'],
+  ['h5','Index reach: G and H','KeyG KeyH'],['h6','Pinky reach: apostrophe key','Quote'],
+  ['h7','Home row review','KeyA KeyS KeyD KeyF KeyG KeyH KeyJ KeyK KeyL Semicolon Quote','r']]],
+ ['Top Row Keys',[
+  ['t1','Top row: E and I','KeyE KeyI'],['t2','Top row: R and U','KeyR KeyU'],['t3','Top row: T and Y','KeyT KeyY'],
+  ['t4','Top row: W and O','KeyW KeyO'],['t5','Top row: Q and P','KeyQ KeyP'],
+  ['t6','Top row: [ ] and \\','BracketLeft BracketRight Backslash'],
+  ['t7','Top row review','KeyQ KeyW KeyE KeyR KeyT KeyY KeyU KeyI KeyO KeyP BracketLeft BracketRight Backslash','r']]],
+ ['Bottom Row Keys',[
+  ['m1','Bottom row: V and M','KeyV KeyM'],['m2','Bottom row: C and comma','KeyC Comma'],
+  ['m3','Bottom row: X and period','KeyX Period'],['m4','Bottom row: Z and slash','KeyZ Slash'],
+  ['m5','Bottom row: B and N','KeyB KeyN'],
+  ['m6','Bottom row review','KeyZ KeyX KeyC KeyV KeyB KeyN KeyM Comma Period Slash','r']]],
+ ['Number Row',[
+  ['n1','Numbers 1 to 5','Digit1 Digit2 Digit3 Digit4 Digit5'],['n2','Numbers 6 to 0','Digit6 Digit7 Digit8 Digit9 Digit0'],
+  ['n3','Other number-row keys','Backquote Minus Equal']]],
+ ['Shift Keys: Half Letters and Conjuncts',[
+  ['s1','Shift: home row','KeyA KeyS KeyD KeyF KeyG KeyH KeyJ KeyK KeyL Semicolon Quote','S'],
+  ['s2','Shift: top row','KeyQ KeyW KeyE KeyR KeyT KeyY KeyU KeyI KeyO KeyP BracketLeft BracketRight Backslash','S'],
+  ['s3','Shift: bottom row','KeyZ KeyX KeyC KeyV KeyB KeyN KeyM Comma Period Slash','S'],
+  ['s4','Shift: number row','Backquote Digit1 Digit2 Digit3 Digit4 Digit5 Digit6 Digit7 Digit8 Digit9 Digit0 Minus Equal','S']]],
+ ['Words',[['w1','Short words'],['w2','Longer words'],['w3','Word challenge']]],
+ ['Sentences',[['q1','Short sentences'],['q2','Longer sentences'],['q3','Sentence challenge']]],
+ ['Exam Practice',[['e1','Hindi exam practice (25 WPM)'],['e2','Hindi exam practice (30 WPM)']]]
+];
+const HLESS=[];
+(()=>{const A=new Set();
+  HC.forEach(([cn,ls],ci)=>ls.forEach(([id,title,keys,flag])=>{
+    const kind='hmtns'.includes(id[0])?'key':id[0]==='w'?'words':id[0]==='q'?'sent':'exam';
+    const L={id,title,ch:ci,kind,review:flag==='r',shift:flag==='S'};
+    if(kind==='key'){L.keys=keys.split(' ');L.nw=L.keys.map(c=>c+(L.shift?'+':''));L.nw.forEach(e=>A.add(e));L.allowed=new Set(A)}
+    HLESS.push(L)}))})();
+const entTok=(lay,e)=>{const sh=e.endsWith('+'),c=sh?e.slice(0,-1):e,m=HK.MAPS[lay][c];return m?m[sh?1:0]:null};
+const tokChars=t=>t==='R^'?['र','्']:[...t];
+/* what is the next physical key to press for word w, given tokens typed so far? returns {code,shift,t} | 'space' | null */
+function hNext(w,toks,lay,allowed){
+  const M=HK.MAPS[lay],cur=HK.compose(toks,lay),a0=HK.align(w,cur.s,lay);
+  if(a0<0)return null;
+  if(!cur.pend&&cur.s===w)return 'space';
+  const keys=Object.keys(M);
+  if(lay!=='mangal'&&!cur.pend){
+    const u=dUnits(w).find(x=>x[0]===a0);
+    if(u&&w.slice(u[0],u[1]).indexOf('ि')>0){
+      for(const c of keys)for(const sh of [0,1]){const t=M[c][sh];if(t==='ि'&&(!allowed||allowed.has(c+(sh?'+':''))))return {code:c,shift:!!sh,t}}
+    }
+  }
+  let best=null,bs=-1e9;
+  for(const c of keys)for(const sh of [0,1]){
+    if(allowed&&!allowed.has(c+(sh?'+':'')))continue;
+    const t=M[c][sh];if(!t)continue;
+    const r=HK.compose(toks.concat([t]),lay);let p;
+    if(r.pend){if(!w.slice(Math.max(0,a0)).includes('ि'))continue;p=a0-0.5}
+    else{
+      const a2=HK.align(w,r.s,lay);if(a2<0)continue;
+      if(r.s===w)p=1000;else if(a2>a0)p=a2;
+      else if(a2===a0&&r.s!==cur.s)p=a0-0.2;else continue;
+    }
+    p-=(sh?0.01:0)+t.length*0.001;
+    if(p>bs){bs=p;best={code:c,shift:!!sh,t}}
+  }
+  return best;
+}
+function hPlan(w,lay,allowed){
+  const toks=[],steps=[];
+  for(let i=0;i<w.length+8;i++){const h=hNext(w,toks,lay,allowed);if(h==='space')return steps;if(!h)return null;steps.push(h);toks.push(h.t)}
+  return null;
+}
+const BADW=/^[\u0900-\u0903\u093A-\u094F\u0962\u0963]|[\u093E-\u094D\u0900-\u0903]{2}|्$/;
+const usesNew=(pl,nw)=>pl.some(s=>nw.has(s.code+(s.shift?'+':'')));
+function hDrills(lay,L,n){
+  const al=L.allowed,nw=new Set(L.nw),newCh=new Set(),oldCh=new Set();
+  [...al].forEach(e=>{const t=entTok(lay,e);if(!t)return;tokChars(t).forEach(ch=>{if(ch==='्')return;if(nw.has(e))newCh.add(ch);else if(/[\u0900-\u097F]/.test(ch)&&ch!=='।')oldCh.add(ch)})});
+  const N=[...newCh],pool=N.concat([...oldCh].filter(c=>!newCh.has(c)));
+  const out=new Set();if(!pool.length)return [];
+  for(let tries=0;out.size<n&&tries<700;tries++){
+    const len=2+rnd(3);let w='';
+    for(let j=0;j<len;j++)w+=Math.random()<.55&&N.length?pick(N):pick(pool);
+    if(!N.some(c=>w.includes(c))||BADW.test(w))continue;
+    const pl=hPlan(w,lay,al);if(!pl||!usesNew(pl,nw))continue;
+    out.add(w);
+  }
+  return [...out];
+}
+const _hOk={};
+const hTypable=(w,lay)=>{const k=lay+'|'+w;if(!(k in _hOk))_hOk[k]=!!hPlan(w,lay,null);return _hOk[k]};
+function hStages(lay,L){
+  const rep=(a,n)=>Array.from({length:n},()=>pick(a));
+  const st=(label,words,acc,wpm)=>({label,text:(Array.isArray(words)?words.join(' '):words).trim(),acc,wpm:wpm||0,allowed:L.allowed||null});
+  if(L.kind==='key'){
+    const nw=new Set(L.nw);
+    let dr=hDrills(lay,L,14);
+    const rw=HIN.filter(w=>{const p=hPlan(w,lay,L.allowed);return p&&usesNew(p,nw)});
+    if(!dr.length&&!rw.length){
+      const set=new Set();L.nw.forEach(e=>{const t=entTok(lay,e);if(t)tokChars(t).forEach(ch=>{if(HK.isC(ch)||/[\u0905-\u0914]/.test(ch))set.add(ch+ch)})});
+      dr=[...set];
+      if(!dr.length)dr=HIN.filter(w=>hTypable(w,lay)).slice(0,10);
+    }
+    const base=dr.length?dr:rw,mix=n=>Array.from({length:n},()=>pick(Math.random()<.5&&rw.length?rw:base));
+    return [st('Key drill',rep(base,16),85),
+            st('Word practice',rw.length>=3?mix(14):rep(base,14),88),
+            st('Challenge',mix(22),90,L.review||L.shift?8:5)];
+  }
+  const allW=HIN.filter(w=>hTypable(w,lay)),pool=allW.length>=8?allW:HIN;
+  if(L.kind==='words'){
+    let sel=L.id==='w1'?pool.filter(w=>dUnits(w).length<=3):L.id==='w2'?pool.filter(w=>dUnits(w).length>=4):pool;
+    if(sel.length<6)sel=pool;
+    const g=L.id==='w1'?[8,10]:L.id==='w2'?[10,12]:[12,15];
+    return [st('Word set 1',rep(sel,20),90),st('Word set 2',rep(sel,28),90,g[0]),st('Challenge',rep(sel,40),92,g[1])];
+  }
+  const qs=HQ.map(q=>q.normalize('NFC')),good=qs.filter(q=>q.split(' ').every(w=>hTypable(w,lay))),Q=good.length>=4?good:qs;
+  if(L.kind==='sent'){
+    const c=L.id==='q1'?[2,3,5,12]:L.id==='q2'?[3,4,6,15]:[4,6,8,18];
+    return [st('Sentences 1',joinS(Q,c[0]),92),st('Sentences 2',joinS(Q,c[1]),92),st('Challenge',joinS(Q,c[2]),92,c[3])];
+  }
+  const w=L.id==='e1'?[15,20,25]:[20,25,30],n=L.id==='e1'?5:6;
+  return w.map((x,i)=>st('Passage '+(i+1),joinS(Q,Math.min(n,Q.length)),94,x));
+}
+/* colour classes for the units of a word */
+function hdCls(w,t,lay){
+  const U=dUnits(w),sk=[],a=HK.align(w,t,lay,sk);
+  const cls=U.map(([s,e])=>a>=0?((e<=a&&!sk.some(x=>x>=s&&x<e))?'o':''):'');
+  return {U,cls,a};
+}
+/*PURE-END*/
+
+/* ---------- typer for Hindi layouts (strict: a wrong key does not move on) ---------- */
+class HTyper{
+  constructor(el,text,lay,o){
+    this.el=el;this.lay=lay;this.o=o||{};this.allowed=this.o.allowed||null;
+    this.words=text.split(' ').filter(Boolean);
+    this.wi=0;this.toks=[];this.typed='';this.err=0;this.keys=0;this.start=0;this.done=false;this.good=0;
+    el.innerHTML='';el.scrollTop=0;el.classList.add('hdev');
+    this.spans=this.words.map((w,i)=>{
+      const row=dUnits(w).map(([s,e])=>{const sp=mk('span','c',w.slice(s,e));el.appendChild(sp);return sp});
+      let sp=null;if(i<this.words.length-1){sp=mk('span','c',' ');el.appendChild(sp)}
+      return {row,sp}});
+    this.paint();this.o.onMove&&this.o.onMove(this);
+  }
+  begin(){if(!this.start){this.start=performance.now();this.o.onStart&&this.o.onStart()}}
+  paint(){
+    const i=this.wi,w=this.words[i],{cls}=hdCls(w,this.typed,this.lay),cur=cls.indexOf('');
+    const sp=this.spans[i];
+    sp.row.forEach((s,k)=>{s.className='c'+(cls[k]==='o'?' d':'')+(k===cur?' cur':'')});
+    if(sp.sp)sp.sp.className='c'+(cur<0?' cur':'');
+    const tg=cur>=0?sp.row[cur]:sp.sp;
+    if(tg&&tg.offsetTop>this.el.scrollTop+this.el.clientHeight-50)this.el.scrollTop=tg.offsetTop-40;
+  }
+  bad(code){
+    errSnd();this.err++;
+    const sp=this.spans[this.wi],{cls}=hdCls(this.words[this.wi],this.typed,this.lay),k=cls.indexOf('');
+    const el=k>=0?sp.row[k]:sp.sp;if(el){el.classList.add('wrong');setTimeout(()=>el.classList.remove('wrong'),160)}
+    if(code){const kk=$(`#kb .k[data-code="${code}"]`);if(kk){kk.classList.add('bad');setTimeout(()=>kk.classList.remove('bad'),170)}}
+    this.o.onError&&this.o.onError(this);
+  }
+  key(e){
+    if(this.done||e.ctrlKey||e.metaKey||e.altKey)return false;
+    const w=this.words[this.wi];
+    if(e.key==='Backspace'){e.preventDefault();
+      if(this.toks.length){this.toks.pop();this.typed=HK.compose(this.toks,this.lay).s;this.paint();this.o.onMove&&this.o.onMove(this)}
+      return true}
+    if(e.key===' '){
+      e.preventDefault();this.begin();this.keys++;
+      const r=HK.compose(this.toks,this.lay);
+      if(!r.pend&&this.typed===w&&this.wi<this.words.length-1){
+        clickSnd();this.good+=w.length+1;this.paint();
+        this.wi++;this.toks=[];this.typed='';this.paint();this.o.onMove&&this.o.onMove(this);
+      }else this.bad('Space');
+      return true}
+    let code=e.code,u=code?HK.lookup(code,e.shiftKey,this.lay):null;
+    if(u==null&&e.key&&e.key.length===1){const f=HK.codeFromChar(e.key);if(f){code=f.code;u=HK.lookup(code,f.shift,this.lay)}}
+    if(u==null)return false;
+    e.preventDefault();this.begin();this.keys++;
+    const r=HK.compose(this.toks.concat([u]),this.lay);let ok;
+    if(r.pend){const a=HK.align(w,this.typed,this.lay);ok=w.slice(Math.max(0,a)).includes('ि')}
+    else ok=HK.align(w,r.s,this.lay)>=0;
+    if(!ok){this.bad(code);return true}
+    clickSnd();this.toks.push(u);this.typed=r.s;
+    if(!r.pend&&this.typed===w&&this.wi===this.words.length-1){
+      this.good+=w.length;this.done=true;this.paint();this.o.onDone&&this.o.onDone(this);return true}
+    this.paint();this.o.onMove&&this.o.onMove(this);return true;
+  }
+  stats(){
+    const m=this.start?(performance.now()-this.start)/60000:0;
+    const prog=this.done?0:Math.max(0,HK.align(this.words[this.wi],this.typed,this.lay));
+    const chars=this.good+prog;
+    return {wpm:m>0.02?Math.round(chars/5/m):0,acc:this.keys?Math.round((this.keys-this.err)/this.keys*100):100,err:this.err,sec:Math.round(m*60)};
+  }
+}
+
+/* ---------- Hindi lesson runner ---------- */
+const hPid=(tr,l)=>'h:'+tr+':'+l.id;
+const HPRE={h1:'Index fingers',h2:'Middle fingers',h3:'Ring fingers',h4:'Pinky fingers',h5:'Index reach',h6:'Pinky reach',t1:'Top row',t2:'Top row',t3:'Top row',t4:'Top row',t5:'Top row',m1:'Bottom row',m2:'Bottom row',m3:'Bottom row',m4:'Bottom row',m5:'Bottom row',n1:'Number row',n2:'Number row'};
+function hT(l,lay){
+  lay=lay||(LM.track&&LM.track!=='en'?(COURSES.find(x=>x.id===LM.track)||{}).lay:null);
+  if(!lay||l.kind!=='key'||l.review||l.shift||!HPRE[l.id]||l.nw.length>5)return l.title;
+  const ch=l.nw.map(e=>{const t=entTok(lay,e);return t?hkShow(t):null}).filter(Boolean);
+  if(!ch.length)return l.title;
+  const txt=ch.length===2?ch[0]+' और '+ch[1]:ch.join(', ');
+  return HPRE[l.id]+': '+txt;
+}
+const hDone=(tr,l)=>{const p=LP[hPid(tr,l)];return p&&p.stages?p.stages.filter(x=>x).length:0};
+const hFull=(tr,l)=>hDone(tr,l)>=3;
+function hInfo(tr){let pf=true;return HC.map(([name],ci)=>{
+  const rows=HLESS.filter(l=>l.ch===ci).map(l=>{const d=hDone(tr,l),full=d>=3,unlocked=pf||d>0;pf=full;return{l,d,full,unlocked}});
+  const n=rows.filter(r=>r.full).length;return{name,rows,n,total:rows.length,done:n===rows.length}})}
+const HL={
+  chIdx:store.get('hchap',null),typer:null,tm:null,cur:null,stages:null,si:0,
+  lay(){const c=COURSES.find(x=>x.id===LM.track);return c&&c.lay},
+  list(){
+    const tr=LM.track,co=COURSES.find(x=>x.id===tr);
+    $('#lessonList').hidden=false;$('#lessonRun').hidden=true;this.typer=null;clearInterval(this.tm);
+    lessonHead(co.title,true);
+    const info=hInfo(tr);
+    if(this.chIdx==null||!info[this.chIdx]){const f=info.findIndex(c=>!c.done);this.chIdx=f<0?0:f}
+    $('#lessonSum').textContent=`${HLESS.filter(l=>hFull(tr,l)).length} of ${HLESS.length} lessons complete`;
+    const c=$('#courses');c.innerHTML='';
+    const wrap=mk('div','lsplit'),side=mk('aside','lside');side.appendChild(mk('h4','','Learn Hindi Typing'));
+    info.forEach((ch,i)=>{const b=mk('button','citem'+(i===this.chIdx?' on':'')+(ch.done?' fin':''));
+      b.innerHTML=`<span>${esc(ch.name)}</span><span class="cs">${ch.done?'✔':ch.n+'/'+ch.total}</span>`;
+      b.onclick=()=>{this.chIdx=i;store.set('hchap',i);this.list()};side.appendChild(b)});
+    const ch=info[this.chIdx],main=mk('div','lmain chap');
+    const pct=Math.round(ch.rows.reduce((t,r)=>t+Math.min(r.d,3)/3,0)/Math.max(1,ch.rows.length)*100);
+    main.appendChild(mk('h3','',ch.name));
+    main.insertAdjacentHTML('beforeend',`<div class="cbar"><i style="width:${pct}%"></i><span>${pct}% Complete</span></div>`);
+    if(ch.done){const d=mk('div','cdone');d.innerHTML='<span>✔ Chapter complete!</span>';
+      if(info[this.chIdx+1]){const nb=mk('button','','Next chapter →');nb.onclick=()=>{this.chIdx++;store.set('hchap',this.chIdx);this.list()};d.appendChild(nb)}
+      main.appendChild(d)}
+    let no=info.slice(0,this.chIdx).reduce((t,x)=>t+x.total,0);
+    ch.rows.forEach(({l,d,full,unlocked})=>{no++;
+      const p=LP[hPid(tr,l)],ss=p&&p.ss?Object.values(p.ss):[];const avg=k=>ss.length?Math.round(ss.reduce((x,y)=>x+y[k],0)/ss.length):0;
+      const meta=ss.length?`<span>Avg Speed: ${avg('wpm')} WPM</span><span>Avg Acc: ${avg('acc')}%</span><span>Time: ${mmss(ss.reduce((x,y)=>x+y.sec,0))}</span>`:`<span>3 steps</span>`;
+      const cls=full?'restart':d>0?'resume':unlocked?'start':'lock',lab=full?'Restart':d>0?'Resume':'Start';
+      const row=mk('div','lrow'+(full?' done':''));
+      row.innerHTML=`<div class="top"><span class="no">${full?'✔':no}</span><div class="mid"><div class="t">${esc(hT(l))}</div><div class="m">${meta}</div></div><button class="act ${cls}" ${cls==='lock'?'disabled':''}>${full?'⟲ ':'▶ '}${lab}</button></div><div class="segs">${[0,1,2].map(i=>`<i class="${i<d?'on':''}"></i>`).join('')}</div>`;
+      if(cls!=='lock')$('.act',row).onclick=()=>{if(full){LP[hPid(tr,l)]={stages:[],ss:{}};store.set('lessons',LP)}this.open(l.id)};
+      main.appendChild(row)});
+    wrap.append(side,main);c.appendChild(wrap);
+  },
+  open(id){
+    const tr=LM.track;this.cur=HLESS.find(l=>l.id===id);this.stages=hStages(this.lay(),this.cur);
+    $('#lessonList').hidden=true;$('#lessonRun').hidden=false;
+    $('#lTitle').textContent=hT(this.cur);
+    const p=LP[hPid(tr,this.cur)];const first=p&&p.stages?p.stages.findIndex(x=>!x):0;
+    this.si=first<0?0:(first>2?0:first);
+    this.play();
+  },
+  keyHelp(){
+    const L=this.cur,lay=this.lay();if(L.kind!=='key'||L.nw.length>6)return '';
+    return ' · '+L.nw.map(e=>{const t=entTok(lay,e);return t?`${e.endsWith('+')?'Shift+':''}${KNAME(e.replace('+',''))} = ${hkShow(t)}`:''}).filter(Boolean).join(',  ');
+  },
+  play(){
+    const s=this.stages[this.si],lay=this.lay();
+    $('#lIntro').hidden=true;$('#lDone').hidden=true;$('#lPlay').hidden=false;
+    $('#lStage').textContent=`Step ${this.si+1} of 3: ${s.label}`+this.keyHelp();
+    $('#lBar').style.width=(this.si/3*100)+'%';
+    $('#lGoal').textContent=s.acc+'%'+(s.wpm?` · ${s.wpm} wpm`:'');
+    const kb=$('#kb');buildHKB(kb,lay);
+    $$('#kb .k.hk').forEach(k=>{k.dataset.f=fingerOf(k.dataset.c.toLowerCase())});
+    const sh=$$('#kb .kr')[3];if(sh){const a=sh.children[0],b=sh.children[sh.children.length-1];a.dataset.c='shiftL';a.dataset.f='lp';b.dataset.c='shiftR';b.dataset.f='rp'}
+    legend();applyLesson();
+    const upd=t=>{const st=t.stats();$('#lWpm').textContent=st.wpm;$('#lAcc').textContent=st.acc+'%';$('#lErr').textContent=st.err;
+      $('#lBar').style.width=((this.si+Math.min(1,(t.good/Math.max(1,s.text.length))))/3*100)+'%'};
+    this.typer=new HTyper($('#lText'),s.text,lay,{allowed:s.allowed,
+      onMove:t=>{this.hint(t);upd(t)},onError:upd,onStart:()=>{this.tm=setInterval(()=>upd(this.typer),500)},
+      onDone:t=>{clearInterval(this.tm);this.hint(null);this.finish(t.stats())}});
+    $('#lWpm').textContent='0';$('#lAcc').textContent='100%';$('#lErr').textContent='0';
+  },
+  hint(t){
+    $$('#kb .k.hit,#kb .k.hit2').forEach(k=>k.classList.remove('hit','hit2'));
+    $$('#hands .fg').forEach(e=>e.classList.remove('act'));
+    const fl=$('#lFinger');
+    if(!t){fl.textContent='';return}
+    const w=t.words[t.wi];
+    let h=hNext(w,t.toks,t.lay,t.allowed);if(h==null&&t.allowed)h=hNext(w,t.toks,t.lay,null);
+    if(h==null){fl.textContent='';return}
+    let f='th',msg;
+    if(h==='space'){const k=$('#kb .k.sp');if(k)k.classList.add('hit');msg=t.wi<t.words.length-1?'Press space with your thumb':''}
+    else{
+      const k=$(`#kb .k[data-code="${h.code}"]`);if(k)k.classList.add('hit');
+      const q=(QCH[h.code]||'').toLowerCase();f=fingerOf(q);
+      msg=`Press ${hkShow(h.t)}  (${KNAME(h.code)} key) with your ${FNAME[f]}`;
+      if(h.shift){const right=['ri','rm','rr','rp'].includes(f),row=$$('#kb .kr')[3],sk=row&&(right?row.children[0]:row.children[row.children.length-1]);
+        if(sk)sk.classList.add('hit2');msg+=` while holding ${right?'left':'right'} Shift`}
+      const act=[f];if(h.shift)act.push(['ri','rm','rr','rp'].includes(f)?'lp':'rp');
+      $$('#hands .fg').forEach(e=>e.classList.toggle('act',act.includes(e.dataset.f)));
+    }
+    fl.textContent=S.lfing?msg:'';
+  },
+  finish(st){
+    this.typer=null;clearInterval(this.tm);
+    const tr=LM.track,s=this.stages[this.si],pass=st.acc>=s.acc&&st.wpm>=s.wpm,pid=hPid(tr,this.cur);
+    let stars=0;if(pass){stars=st.acc>=98&&(!s.wpm||st.wpm>=s.wpm*1.15)?3:st.acc>=95?2:1}
+    if(pass){const p=LP[pid]||(LP[pid]={stages:[]});p.stages=p.stages||[];while(p.stages.length<3)p.stages.push(0);
+      p.stages[this.si]=Math.max(p.stages[this.si]||0,stars);p.ss=p.ss||{};p.ss[this.si]={wpm:st.wpm,acc:st.acc,sec:st.sec};
+      store.set('lessons',LP);Board.saveProgress&&Board.saveProgress()}
+    $('#lPlay').hidden=true;$('#lDone').hidden=false;
+    const last=this.si>=2;
+    $('#lDone').innerHTML=`<h3>${pass?(last?'Lesson complete':'Step complete'):'Not quite yet'}</h3>
+      <p class="stars" style="font-size:30px;margin:8px 0">${[1,2,3].map(i=>`<span class="${i<=stars?'on':''}">★</span>`).join('')}</p>
+      <div class="rstats" style="margin:0;padding:0"><div><b>${st.wpm}</b><span>WPM</span></div><div><b>${st.acc}%</b><span>accuracy</span></div><div><b>${st.err}</b><span>mistakes</span></div><div><b>${st.sec}s</b><span>time</span></div></div>
+      <p class="muted" style="margin-top:12px">${pass?'Nice work. Try for more stars by slowing down a little and cutting mistakes.':`You need ${s.acc}% accuracy${s.wpm?` and ${s.wpm} WPM`:''} to pass this step. Take it a little slower and try again.`}</p>
+      <div class="ractions">${pass&&!last?'<button class="btn" id="lNext">Next step</button>':''}<button class="btn ${pass&&!last?'sec':''}" id="lRetry">${pass?'Practise again':'Try again'}</button><button class="btn sec" id="lList">All lessons</button></div>`;
+    if($('#lNext'))$('#lNext').onclick=()=>{this.si++;this.play()};
+    $('#lRetry').onclick=()=>{this.stages=hStages(this.lay(),this.cur);this.play()};
+    $('#lList').onclick=()=>this.list();
+    renderProfile();
+  },
+  key(e){
+    if($('#lessonRun').hidden)return;
+    if(!this.typer){if(e.key==='Enter'&&!$('#lDone').hidden&&$('#lNext')){e.preventDefault();$('#lNext').click()}return}
+    if(e.key==='Escape'){this.list();return}
+    this.typer.key(e);
+  }
+};
+
+/* ---------- chooser page ---------- */
+const LM={track:null};
+const courseAbout=c=>(((SITE.lessonAbout||{})[c.id])||'').trim()||c.def;
+const courseOff=c=>!!((SITE.lessonOff||{})[c.id]);
+function lessonHead(title,back){
+  const hd=$('#lessonList .head');if(!hd)return;
+  $('h2',hd).textContent=title;
+  let b=$('#lcBack');
+  if(back){if(!b){b=mk('button','ghost','← All courses');b.id='lcBack';b.onclick=()=>{LM.track=null;Lesson.list()};hd.insertBefore(b,hd.firstChild)}}
+  else if(b)b.remove();
+}
+function lessonHome(){
+  $('#lessonList').hidden=false;$('#lessonRun').hidden=true;
+  lessonHead('Typing lessons',false);
+  $('#lessonSum').textContent='What do you want to learn? Choose a course.';
+  const c=$('#courses');c.innerHTML='';
+  const g=mk('div','lchoose'),isAdm=typeof Board!=='undefined'&&Board.admin;
+  COURSES.filter(co=>!courseOff(co)||isAdm).forEach(co=>{
+    const b=mk('button','lch'+(courseOff(co)?' off':''));
+    const done=co.id==='en'?LESSONS.filter(l=>lessonStars(l)>0).length:HLESS.filter(l=>hFull(co.id,l)).length;
+    const tot=co.id==='en'?LESSONS.length:HLESS.length;
+    b.innerHTML=`<span class="lt">${esc(co.title)}</span><span class="la">${esc(courseAbout(co))}</span><span class="lp">${done} of ${tot} lessons done${courseOff(co)?' · hidden from students':''}</span>`;
+    b.onclick=()=>{LM.track=co.id;Lesson.list()};
+    g.appendChild(b)});
+  c.appendChild(g);
+}
+const _lessonListEn=Lesson.list;
+Lesson.list=function(){
+  this.typer=null;clearInterval(this.tm);
+  if(HL.typer){HL.typer=null;clearInterval(HL.tm)}
+  $('#lText').classList.remove('hdev');
+  if(LM.track==null)return lessonHome();
+  if(LM.track==='en'){_lessonListEn.call(this);lessonHead('English typing',true);return}
+  HL.list();
+};
+const _lessonPlayEn=Lesson.play;
+Lesson.play=function(){$('#lText').classList.remove('hdev');return _lessonPlayEn.call(this)};
+const _lessonKey=Lesson.key;
+Lesson.key=function(e){return (LM.track&&LM.track!=='en')?HL.key(e):_lessonKey.call(this,e)};
+const _showV6=show;
+show=function(v){if(v==='lessons')LM.track=null;_showV6(v)};
+if(view==='lessons')Lesson.list();
+
+/* ---------- admin: lesson card texts ---------- */
+function adminLessons(){
+  const c=mk('div','card');c.appendChild(mk('h3','','📚 Lesson courses'));c.firstChild.style.marginBottom='4px';
+  c.appendChild(mk('p','muted','These are the cards students see when they open Lessons. Write the short line shown under each course name, for example the exams it is used in. Leave it empty to use the default text.'));
+  const ab=Object.assign({},SITE.lessonAbout||{}),off=Object.assign({},SITE.lessonOff||{});
+  COURSES.forEach(co=>{
+    const box=mk('div','frow');box.style.cssText='flex-direction:column;align-items:stretch;gap:6px;padding:12px 0;border-top:1px solid var(--border)';
+    const top=mk('div');top.style.cssText='display:flex;justify-content:space-between;align-items:center;gap:10px';
+    top.appendChild(mk('b','',co.title));
+    const sw=mk('button','sw'+(off[co.id]?'':' on'));sw.title=off[co.id]?'Hidden: click to show':'Visible: click to hide';
+    sw.onclick=()=>{sw.disabled=true;const o=Object.assign({},SITE.lessonOff||{});o[co.id]=!o[co.id];setSite({lessonOff:o}).then(()=>{sw.disabled=false})};
+    top.appendChild(sw);
+    const inp=mk('input','field');inp.maxLength=90;inp.placeholder=co.def;inp.value=ab[co.id]||'';inp.style.maxWidth='none';
+    inp.oninput=()=>{ab[co.id]=inp.value};
+    box.append(top,inp);c.appendChild(box)});
+  const save=mk('button','btn','Save card texts');save.style.marginTop='12px';
+  save.onclick=async()=>{const o={};COURSES.forEach(co=>{o[co.id]=(ab[co.id]||'').trim()});save.disabled=true;await setSite({lessonAbout:o});save.disabled=false};
+  c.appendChild(save);
+  return c;
+}
+/* live update when admin changes the cards */
+(()=>{const o=applySite;applySite=function(){o();if(view==='lessons'&&LM.track==null)lessonHome()}})();
 
 </script>
 </body>
