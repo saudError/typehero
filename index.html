@@ -134,6 +134,9 @@ main{padding-bottom:60px}
 kbd{font-family:var(--mono);font-size:12px;background:var(--card);border:1px solid var(--border);border-bottom-width:2px;border-radius:5px;padding:1px 6px}
 .restart{background:none;border:0;color:var(--muted);font-weight:600;padding:6px 10px;border-radius:8px}
 .restart:hover{color:var(--text);background:var(--soft)}
+.bwk{display:inline-flex;flex-direction:column;align-items:center;vertical-align:top}
+.khint{font-size:10px;color:var(--muted);margin-top:-2px;opacity:.8}
+.khint kbd{font-size:9px;padding:0 4px;border-bottom-width:1px}
 .capin{position:fixed;left:-999px;top:0;opacity:0;width:1px;height:1px}
 
 /* results */
@@ -156,6 +159,32 @@ kbd{font-family:var(--mono);font-size:12px;background:var(--card);border:1px sol
 .ractions{display:flex;gap:10px;flex-wrap:wrap;margin-top:22px;align-items:center}
 .note{font-size:14px;color:var(--muted)}
 .pbtag{display:inline-block;background:var(--hl);color:var(--text);padding:2px 10px;border-radius:6px;font-weight:700;font-size:13px;margin-left:8px}
+/* about page */
+.abHero{background:linear-gradient(135deg,var(--accent),color-mix(in srgb,var(--accent) 60%,#000));color:var(--accent-t);border-radius:16px;padding:34px 30px;margin-bottom:20px}
+.abHero h2{font-size:34px;margin-bottom:10px}.abHero p{max-width:720px;opacity:.93;margin-top:8px;font-size:17px}
+.abStats{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:26px}
+.abStat{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:20px;text-align:center}
+.abStat i{font-style:normal;font-size:30px;display:block}.abStat b{display:block;font-size:34px;color:var(--ink);font-variant-numeric:tabular-nums;margin:6px 0 2px;line-height:1.1}
+.abStat span{color:var(--muted);font-size:14px;font-weight:600}
+.abSec{margin:30px 0 12px}.abNote{font-size:13px;color:var(--muted);margin:-14px 0 24px;text-align:center}
+.abFeat{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:12px}
+.abFeat button{text-align:left;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px;display:flex;flex-direction:column;gap:6px}
+.abFeat button:hover{border-color:var(--accent)}.abFeat b{font-size:16px}.abFeat span{font-size:14px;color:var(--muted)}.abFeat i{font-style:normal;font-size:26px}
+.abLinks{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:12px}
+@media(max-width:620px){.abStats{grid-template-columns:1fr}.abHero{padding:24px 20px}.abHero h2{font-size:28px}}
+/* new record celebration */
+.recbanner{display:flex;align-items:center;gap:14px;margin:4px 0 18px;padding:14px 18px;border-radius:12px;background:linear-gradient(100deg,#FFE98A,#FFC93C);color:#4A3500;border:1px solid #E5B21F;box-shadow:0 6px 18px rgba(240,180,20,.35);animation:recIn .5s cubic-bezier(.2,1.3,.4,1)}
+.recbanner .rbIc{font-size:38px;line-height:1;animation:crownWiggle 1.6s ease-in-out infinite}
+.recbanner b{display:block;font-size:19px}
+.recbanner span.rbTx{display:block;font-size:14px;font-weight:600;opacity:.85}
+.crown{position:absolute;top:-22px;left:30px;font-size:44px;line-height:1;transform:rotate(-16deg);filter:drop-shadow(0 3px 4px rgba(0,0,0,.25));animation:crownPop .6s cubic-bezier(.2,1.6,.4,1) both;pointer-events:none;z-index:2}
+#confetti{position:fixed;inset:0;pointer-events:none;overflow:hidden;z-index:60}
+#confetti i{position:absolute;top:-16px;width:9px;height:14px;border-radius:2px;opacity:.95;animation:cfall linear forwards}
+@keyframes cfall{to{transform:translateY(105vh) rotate(720deg);opacity:.9}}
+@keyframes recIn{from{transform:scale(.85) translateY(-10px);opacity:0}to{transform:none;opacity:1}}
+@keyframes crownPop{from{transform:scale(0) rotate(-16deg);opacity:0}to{transform:scale(1) rotate(-16deg);opacity:1}}
+@keyframes crownWiggle{0%,100%{transform:rotate(-8deg)}50%{transform:rotate(8deg) scale(1.08)}}
+@media (prefers-reduced-motion:reduce){#confetti{display:none}.recbanner,.crown,.recbanner .rbIc{animation:none}}
 
 /* cards & tables */
 .card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px}
@@ -265,6 +294,7 @@ tr.me td{background:var(--hl)}
   .grade .num{font-size:74px}
   .k{height:36px;font-size:12px}
   .tips{display:none}
+  .khint{display:none}
   .bombword{font-size:34px}
 }
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
@@ -546,17 +576,18 @@ window.TYPEADDA_CONFIG={
     </div>
     <input class="capin" id="cap" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" aria-label="Typing input">
     <div class="tips chrome" id="tips">
-      <span><kbd>Tab</kbd> new test</span><span><kbd>Esc</kbd> restart same words</span><span><kbd>Ctrl</kbd>+<kbd>Backspace</kbd> delete word</span>
+      <span><kbd>Esc</kbd> settings</span><span><kbd>Ctrl</kbd>+<kbd>Backspace</kbd> delete word</span>
     </div>
     <div class="kb" id="tkb" hidden></div>
     <div class="note chrome" id="hkNote" hidden style="text-align:center;margin-top:8px"></div>
-    <div style="text-align:center;margin-top:10px" class="chrome"><button class="restart" id="btnNext">New test</button><button class="restart" id="btnSame">Repeat same words</button></div>
+    <div style="text-align:center;margin-top:10px" class="chrome"><div class="bwk"><button class="restart" id="btnNext">New test</button><span class="khint"><kbd>Tab</kbd></span></div><div class="bwk"><button class="restart" id="btnSame">Repeat same words</button><span class="khint"><kbd>Tab</kbd> + <kbd>Enter</kbd></span></div></div>
   </div>
 
   <div class="results" id="results" hidden>
+    <div class="recbanner" id="recBanner" hidden></div>
     <div class="rgrid">
       <div>
-        <div class="grade"><span class="num" id="rWpm">0</span><span class="unit">words per minute</span></div>
+        <div class="grade"><span class="crown" id="rCrown" hidden>👑</span><span class="num" id="rWpm">0</span><span class="unit">words per minute</span></div>
         <div class="remark" id="rRemark"></div>
         <div class="sbox"><b id="rAcc">0%</b><span>accuracy</span></div>
       </div>
@@ -634,7 +665,8 @@ window.TYPEADDA_CONFIG={
         <h3 style="margin-bottom:14px">Your details</h3>
         <div class="form">
           <div class="full" style="display:flex;gap:14px;align-items:center;flex-wrap:wrap"><span id="pAva"></span><div><input type="file" id="picFile" accept="image/*" hidden><button class="btn sec" type="button" id="picBtn">Change photo</button> <button class="ghost" type="button" id="picDel">Remove</button><p class="note" id="picMsg"></p></div></div>
-          <label class="full">Username<input id="pUser" maxlength="20" autocapitalize="off" placeholder="e.g. rahul_typist (shown on leaderboard; if empty, your name is shown)"></label>
+          <label class="full"><span id="pUserLab">Username</span><input id="pUser" maxlength="20" autocapitalize="off" placeholder="e.g. rahul_typist (shown on leaderboard; if empty, your name is shown)"></label>
+          <label class="full" id="pEmailBox" hidden><span id="pEmailLab">Email</span><input id="pEmail" type="email" maxlength="80" autocapitalize="off" placeholder="you@example.com"><span class="note" id="pEmailNote"></span></label>
           <label class="full">Full name<input id="pName" maxlength="40" placeholder="Shown on the leaderboard if you do not set a username"></label>
           <label class="full">Short bio<input id="pBio" maxlength="120" placeholder="One line about you"></label>
           <label class="full">About me<textarea id="pAbout" rows="4" maxlength="500" placeholder="Tell others about yourself: your goals, your college, what you are practising for..."></textarea></label>
@@ -675,18 +707,19 @@ window.TYPEADDA_CONFIG={
 </section>
 
 <section id="v-events" class="view"><div id="evRoot"></div></section>
+<section id="v-about" class="view"><div id="aboutRoot"></div></section>
 <section id="v-colleges" class="view">
   <div id="colList"><div class="head"><div><h2>Colleges on TypeAdda</h2><p class="muted">Courses, fees and details shared by the colleges themselves.</p></div><input class="field" id="colQ" placeholder="Search colleges" style="max-width:280px"></div><div class="colgrid" id="colGrid"></div></div>
   <div id="colDetail" hidden></div>
 </section>
 </main>
 
-<footer id="foot" class="chrome"><a data-info="about">About</a><a data-go="colleges" id="fColleges">Colleges</a><a data-info="terms">Terms &amp; Conditions</a><a data-info="privacy">Privacy</a><a data-info="contact">Contact</a><button class="ghost" id="btnAdminLogin">🔐 Admin login</button><span>© TypeAdda</span></footer>
+<footer id="foot" class="chrome"><a data-go="about">About</a><a data-go="colleges" id="fColleges">Colleges</a><a data-info="terms">Terms &amp; Conditions</a><a data-info="privacy">Privacy</a><a data-info="contact">Contact</a><button class="ghost" id="btnAdminLogin">🔐 Admin login</button><span>© TypeAdda</span></footer>
 <div class="modal" id="mInfo" hidden><div class="box"><h3 id="iTitle"></h3><div id="iBody"></div><div class="ractions"><button class="btn sec" data-close>Close</button></div></div></div>
 <div class="modal" id="mAuth" hidden><div class="box"><h3 id="aTitle">Login</h3>
 <button class="btn" id="aGoogle" style="width:100%;margin-bottom:10px;background:#fff;color:#333;border:1px solid var(--border)">🇬 Continue with Google</button><p class="note" style="text-align:center;margin:0 0 10px">or use email</p>
 <div class="seg" id="aTabs" style="margin-bottom:10px"><button data-m="login" class="on">Login</button><button data-m="reg">Sign up</button></div>
-<input class="field" id="aName" placeholder="Your name" maxlength="24" hidden><input class="field" id="aMail" type="email" placeholder="Email"><input class="field" id="aPass" type="password" placeholder="Password (min 6 characters)">
+<input class="field" id="aName" placeholder="Your name" maxlength="24" hidden><input class="field" id="aMail" type="text" autocapitalize="off" autocomplete="username" placeholder="Email or username"><input class="field" id="aPass" type="password" placeholder="Password (min 6 characters)">
 <p class="note" id="aMsg"></p><div class="ractions"><button class="btn" id="aGo">Login</button><button class="ghost" id="aForgot">Forgot password?</button></div></div></div>
 <div class="modal" id="mSettings" hidden><div class="box">
   <h3>Settings</h3>
@@ -702,7 +735,6 @@ window.TYPEADDA_CONFIG={
   <div class="row"><span>Error highlighting <span class="note">show wrong letters in red</span></span><div class="seg" id="sErrHl"></div></div>
   <div class="row"><span>Stop on error <span class="note">cannot move on until the letter is correct</span></span><div class="seg" id="sStop"></div></div>
   <div class="row"><span>Backspace</span><div class="seg" id="sBsp"></div></div>
-  <div class="row"><span>Quick restart <span class="note">Tab = new test</span></span><div class="seg" id="sQr"></div></div>
     <div class="row"><span>Virtual keyboard <span class="note">green = right, red = wrong</span></span><div class="seg" id="sVkb"></div></div>
   <div class="row"><span>Blind mode <span class="note">hide mistakes until the end</span></span><div class="seg" id="sBlind"></div></div>
   <div class="row"><span>Caret smoothness</span><div class="seg" id="sSmooth"></div></div>
@@ -1022,6 +1054,7 @@ const COUNTRIES=["India","Nepal","Bangladesh","Sri Lanka","Pakistan","United Sta
 const S=Object.assign({theme:'auto',fs:26,caret:'block',sound:false,focus:true,live:true,vkb:false,blind:false,smooth:true,lkb:true,lfing:true,oneline:false,punct:false,nums:false,lang:'en',mode:'time',time:30,words:25},store.get('settings',{}));
 let P=Object.assign({name:'',country:'India',state:'',district:'',college:'',verifySent:false,verifyCollege:''},store.get('profile',{}));
 let H=store.get('history',[]);
+let TC=Math.max(store.get('testCount',0),H.length);
 let PB=store.get('pb',{});
 const saveS=()=>store.set('settings',S);
 function applySettings(){
@@ -1096,12 +1129,13 @@ function paintWord(i){
   e.innerHTML=wordHTML(i);
   e.classList.toggle('e',i<T.idx&&T.typed[i]!==T.words[i]);
 }
-function newTest(same){
+function newTest(same,wordsOverride){
   if(T&&T.timer)clearInterval(T.timer);
-  const words=same&&T?T.words.slice():initialWords();
+  const words=wordsOverride?wordsOverride.slice():same&&T?T.words.slice():initialWords();
   T={words,typed:[],tok:[],idx:0,started:false,ended:false,start:0,timer:null,kc:0,kw:0,sec:0,secErr:0,secChars:0,samples:[],lastSec:0};
   resultsOn=false;wordsEl.classList.toggle('dev',S.lang==='hi');
   $('#results').hidden=true;$('#stage').hidden=false;
+  {const cf=$('#confetti');if(cf)cf.remove()}
   document.body.classList.remove('typing');
   document.body.classList.remove('fl-on');wordsEl.style.transform='none';
   wordsEl.innerHTML=T.words.map((w,i)=>`<div class="w" id="w${i}">${wordHTML(i)}</div>`).join('');
@@ -1154,7 +1188,7 @@ function sample(sec){
   T.secErr=0;T.secChars=0;
 }
 function beginTest(){
-  T.started=true;T.start=performance.now();$('#hint').hidden=true;
+  T.started=true;T.start=performance.now();$('#hint').hidden=true;IdleUI.lastKey=performance.now();
   document.body.classList.add('typing');
   T.timer=setInterval(tick,100);
 }
@@ -1232,12 +1266,13 @@ function showResults(r){
   $('#rStats').innerHTML=st.map(s=>`<div><b>${s[1]}</b><span>${s[0]}</span></div>`).join('');
   drawChart($('#chart'),T.samples);
   // save
+  TC++;store.set('testCount',TC);
   H.push({ts:Date.now(),key:r.key,wpm:Math.round(r.wpm),acc:Math.round(r.acc),raw:Math.round(r.raw),cons:r.cons,sus:T.cheat?1:0});
   if(H.length>200)H=H.slice(-200);store.set('history',H);
   const old=PB[r.key];let isPB=false;
   if(!T.cheat&&r.acc>=50&&(!old||r.wpm>old.wpm)){PB[r.key]={wpm:Math.round(r.wpm*10)/10,acc:Math.round(r.acc*10)/10,ts:Date.now()};if(/h$/.test(r.key))PB[r.key].kb=S.hkb;store.set('pb',PB);isPB=true}
-  const tag=$('#rWpm').parentElement.querySelector('.pbtag');if(tag)tag.remove();
-  if(isPB&&old)$('#rRemark').appendChild(mk('span','pbtag','new best'));
+  $('#recBanner').hidden=true;$('#rCrown').hidden=true;
+  if(isPB&&old)celebrate(r,old);
   const note=$('#rNote');note.textContent='';
   if(T.cheat)note.textContent='Result not counted: '+T.cheat+'.';else{Streak.mark();if(!/^t(15|60|600)$/.test(r.plain))note.textContent='Saved to your profile. The leaderboard counts only 15s, 60s and 10 min tests.'}
   const qual=/^t(15|60|600)$/.test(r.plain)&&r.key===r.plain&&r.acc>=80&&r.wpm<=350;
@@ -1246,7 +1281,22 @@ function showResults(r){
     Board.submit().then(msg=>{note.textContent=msg||''});
   }else if(/^[tw]/.test(r.key)&&r.key!==r.plain)note.textContent='Leaderboard uses plain English tests without punctuation or numbers.';
   else if(r.acc<80)note.textContent='Accuracy under 80% does not count for the leaderboard.';
+  if(!T.cheat&&!qual&&!isPB&&TC%5===0&&Board.uid&&P.name)Board.submit();
   renderProfile();
+}
+function celebrate(r,old){
+  const f=x=>Math.round(x*10)/10;
+  const b=$('#recBanner');
+  b.innerHTML=`<span class="rbIc">👑</span><div><b>Congratulations! New record 🎉</b><span class="rbTx">${esc(labelKey(r.key))}: ${f(old.wpm)} → ${f(r.wpm)} WPM</span></div>`;
+  b.hidden=false;$('#rCrown').hidden=false;
+  const old2=$('#confetti');if(old2)old2.remove();
+  const c=document.createElement('div');c.id='confetti';
+  const col=['#F2B705','#E4574F','#1E8E5A','#3B96E0','#B05CE0','#FF8A3D'];
+  for(let i=0;i<48;i++){const e=document.createElement('i');
+    e.style.left=Math.random()*100+'%';e.style.background=col[i%col.length];
+    e.style.animationDuration=(2.2+Math.random()*1.8)+'s';e.style.animationDelay=(Math.random()*.6)+'s';
+    e.style.transform='rotate('+Math.round(Math.random()*180)+'deg)';c.appendChild(e)}
+  document.body.appendChild(c);setTimeout(()=>c.remove(),5000);
 }
 function drawChart(svg,samples){
   const W=640,Hh=220,L=38,R=12,Tp=12,B=26;
@@ -1264,10 +1314,16 @@ function drawChart(svg,samples){
   g+=`<text x="${W-R}" y="10" text-anchor="end" font-size="11" fill="var(--muted)">solid: wpm · dashed: raw · ×: mistakes</text>`;
   svg.innerHTML=g;
 }
-const Test={
+const Test={armed:0,prev:null,
   key(e){
-    if(resultsOn){if(e.key==='Enter'||e.key==='Tab'){e.preventDefault();newTest()}return}
-    if(e.key==='Tab'){e.preventDefault();if(S.qr)newTest();return}
+    /* Tab = new test, Tab then Enter (within 2.5s) = restart the test you were on (same words) */
+    if(e.key==='Tab'){e.preventDefault();if(e.repeat)return;
+      if(!Test.armed)Test.prev=T?T.words.slice():null;
+      Test.armed=performance.now();newTest();return}
+    if(e.key==='Enter'&&Test.armed&&performance.now()-Test.armed<2500&&Test.prev){
+      e.preventDefault();Test.armed=0;const w=Test.prev;Test.prev=null;newTest(false,w);return}
+    if(!['Enter','Shift','Control','Alt','Meta','CapsLock'].includes(e.key)){Test.armed=0;Test.prev=null}
+    if(resultsOn){if(e.key==='Enter'){e.preventDefault();newTest()}return}
     if(e.key==='Escape'){e.preventDefault();if(T&&T.started&&!T.ended)newTest(true);document.body.classList.remove('fl-on','typing');try{buildSettings()}catch(er){console.error(er)}openModal('mSettings');return}
     if(e.ctrlKey||e.metaKey||e.altKey&&e.key!=='Backspace')return;
     if(e.key==='Backspace'){e.preventDefault();backspace(e.ctrlKey||e.altKey);return}
@@ -1300,9 +1356,25 @@ $('#selLang').onchange=e=>{
 };
 $('#btnNext').onclick=()=>newTest();$('#btnSame').onclick=()=>newTest(true);
 $('#rNext').onclick=()=>newTest();$('#rSame').onclick=()=>newTest(true);
-$('#paper').onclick=()=>{$('#cap').focus();$('#hint').hidden=true;document.body.classList.remove('typing')};
+$('#paper').onclick=()=>{$('#cap').focus();$('#hint').hidden=true};
 $('#customOk').onclick=()=>{const t=$('#customText').value.trim();if(!t)return;store.set('custom',t);closeModals();S.mode='custom';saveS();renderCfg();newTest()};
-document.addEventListener('mousemove',()=>{if(document.body.classList.contains('typing')){document.body.classList.remove('typing');clearTimeout(window.__mt);window.__mt=setTimeout(()=>{if(T&&T.started&&!T.ended)document.body.classList.add('typing')},1400)}});
+/* while typing only the text is visible. The page comes back when:
+   - keyboard idle >= 2s AND the mouse moves, or
+   - keyboard idle >= 6s (mouse not needed). Typing again hides it. */
+const IdleUI={lastKey:0,
+  live:()=>view==='type'&&T&&T.started&&!T.ended,
+  show(){document.body.classList.remove('typing')},
+  hide(){if(this.live()&&!modalOpen())document.body.classList.add('typing')}};
+document.addEventListener('keydown',e=>{
+  if(e.key.length!==1&&e.key!=='Backspace')return;
+  IdleUI.lastKey=performance.now();IdleUI.hide();
+},true);
+document.addEventListener('mousemove',()=>{
+  if(IdleUI.live()&&performance.now()-IdleUI.lastKey>=2000)IdleUI.show();
+});
+setInterval(()=>{
+  if(IdleUI.live()&&performance.now()-IdleUI.lastKey>=6000)IdleUI.show();
+},500);
 /* mobile / IME fallback */
 let imeMode=false;
 $('#cap').addEventListener('keydown',e=>{if(e.key==='Unidentified'||e.keyCode===229)imeMode=true});
@@ -1748,7 +1820,7 @@ const Board={
       if(P.name)this.submit();
     }catch(e){console.warn('db unavailable',e)}
   },
-  changed(){if(view==='board')renderBoard();if(view==='profile')renderProfile();if(view==='admin')renderAdmin()},
+  changed(){if(view==='about')renderAbout();if(view==='board')renderBoard();if(view==='profile')renderProfile();if(view==='admin')renderAdmin()},
   submit(){this.q=this.q.then(()=>this._push()).catch(e=>'Could not reach the leaderboard ('+((e&&e.code)||'error')+'). Your score is saved on this device.');return this.q},
   async _push(){
     if(!this.db)return 'Leaderboard sync is not available here, so this score is saved on this device only.';
@@ -1759,7 +1831,7 @@ const Board={
     LBKEYS.forEach(k=>{const l=PB[k];if(l&&(!best[k]||l.wpm>best[k].wpm)){best[k]={wpm:l.wpm,acc:l.acc,ts:l.ts};up=true}});
     const meta={name:P.name,country:P.country,state:P.state,district:P.district,college:P.college};
     const mc=Object.keys(meta).some(k=>cur[k]!==meta[k]);
-    if(!up&&!mc)return 'Your leaderboard score is already up to date.';
+    if(!up&&!mc&&cur.tests===Math.max(TC,H.length,cur.tests||0)&&Math.abs((cur.time||0)-Math.round(TT))<120)return 'Your leaderboard score is already up to date.';
     await ref.set(Object.assign({},meta,{best,updated:Date.now()}));
     try{const nk=LBKEYS.filter(k=>best[k]&&!(cur.best&&cur.best[k]));if(nk.length&&!isStaff()&&typeof Mail!=='undefined')Mail.congrats(nk)}catch(er){}
   return up?'Score posted to the leaderboard.':'Profile updated on the leaderboard.';
@@ -1895,7 +1967,7 @@ function renderProfile(){
 }
 $('#pReset').onclick=e=>{
   const b=e.target;if(b.dataset.sure!=='1'){b.dataset.sure='1';b.textContent='Click again to clear history, bests and lesson progress';setTimeout(()=>{b.dataset.sure='0';b.textContent='Clear data on this device'},4000);return}
-  const keep=store.get('profile',{});store.clear();H=[];PB={};LP={};GH={};store.set('profile',keep);renderProfile();toast('Local data cleared');b.dataset.sure='0';b.textContent='Clear data on this device';
+  const keep=store.get('profile',{});store.clear();H=[];TC=0;PB={};LP={};GH={};store.set('profile',keep);renderProfile();toast('Local data cleared');b.dataset.sure='0';b.textContent='Clear data on this device';
 };
 
 /* ---------- admin ---------- */
@@ -1948,6 +2020,7 @@ function show(v){
   if(v==='lessons')Lesson.list();
   if(v==='games')Games.menu();
   if(v==='board')renderBoard();
+  if(v==='about')renderAbout();
   if(v==='profile'){initProfileForm();renderProfile()}
   if(v==='admin')renderAdmin();
   if(v==='type'&&T)requestAnimationFrame(placeCaret);
@@ -1965,6 +2038,7 @@ document.addEventListener('keydown',e=>{
   else if(view==='games')Games.key(e);
 });
 window.addEventListener('blur',()=>{document.body.classList.remove('typing')});
+window.addEventListener('focus',()=>{if(view==='type'&&T&&T.started&&!T.ended)document.body.classList.add('typing')});
 
 
 /* ---------- v2: focus line, virtual keyboard, lesson options, rooms ---------- */
@@ -2620,6 +2694,7 @@ $('#aTabs').onclick=e=>{const b=e.target.closest('button');if(b)Auth.setMode(b.d
 $('#aGo').onclick=()=>Auth.go();
 $('#mAuth').addEventListener('keydown',e=>{if(e.key==='Enter')Auth.go()});
 $('#aForgot').onclick=async()=>{const em=$('#aMail').value.trim();if(!em||!Board.auth){Auth.msg('Enter your email first');return}
+  if(!em.includes('@')){Auth.msg('Username accounts are made by your college. Ask your college to reset your password.');return}
   try{await Board.auth.sendPasswordResetEmail(em);Auth.msg('Password reset email sent')}catch(e){Auth.msg(Auth.err(e))}};
 $('#btnAdminLogin').onclick=()=>{if(Board.admin)show('admin');else if(Board.uid)toast('This account is not an admin');else Auth.open(true)};
 $('#pLogout').onclick=async()=>{try{await Sync.push();await Board.auth.signOut()}catch(e){}
@@ -2632,6 +2707,51 @@ renderProfile=(function(prev){return function(){
   $('#pLogout').hidden=!Board.uid;
   $('#pAcct').textContent=Board.uid?'Signed in as '+Board.email:(Board.cloud?'You are not logged in. Login to keep your progress on every device.':'');
 }})(renderProfile);
+
+// ---- About page ----
+function aboutStats(){
+  let users=0,time=0,tests=0;
+  if(Board.db){
+    for(const [id,d] of Board.scores){if(Board.blocked&&Board.blocked.has(id))continue;users++;time+=+d.time||0;tests+=+d.tests||0}
+    if(Board.users&&Board.users.size>users)users=Board.users.size;
+  }else{users=1;time=Math.round(TT);tests=Math.max(TC,H.length)}
+  return {users,time,tests};
+}
+function fmtTotal(t){t=Math.round(t);if(t<60)return t+' sec';const h=Math.floor(t/3600),m=Math.floor(t%3600/60);
+  return h?h.toLocaleString('en-IN')+' hrs '+m+' min':m+' min'}
+function openInfo(k){const i=INFO[k];if(!i)return;$('#iTitle').innerHTML=i[0];$('#iBody').innerHTML=i[1];openModal('mInfo')}
+function renderAbout(){
+  const root=$('#aboutRoot');if(!root)return;
+  const n=SITE.name||'TypeAdda',st=aboutStats(),L=SITE.links||{},clean={};
+  try{SOCU.forEach(([k])=>{const u=cleanURL(L[k]);if(u)clean[k]=u})}catch(e){}
+  let soc='';try{soc=socRow(clean)}catch(e){}
+  const mail=(window.TYPEADDA_CONFIG||{}).contact||'';
+  const story=SITE.about?SITE.about.split(/\n+/).map(x=>'<p>'+esc(x)+'</p>').join(''):
+    '<p>'+esc(n)+' is a free place to practise typing: timed tests, step-by-step lessons with finger guides, games and leaderboards for students and job-seekers across India.</p>';
+  const F=[['⌨️','Typing tests','Timed and word tests in English and Hindi (Remington Gail, Kruti Dev, Mangal).','type'],
+    ['📚','Lessons','Step-by-step lessons with finger guides, from home row to full speed.','lessons'],
+    ['🎮','Games','Fun typing games that build speed without feeling like practice.','games'],
+    ['🏆','Leaderboards','Compete by country, state, district and college. Fair, anti-cheat ranks.','board'],
+    ['🎓','Colleges & events','College pages, verified students and typing events.','colleges']];
+  root.innerHTML=`<div class="abHero"><h2>About ${esc(n)}</h2>${story}</div>
+  <div class="abStats">
+    <div class="abStat"><i>👥</i><b>${st.users.toLocaleString('en-IN')}</b><span>Total users</span></div>
+    <div class="abStat"><i>⏱️</i><b>${esc(fmtTotal(st.time))}</b><span>Total time spent by all users</span></div>
+    <div class="abStat"><i>✅</i><b>${st.tests.toLocaleString('en-IN')}</b><span>Total tests completed</span></div>
+  </div>
+  <p class="abNote">${Board.db?'Counted from typists who have joined the leaderboard. Updates live.':'Leaderboard is offline, showing your device only.'}</p>
+  <h3 class="abSec">What you can do here</h3>
+  <div class="abFeat">${F.map(f=>`<button data-goto="${f[3]}"><i>${f[0]}</i><b>${f[1]}</b><span>${f[2]}</span></button>`).join('')}</div>
+  <h3 class="abSec">Our promise</h3>
+  <div class="card"><p><b>Free to use.</b> Practise as much as you like, no payment needed for tests, lessons and games.</p>
+  <p style="margin-top:8px"><b>Fair ranks.</b> Bots and fake typing are filtered out, so a score on the leaderboard is a real score.</p>
+  <p style="margin-top:8px"><b>Made for India.</b> Hindi typing layouts, exam-style passages and college rankings are built in.</p></div>
+  <h3 class="abSec">Get in touch</h3>
+  <div class="card">${mail?'<p>Questions, feedback or problems? Write to <b>'+esc(mail)+'</b></p>':''}${soc?'<p style="margin-top:10px"><b>Follow us</b></p><div class="socs">'+soc+'</div>':''}
+  <div class="abLinks"><button class="btn sec" data-info="terms">Terms &amp; Conditions</button><button class="btn sec" data-info="privacy">Privacy</button><button class="btn" data-goto="type">Start typing</button></div></div>`;
+}
+$('#aboutRoot').onclick=e=>{const g=e.target.closest('[data-goto]');if(g){show(g.dataset.goto);return}
+  const i=e.target.closest('[data-info]');if(i)openInfo(i.dataset.info)};
 
 // footer info
 const INFO={
@@ -2823,8 +2943,8 @@ Board._push=async function(){
   LBKEYS.forEach(k=>{const l=PB[k];if(l&&(!best[k]||l.wpm>best[k].wpm)){best[k]={wpm:l.wpm,acc:l.acc,ts:l.ts};up=true}});
   const meta={name:P.name,country:P.country,state:P.state,district:P.district,college:P.college,thumb:P.thumb||'',bio:P.bio||''};
   const mc=Object.keys(meta).some(k=>(cur[k]||'')!==meta[k]);
-  if(!up&&!mc)return 'Your leaderboard score is already up to date.';
-  await ref.set(Object.assign({},meta,{best,tests:H.length,time:Math.round(TT),lessons:LESSONS.filter(l=>lessonStars(l)>0).length,updated:Date.now()}));
+  if(!up&&!mc&&cur.tests===Math.max(TC,H.length,cur.tests||0)&&Math.abs((cur.time||0)-Math.round(TT))<120)return 'Your leaderboard score is already up to date.';
+  await ref.set(Object.assign({},meta,{best,tests:Math.max(TC,H.length,cur.tests||0),time:Math.round(TT),lessons:LESSONS.filter(l=>lessonStars(l)>0).length,updated:Date.now()}));
   try{const nk=LBKEYS.filter(k=>best[k]&&!(cur.best&&cur.best[k]));if(nk.length&&!isStaff()&&typeof Mail!=='undefined')Mail.congrats(nk)}catch(er){}
   return up?'Score posted to the leaderboard.':'Profile updated on the leaderboard.';
 };
@@ -2911,8 +3031,8 @@ Board._push=async function(){
   const rec={};Object.keys(PB).forEach(k=>{const x=PB[k];if(x&&/^[tw]\d+[pn]*h?$/.test(k))rec[k]=Object.assign({wpm:x.wpm,acc:x.acc,ts:x.ts},x.kb?{kb:x.kb}:{})});
   const meta={name:P.name,username:P.username||'',country:P.country,state:P.state,district:P.district,college:P.college,thumb:P.thumb||'',bio:P.bio||'',about:P.about||'',links:P.links||{},pb:rec};
   const mc=Object.keys(meta).some(k=>JSON.stringify(cur[k]===undefined?(k==='links'||k==='pb'?{}:''):cur[k])!==JSON.stringify(meta[k]));
-  if(!up&&!mc)return 'Your leaderboard score is already up to date.';
-  await ref.set(Object.assign({},meta,{best,tests:H.length,time:Math.round(TT),lessons:LESSONS.filter(l=>lessonStars(l)>0).length,updated:Date.now()}));
+  if(!up&&!mc&&cur.tests===Math.max(TC,H.length,cur.tests||0)&&Math.abs((cur.time||0)-Math.round(TT))<120)return 'Your leaderboard score is already up to date.';
+  await ref.set(Object.assign({},meta,{best,tests:Math.max(TC,H.length,cur.tests||0),time:Math.round(TT),lessons:LESSONS.filter(l=>lessonStars(l)>0).length,updated:Date.now()}));
   try{const nk=LBKEYS.filter(k=>best[k]&&!(cur.best&&cur.best[k]));if(nk.length&&!isStaff()&&typeof Mail!=='undefined')Mail.congrats(nk)}catch(er){}
   return up?'Score posted to the leaderboard.':'Profile updated on the leaderboard.';
 };
@@ -2996,7 +3116,7 @@ Pub.open=async function(id){let d=Board.scores.get(id);if(!d)return;const v=Boar
   try{const sn=await Board.db.doc('avatars/'+id).get();if(sn.exists&&sn.data().pic)this.show(d,v,sn.data().pic)}catch(e){}};
 $('#pView').onclick=()=>{
   const mine=Board.scores.get(Board.uid)||{};
-  const d=Object.assign({},mine,{username:P.username,name:P.name||'You',country:P.country,state:P.state,district:P.district,college:P.college,bio:P.bio,about:P.about,links:P.links,best:Object.assign({},PB&&Object.fromEntries(LBKEYS.filter(k=>PB[k]).map(k=>[k,PB[k]]))),pb:PB,_id:Board.uid||'local',tests:H.length,time:Math.round(TT),lessons:LESSONS.filter(l=>lessonStars(l)>0).length});
+  const d=Object.assign({},mine,{username:P.username,name:P.name||'You',country:P.country,state:P.state,district:P.district,college:P.college,bio:P.bio,about:P.about,links:P.links,best:Object.assign({},PB&&Object.fromEntries(LBKEYS.filter(k=>PB[k]).map(k=>[k,PB[k]]))),pb:PB,_id:Board.uid||'local',tests:Math.max(TC,H.length,cur.tests||0),time:Math.round(TT),lessons:LESSONS.filter(l=>lessonStars(l)>0).length});
   Pub.show(d,Board.verified.get(Board.uid),P.pic||d.thumb)};
 
 /* ================= v7: usernames, college logins, events, college pages ================= */
@@ -3017,11 +3137,51 @@ async function claimUsername(nu){
   try{await db.runTransaction(async t=>{const sn=await t.get(ref);if(sn.exists&&sn.data().uid!==me)throw {code:'taken'};t.set(ref,{uid:me,ts:Date.now()});if(old)t.delete(old)});P.username=nu;return ''}
   catch(e){return e.code==='taken'?'That username is already taken':'Could not save username ('+((e&&e.code)||'error')+')'}
 }
-initProfileForm=(function(prev){return function(){prev();$('#pUser').value=P.username||''}})(initProfileForm);
+/* college-made accounts log in with a username. Firebase keeps username@SUBDOM as the fixed login id,
+   so the username never changes; the student only adds a real contact email (P.contactEmail). */
+const SUBDOM='@student.typeadda.in';
+const isAliasAcct=()=>!!Board.email&&Board.email.toLowerCase().endsWith(SUBDOM);
+const aliasLoginId=()=>isAliasAcct()?Board.email.slice(0,-SUBDOM.length).toLowerCase():'';
+const MAILRX=/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+let aliasTried='';
+async function lockAliasUsername(){
+  if(!isAliasAcct())return;const id=aliasLoginId();if(aliasTried===id)return;aliasTried=id;
+  if(P.username!==id&&/^[a-z0-9_.]{3,20}$/.test(id)){const er=await claimUsername(id);if(!er){store.set('profile',P);updateChip()}}
+}
+function syncProfileAcct(){
+  const u=$('#pUser'),eb=$('#pEmailBox');if(!u||!eb)return;
+  if(!Board.uid){u.readOnly=false;u.disabled=false;eb.hidden=true;$('#pUserLab').textContent='Username';return}
+  eb.hidden=false;const em=$('#pEmail'),nt=$('#pEmailNote');
+  if(isAliasAcct()){
+    u.value=aliasLoginId();u.readOnly=true;u.style.opacity='.7';u.style.cursor='not-allowed';
+    $('#pUserLab').textContent='Username (your login ID, cannot be changed)';
+    $('#pEmailLab').textContent='Email (optional)';em.readOnly=false;em.style.opacity='';em.style.cursor='';
+    if(document.activeElement!==em)em.value=P.contactEmail||'';
+    nt.textContent='Add your own email so we can reach you. You will keep logging in with your username.';
+    const m=$('#unMsg');if(m)m.textContent='';
+  }else{
+    u.readOnly=false;u.style.opacity='';u.style.cursor='';
+    $('#pUserLab').textContent='Username';
+    $('#pEmailLab').textContent='Email (your login, cannot be changed)';
+    em.value=Board.email||'';em.readOnly=true;em.style.opacity='.7';em.style.cursor='not-allowed';
+    nt.textContent='You signed up with this email. You can change your username above.';
+  }
+}
+initProfileForm=(function(prev){return function(){prev();$('#pUser').value=P.username||'';syncProfileAcct()}})(initProfileForm);
+renderProfile=(function(prev){return function(){prev();lockAliasUsername().then(syncProfileAcct);syncProfileAcct();
+  if(isAliasAcct())$('#pAcct').textContent='Login ID: '+aliasLoginId()+' (use this username to login)'}})(renderProfile);
 {const ps=$('#pSave').onclick;$('#pSave').onclick=async()=>{
-  const un=$('#pUser').value.trim();
-  if(un){const er=await claimUsername(un);if(er){$('#pMsg').textContent=er;return}}
-  else if(Board.uid)$('#pMsg').textContent='Tip: without a username, your name is shown on the leaderboard.';
+  if(isAliasAcct()){
+    const ce=$('#pEmail').value.trim().toLowerCase();
+    if(ce&&!MAILRX.test(ce)){$('#pMsg').textContent='Enter a valid email address';return}
+    if(ce.endsWith(SUBDOM)){$('#pMsg').textContent='Please enter your own email address';return}
+    P.contactEmail=ce;store.set('profile',P);
+    $('#pUser').value=aliasLoginId();
+  }else{
+    const un=$('#pUser').value.trim();
+    if(un){const er=await claimUsername(un);if(er){$('#pMsg').textContent=er;return}}
+    else if(Board.uid)$('#pMsg').textContent='Tip: without a username, your name is shown on the leaderboard.';
+  }
   await ps()}}
 Board._push=(function(prev){return async function(){
   return prev.call(this)}})(Board._push);
@@ -3280,13 +3440,14 @@ function collegeEditor(parent,id,name,isMain){
 }
 
 // ================= COLLEGE PANEL (college login) =================
+let csQ='',csTab='students';
 function renderCollegePanel(){
   const l=$('#aList');l.innerHTML='';const C=Board.college,cid=C.collegeId;
   $('#aHead').textContent=C.collegeName+' - College panel';
   const pend=[...Board.reqs].filter(([id,r])=>r.collegeId===cid);
   const stu=[...Board.verified].filter(([id,v])=>v.collegeId===cid);
   const put=async(id,data,msg)=>{try{await Board.db.doc('verified/'+id).set(Object.assign({college:C.collegeName,collegeId:cid,by:'college',ts:Date.now()},data));toast(msg);return true}catch(e){toast('Failed: '+((e&&e.code)||'error'));return false}};
-  const pc=mk('div','card');pc.appendChild(mk('h3','','🪪 Pending ID cards ('+pend.length+')'));
+  const pc=mk('div','card');pc.dataset.tab='ids';pc.appendChild(mk('h3','','🪪 Pending ID cards ('+pend.length+')'));
   if(!pend.length)pc.appendChild(mk('p','muted','No pending requests.'));
   pend.forEach(([id,r])=>{const w=mk('div','crow');w.style.display='block';
     w.appendChild(mk('b','',(r.username?'@'+r.username+' · ':'')+(r.name||'Unnamed')));
@@ -3296,20 +3457,30 @@ function renderCollegePanel(){
     ok.onclick=async()=>{if(await put(id,{ok:true,name:r.name||'',username:r.username||'',remark:rm.value.trim()},'Student verified'))await Board.db.doc('verifyReq/'+id).delete().catch(()=>{})};
     no.onclick=async()=>{const t=rm.value.trim();if(!t){toast('Write a remark: what is wrong?');return}if(await put(id,{ok:false,name:r.name||'',username:r.username||'',remark:t},'Rejected'))await Board.db.doc('verifyReq/'+id).delete().catch(()=>{})};
     a.append(ok,no);w.appendChild(a);pc.appendChild(w)});
-  const sc=mk('div','card scroll-x');sc.appendChild(mk('h3','','🎓 Your students ('+stu.filter(([i,v])=>v.ok).length+' verified)'));sc.firstChild.style.marginBottom='8px';
-  if(!stu.length)sc.appendChild(mk('p','muted','No students yet.'));
-  else{const t=mk('table');t.innerHTML='<thead><tr><th>Username</th><th>Name</th><th>Status</th><th></th></tr></thead>';const tb=mk('tbody');
-    stu.sort((a,b)=>(b[1].ts||0)-(a[1].ts||0)).forEach(([id,v])=>{const tr=mk('tr'),sc2=Board.scores.get(id)||{};
-      [mk('td','',v.username||sc2.username||'-'),mk('td','',v.name||sc2.name||'-')].forEach(x=>tr.appendChild(x));
-      const s1=mk('td');s1.innerHTML=v.ok?'<span class="pill ok">Verified</span>':'<span class="pill no">Not verified</span>'+(v.remark?'<div class="note">'+esc(v.remark)+'</div>':'');tr.appendChild(s1);
-      const s2=mk('td');
-      if(v.ok){const b=mk('button','ghost','Un-verify');b.onclick=async()=>{const t=prompt('Reason for un-verifying (the student will see it):');if(t===null)return;if(!t.trim()){toast('A reason is required');return}await put(id,{ok:false,name:v.name||'',username:v.username||'',remark:t.trim()},'Student un-verified')};s2.appendChild(b)}
-      else{const b=mk('button','ghost','Verify again');b.onclick=()=>put(id,{ok:true,name:v.name||'',username:v.username||'',remark:''},'Student verified');s2.appendChild(b)}
-      tr.appendChild(s2);tb.appendChild(tr)});t.appendChild(tb);sc.appendChild(t)}
-  const pf=mk('div','card');pf.appendChild(mk('h3','','🏫 College profile (public page)'));pf.firstChild.style.marginBottom='6px';
+  const sc=mk('div','card scroll-x');sc.dataset.tab='students';sc.appendChild(mk('h3','','🎓 Your students ('+stu.filter(([i,v])=>v.ok).length+' verified)'));sc.firstChild.style.marginBottom='8px';
+  const ids=new Set(stu.map(x=>x[0]));try{Sub.cs.forEach((d,i)=>{if(!ids.has(i)){ids.add(i);stu.push([i,{ok:true,name:d.name,ts:d.ts,collegeId:cid}])}})}catch(e){}
+  if(!stu.length)sc.appendChild(mk('p','muted','No students yet. Use the form above to create the first student account.'));
+  else{
+    const qi=mk('input','field');qi.placeholder='Search student by name or login ID';qi.style.maxWidth='320px';qi.style.marginBottom='10px';qi.value=csQ;
+    const wrap=mk('div');sc.appendChild(qi);sc.appendChild(wrap);
+    const draw=()=>{wrap.innerHTML='';const k=csQ.trim().toLowerCase();
+      const t=mk('table');t.innerHTML='<thead><tr><th>Name</th><th>Login ID / Username</th><th>Plan</th><th>Status</th><th></th></tr></thead>';const tb=mk('tbody');
+      stu.filter(([id,v])=>{const sc2=Board.scores.get(id)||{},cs=(Sub.cs.get(id)||{});return !k||((v.name||sc2.name||'')+' '+(cs.loginId||v.username||sc2.username||'')).toLowerCase().includes(k)})
+      .sort((a,b)=>(b[1].ts||0)-(a[1].ts||0)).forEach(([id,v])=>{const tr=mk('tr'),sc2=Board.scores.get(id)||{},cs=(Sub.cs.get(id)||{}),pl=Sub.all.get(id);
+        const planTxt=Sub.act(pl)?'<span class="pill ok">'+esc(pl.name)+'</span><div class="note">till '+fmtD(pl.end)+'</div>':'<span class="note">No plan</span>';
+        [mk('td','',v.name||sc2.name||cs.name||'-'),mk('td','',cs.loginId||v.username||sc2.username||'-')].forEach(x=>tr.appendChild(x));
+        const s0=mk('td');s0.innerHTML=planTxt;tr.appendChild(s0);
+        const s1=mk('td');s1.innerHTML=v.ok?'<span class="pill ok">Verified</span>':'<span class="pill no">Not verified</span>'+(v.remark?'<div class="note">'+esc(v.remark)+'</div>':'');tr.appendChild(s1);
+        const s2=mk('td');
+        if(v.ok){const b=mk('button','ghost','Un-verify');b.onclick=async()=>{const t=prompt('Reason for un-verifying (the student will see it):');if(t===null)return;if(!t.trim()){toast('A reason is required');return}await put(id,{ok:false,name:v.name||'',username:v.username||'',remark:t.trim()},'Student un-verified')};s2.appendChild(b)}
+        else{const b=mk('button','ghost','Verify again');b.onclick=()=>put(id,{ok:true,name:v.name||'',username:v.username||'',remark:''},'Student verified');s2.appendChild(b)}
+        tr.appendChild(s2);tb.appendChild(tr)});
+      t.appendChild(tb);wrap.appendChild(t);if(!tb.children.length)wrap.appendChild(mk('p','muted','No student matches your search.'))};
+    qi.oninput=()=>{csQ=qi.value;draw()};draw()}
+  const pf=mk('div','card');pf.dataset.tab='page';pf.appendChild(mk('h3','','🏫 College profile (public page)'));pf.firstChild.style.marginBottom='6px';
   pf.appendChild(mk('p','muted','Courses, fees and details shown on the Colleges page and in Google search. Use the Events tab to create events for your students.'));pf.lastChild.style.marginBottom='12px';
   collegeEditor(pf,cid,C.collegeName,false);
-  l.append(pc,sc,pf);
+  l.append(sc,pc,pf);
 }
 
 // ================= ADMIN additions =================
@@ -3532,7 +3703,6 @@ buildSettings=function(){
   seg('#sErrHl',oo,()=>S.errHl,v=>S.errHl=v);
   seg('#sStop',oo,()=>S.stopErr,v=>S.stopErr=v);
   seg('#sBsp',oo,()=>S.bsp,v=>S.bsp=v);
-  seg('#sQr',oo,()=>S.qr,v=>S.qr=v);
 };
 
 /* ===== Anti-cheat ===== */
@@ -4189,7 +4359,6 @@ function adminLessons(){
 
 
 /* ================= SUBSCRIPTIONS ================= */
-const SUBDOM='@student.typeadda.in';
 const SUBCSS=`.plock{display:inline-block;font-size:11px;font-weight:800;color:#b45309;background:#fef3c7;border-radius:99px;padding:2px 8px;margin-left:6px;vertical-align:middle}
 .subcard .sg{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:12px 18px;margin:12px 0}
 .subcard label{display:block;font-size:13px;font-weight:700}.subcard label .field,.subcard label select{max-width:none;display:block;margin-top:4px}
@@ -4351,11 +4520,11 @@ function collegeSub(){
   const stu=new Map();[...Board.verified].filter(([i,v])=>v.collegeId===cid).forEach(([i,v])=>stu.set(i,v.name||v.username||i.slice(0,6)));
   Sub.cs.forEach((d,i)=>stu.set(i,d.name||d.loginId));
   const cr=[...Sub.credits].filter(([i,c])=>c.seats-c.used>0);
-  let k=mk('div','card subcard');k.appendChild(mk('h3','','💳 Plan credits'));
+  let k=mk('div','card subcard');k.dataset.tab='plans';k.appendChild(mk('h3','','💳 Plan credits'));
   if(!Sub.credits.size)k.appendChild(mk('p','muted','No bulk plan yet. Contact TypeAdda to buy plans for your students.'));
   Sub.credits.forEach(c=>k.appendChild(mk('div','crow',c.planName+' · '+durTxt(c.days)+' · '+(c.seats-c.used)+' of '+c.seats+' seats left')));
   out.push(k);
-  k=mk('div','card subcard');k.appendChild(mk('h3','','⬆️ Upgrade a student'));
+  k=mk('div','card subcard');k.dataset.tab='plans';k.appendChild(mk('h3','','⬆️ Upgrade a student'));
   const so=[...stu].map(([i,n])=>{const s=Sub.all.get(i);return [i,n+(Sub.act(s)?' · '+s.name+' till '+fmtD(s.end):' · no plan')]});
   const g=mk('div','sg');g.append(field('1. Select student',sel('stu',so,'Select student',csSt)),field('2. Select plan credit',sel('cred',cr.map(([i,c])=>[i,c.planName+' · '+(c.seats-c.used)+' left'].concat()),'Select plan',csSt)));
   const ub=mk('button','btn','Upgrade student');
@@ -4365,24 +4534,57 @@ function collegeSub(){
       await Board.db.runTransaction(async t=>{const ref=Board.db.doc('credits/'+csSt.cred),s=await t.get(ref);if(!s.exists||s.data().used>=s.data().seats)throw new Error('nocredit');t.update(ref,{used:s.data().used+1});t.set(Board.db.doc('subs/'+uid),rec)});
       toast('Student upgraded')}catch(e){toast(e.message==='nocredit'?'No seats left in this plan':'Failed: '+((e&&e.code)||'error'))}ub.disabled=false};
   k.append(g,ub);out.push(k);
-  k=mk('div','card subcard');k.appendChild(mk('h3','','👩‍🎓 Create a student account'));
-  k.appendChild(mk('p','muted','Enter the details below and set a password. Share the login ID and password with the student.'));
-  const g2=mk('div','sg');g2.append(field('Student name',inp('name','text','Full name',csSt)),field('Email or username',inp('login','text','email or username',csSt)),field('Password (6+ characters)',inp('pw','text','set a password',csSt)));
+  k=mk('div','card subcard');k.dataset.tab='students';k.appendChild(mk('h3','','👩‍🎓 Create a student account'));
+  k.appendChild(mk('p','muted','Give the student a username (or an email) and a password. With a username, the student logs in with that username, and it stays the same. The student can add their own email later from Profile.'));
+  const g2=mk('div','sg');const pwi=inp('pw','text','min 6 characters',csSt);
+  const pwBox=mk('div');pwBox.style.cssText='display:flex;gap:6px';pwi.style.flex='1';const gen=mk('button','ghost','Generate');gen.type='button';
+  gen.onclick=()=>{const ch='abcdefghjkmnpqrstuvwxyz23456789';let r='';const a=new Uint32Array(8);crypto.getRandomValues(a);a.forEach(n=>r+=ch[n%ch.length]);csSt.pw=r;pwi.value=r};pwBox.append(pwi,gen);
+  g2.append(field('Student name',inp('name','text','Full name',csSt)),field('Username or email',inp('login','text','e.g. rahul.sharma or rahul@gmail.com',csSt)),field('Password',pwBox));
+  const hint=mk('p','note','Username: 3 to 20 characters, small letters, numbers, _ or .   |   If you type an email, the student logs in with that email.');
   const mb=mk('button','btn','Create student account');
+  const res=mk('div');if(csSt.cred2){res.className='csresult';res.innerHTML='<b>✅ Account created</b><div>Login ID: <code>'+esc(csSt.cred2.id)+'</code></div><div>Password: <code>'+esc(csSt.cred2.pw)+'</code></div>';const cb=mk('button','btn sec','Copy login details');cb.onclick=async()=>{const t='TypeAdda login\nLogin ID: '+csSt.cred2.id+'\nPassword: '+csSt.cred2.pw;try{await navigator.clipboard.writeText(t);toast('Copied')}catch(e){toast('Could not copy')}};res.appendChild(cb)}
   mb.onclick=async()=>{const nm=csSt.name.trim(),lg=csSt.login.trim().toLowerCase().replace(/\s+/g,''),pw=csSt.pw;
-    if(!nm||!lg||pw.length<6){toast('Enter name, email or username, and a password of 6+ characters');return}
-    const em=lg.includes('@')?lg:lg+SUBDOM,cfg=(window.TYPEADDA_CONFIG||{}).firebase;mb.disabled=true;let sec;
-    try{sec=firebase.initializeApp(cfg,'sec'+Date.now());const r=await sec.auth().createUserWithEmailAndPassword(em,pw);const uid=r.user.uid;await sec.auth().signOut();
-      await Board.db.doc('verified/'+uid).set({ok:true,name:nm,username:'',college:C.collegeName,collegeId:cid,by:'college',ts:Date.now()});
+    if(!nm||!lg||pw.length<6){toast('Enter name, username or email, and a password of 6+ characters');return}
+    const isMail=lg.includes('@');
+    if(isMail&&(!MAILRX.test(lg)||lg.endsWith(SUBDOM))){toast('Enter a valid email address');return}
+    if(!isMail&&!/^[a-z0-9_.]{3,20}$/.test(lg)){toast('Username must be 3 to 20 characters: small letters, numbers, _ or .');return}
+    const em=isMail?lg:lg+SUBDOM,cfg=(window.TYPEADDA_CONFIG||{}).firebase;mb.disabled=true;let sec;
+    try{
+      if(!isMail){const sn=await Board.db.doc('usernames/'+lg).get();if(sn.exists){toast('This username is already taken. Try another one.');mb.disabled=false;return}}
+      sec=firebase.initializeApp(cfg,'sec'+Date.now());const r=await sec.auth().createUserWithEmailAndPassword(em,pw);const uid=r.user.uid;
+      if(!isMail){try{await sec.firestore().doc('usernames/'+lg).set({uid,ts:Date.now()})}catch(e){}}
+      await sec.auth().signOut();
+      await Board.db.doc('verified/'+uid).set({ok:true,name:nm,username:isMail?'':lg,college:C.collegeName,collegeId:cid,by:'college',ts:Date.now()});
       await Board.db.doc('collegeStudents/'+uid).set({collegeId:cid,name:nm,loginId:lg,ts:Date.now()});
-      csSt.name=csSt.login=csSt.pw='';toast('Account created. Login ID: '+lg);renderAdmin()}catch(e){toast(Auth.err(e))}
+      csSt.cred2={id:lg,pw};csSt.name=csSt.login=csSt.pw='';toast('Student account created');renderAdmin()}catch(e){toast(Auth.err(e))}
     finally{try{if(sec)await sec.delete()}catch(e){}mb.disabled=false}};
-  k.append(g2,mb);
-  Sub.cs.forEach((d,i)=>k.appendChild(mk('div','crow',d.name+' · login ID: '+d.loginId)));
+  k.append(g2,hint,mb,res);
   out.push(k);return out}
 renderAdmin=(function(prev){return function(){
   const l=$('#aList'),ae=document.activeElement;if(l.contains(ae)&&/INPUT|TEXTAREA|SELECT/.test(ae.tagName))return;
-  prev();if(Board.admin||!isCollAdmin())return;l.append(...collegeSub())}})(renderAdmin);
+  prev();if(Board.admin||!isCollAdmin())return;l.append(...collegeSub());collegeTabs(l)}})(renderAdmin);
+function collegeTabs(l){
+  const C=Board.college,cid=C.collegeId,hp=$('#aHead').parentElement.querySelector('p');if(hp)hp.textContent='Create student accounts, give plans, verify ID cards and manage your college page.';
+  const all=new Set([...Board.verified].filter(([i,v])=>v.collegeId===cid).map(x=>x[0]));Sub.cs.forEach((d,i)=>all.add(i));
+  const act=[...all].filter(i=>Sub.act(Sub.all.get(i))).length,seats=[...Sub.credits].reduce((n,[i,c])=>n+Math.max(0,c.seats-c.used),0);
+  const pend=[...Board.reqs].filter(([id,r])=>r.collegeId===cid).length;
+  const st=mk('div','cpstats');
+  [['👩‍🎓',all.size,'Students'],['⭐',act,'On a plan'],['💳',seats,'Seats left'],['🪪',pend,'ID pending']].forEach(([ic,n,t])=>{const d=mk('div');d.innerHTML='<i>'+ic+'</i><b>'+n+'</b><span>'+t+'</span>';st.appendChild(d)});
+  const bar=mk('div','cptabs');
+  [['students','👩‍🎓 Students'],['plans','💳 Plans'],['ids','🪪 ID requests'+(pend?' ('+pend+')':'')],['page','🏫 College page']].forEach(([id,t])=>{
+    const b=mk('button','cptab'+(csTab===id?' on':''),t);b.onclick=()=>{csTab=id;renderAdmin()};bar.appendChild(b)});
+  [...l.children].forEach(c=>{if(c.dataset&&c.dataset.tab)c.hidden=c.dataset.tab!==csTab});
+  l.prepend(st,bar);
+}
+document.head.appendChild(Object.assign(document.createElement('style'),{textContent:`.cpstats{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:12px;margin-bottom:16px}
+.cpstats div{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px 16px;display:flex;flex-direction:column;gap:2px}
+.cpstats i{font-style:normal;font-size:20px}.cpstats b{font-size:26px;line-height:1.1}.cpstats span{font-size:13px;color:var(--muted);font-weight:600}
+.cptabs{display:flex;gap:6px;flex-wrap:wrap;border-bottom:1px solid var(--border);margin-bottom:16px}
+.cptab{background:none;border:0;border-bottom:3px solid transparent;padding:10px 14px;font-weight:700;color:var(--muted);cursor:pointer;margin-bottom:-1px}
+.cptab.on{color:var(--text);border-bottom-color:var(--accent)}
+.csresult{margin-top:14px;padding:12px 14px;border:1px solid var(--ok);border-radius:10px;background:var(--soft);display:flex;flex-direction:column;gap:6px;align-items:flex-start}
+.csresult code{background:var(--paper);border:1px solid var(--border);border-radius:6px;padding:1px 8px;font-weight:700}
+#aList>.card[hidden]{display:none}#aList>.card{margin-bottom:16px}`}));
 /* ================= Online payments: Razorpay + PhonePe ================= */
 /* Keep PAY_REGION the same as PAY_REGION in functions/payments.js */
 const PAY_REGION='asia-south1';
