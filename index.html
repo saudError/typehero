@@ -2564,7 +2564,7 @@ Board.init=async function(){
   const load=src=>new Promise((res,rej)=>{const x=document.createElement('script');x.src=src;x.onload=res;x.onerror=rej;document.head.appendChild(x)});
   try{
     const b='https://www.gstatic.com/firebasejs/10.12.2/';
-    await load(b+'firebase-app-compat.js');await Promise.all([load(b+'firebase-auth-compat.js'),load(b+'firebase-firestore-compat.js')]);
+    await load(b+'firebase-app-compat.js');await Promise.all([load(b+'firebase-auth-compat.js'),load(b+'firebase-firestore-compat.js'),load(b+'firebase-functions-compat.js')]);
     firebase.initializeApp(cfg.firebase);this.auth=firebase.auth();this.db=firebase.firestore();this.cloud=true;
     const bad=e=>{this.err=(e&&e.code)||'error';this.changed()};
     const W=(n,lim,fn)=>this.db.collection(n).limit(lim).onSnapshot(x=>{fn(x);this.changed()},bad);
@@ -3489,19 +3489,19 @@ renderAdmin=(function(prev){return function(){
   const l=$('#aList'),ae=document.activeElement;
   if(l.contains(ae)&&/INPUT|TEXTAREA|SELECT/.test(ae.tagName))return;
   l.classList.remove('adm');prev();if(!Board.admin||isCollAdmin())return;
-  const S={dash:[],ver:[],site:[],seo:[],col:[],usr:[],txt:[],mail:[],les:[]};
+  const S={dash:[],ver:[],site:[],seo:[],col:[],usr:[],txt:[],mail:[],les:[],sub:[],pay:[]};
   [...l.children].forEach(c=>{const h=(c.querySelector('h3')||{}).textContent||'';
     if(h.startsWith('📝'))S.txt.push(c);else if(h.startsWith('👤'))S.usr.push(c);else if(h.startsWith('🎨'))S.site.push(c);
     else if(h.startsWith('🏫')||h.includes('College logins'))S.col.push(c);
     else if(h.startsWith('🌐')){const b=c.querySelector('button');if(b&&/Page is/.test(b.textContent))b.remove();c.querySelector('h3').textContent='🗺️ Sitemap for Google';S.seo.push(c)}
     else S.ver.push(c)});
-  S.dash=[adminDash(),adminFeatures()];S.les=[adminLessons()];S.seo=[adminSEO()].concat(S.seo);S.mail=[adminMail()];
+  S.dash=[adminDash(),adminFeatures()];S.les=[adminLessons()];S.sub=adminSub();S.seo=[adminSEO()].concat(S.seo);S.mail=[adminMail()];S.pay=[adminPay()];
   if(!S[AT])AT='dash';
-  const tabs=[['dash','📊 Dashboard'],['ver','🪪 Verification',Board.reqs.size],['site','🎨 Site & About'],['seo','🔎 SEO'],['col','🏫 Colleges'],['usr','👤 Users'],['mail','✉️ Email'],['les','📚 Lessons'],['txt','📝 Typing texts']];
+  const tabs=[['dash','📊 Dashboard'],['ver','🪪 Verification',Board.reqs.size],['site','🎨 Site & About'],['seo','🔎 SEO'],['col','🏫 Colleges'],['usr','👤 Users'],['mail','✉️ Email'],['les','📚 Lessons'],['sub','💳 Subscriptions'],['pay','💰 Payments'],['txt','📝 Typing texts']];
   l.innerHTML='';const bar=mk('div','seg abar');
   tabs.forEach(([id,t,n])=>{const b=mk('button',id===AT?'on':'',t);if(n)b.appendChild(mk('span','bd',n));b.onclick=()=>{AT=id;store.set('adminTab',id);renderAdmin()};bar.appendChild(b)});
   l.appendChild(bar);S[AT].forEach(c=>l.appendChild(c));l.classList.add('adm');
-  $('#aHead').textContent=({dash:'Dashboard',ver:'Verification',site:'Site & About',seo:'SEO',col:'Colleges',usr:'Users',mail:'Email',les:'Lessons',txt:'Typing texts'})[AT]||'Admin panel';const hp=$('#v-admin .head p.muted');if(hp)hp.textContent=({dash:'A quick look at your site, and the switches for what visitors can see.',ver:'Check student ID cards and approve or reject them.',site:'Site name, logo, icon and the About page.',seo:'How your site appears on Google.',col:'Colleges, college logins and public college pages.',usr:'Everyone who registered. Block or unblock users.',mail:'Welcome and congratulations emails: Gmail or company SMTP.',les:'Choose what each lesson course card says, and show or hide a course.',txt:'Add or remove the texts used in typing tests.'})[AT]||'';
+  $('#aHead').textContent=({dash:'Dashboard',ver:'Verification',site:'Site & About',seo:'SEO',col:'Colleges',usr:'Users',mail:'Email',les:'Lessons',sub:'Subscriptions',pay:'Payments',txt:'Typing texts'})[AT]||'Admin panel';const hp=$('#v-admin .head p.muted');if(hp)hp.textContent=({dash:'A quick look at your site, and the switches for what visitors can see.',ver:'Check student ID cards and approve or reject them.',site:'Site name, logo, icon and the About page.',seo:'How your site appears on Google.',col:'Colleges, college logins and public college pages.',usr:'Everyone who registered. Block or unblock users.',mail:'Welcome and congratulations emails: Gmail or company SMTP.',pay:'PhonePe and Razorpay keys, and which one is active.',les:'Choose what each lesson course card says, and show or hide a course.',txt:'Add or remove the texts used in typing tests.'})[AT]||'';
 }})(renderAdmin);
 applySEO();applyRoleUI();
 
@@ -4187,6 +4187,375 @@ function adminLessons(){
 /* live update when admin changes the cards */
 (()=>{const o=applySite;applySite=function(){o();if(view==='lessons'&&LM.track==null)lessonHome()}})();
 
+
+/* ================= SUBSCRIPTIONS ================= */
+const SUBDOM='@student.typeadda.in';
+const SUBCSS=`.plock{display:inline-block;font-size:11px;font-weight:800;color:#b45309;background:#fef3c7;border-radius:99px;padding:2px 8px;margin-left:6px;vertical-align:middle}
+.subcard .sg{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:12px 18px;margin:12px 0}
+.subcard label{display:block;font-size:13px;font-weight:700}.subcard label .field,.subcard label select{max-width:none;display:block;margin-top:4px}
+.subcard details{border-top:1px solid var(--border);padding:8px 0}.subcard summary{cursor:pointer;font-weight:700}
+.subcard .ck{display:flex;gap:8px;align-items:center;padding:4px 0;font-size:14px}.subcard .ck input{width:auto}
+.subcard .st{font-size:13px;margin:4px 0 12px;color:var(--muted,#666)}
+.subcard .pill{font-size:12px;font-weight:700;border-radius:99px;padding:2px 10px;background:#dcfce7;color:#166534}.subcard .pill.off{background:#fee2e2;color:#991b1b}`;
+document.head.appendChild(Object.assign(document.createElement('style'),{textContent:SUBCSS}));
+const fmtD=t=>new Date(t).toLocaleDateString(undefined,{day:'numeric',month:'short',year:'numeric'});
+const durTxt=d=>d%365===0?(d/365)+' year'+(d/365>1?'s':''):d%30===0?(d/30)+' month'+(d/30>1?'s':''):d+' days';
+const Sub={mine:null,all:new Map(),plans:new Map(),credits:new Map(),cs:new Map(),un:[],
+  cfg(){return SITE.sub||{}},
+  on(){return !!this.cfg().on&&!!Board.cloud},
+  act(s){return !!s&&s.end>Date.now()},
+  has(){return isStaff()||this.act(this.mine)},
+  needs(kind,id,course){
+    if(!this.on()||this.has())return false;const c=this.cfg();
+    if(kind==='game')return !!(c.games||{})[id];
+    const cc=(c.courses||{})[course];return !!(cc&&cc.on&&!(cc.free||[]).includes(id))},
+  gate(kind,id,course){if(!this.needs(kind,id,course))return true;this.wall();return false},
+  wall(){
+    let m=$('#mPlan');
+    if(!m){m=mk('div','modal');m.id='mPlan';m.hidden=true;m.innerHTML='<div class="box"><h3>🔒 Premium feature</h3><div id="mPlanB"></div><div class="ractions"><button class="ghost" data-close>Close</button></div></div>';
+      m.addEventListener('click',e=>{if(e.target===m||e.target.hasAttribute('data-close'))m.hidden=true});document.body.appendChild(m)}
+    const b=$('#mPlanB',m),pl=[...this.plans].map(([id,p])=>p).filter(p=>p.on!==false);
+    b.innerHTML=`<p class="muted">This lesson or game needs an active plan. The first lessons marked as free demo stay open for everyone.</p>`
+      +(pl.length?'<div style="margin:12px 0">'+pl.map(p=>`<div class="crow"><span><b>${esc(p.name)}</b> · ${durTxt(p.days)}</span><span>${p.price?'₹'+esc(p.price):'Free'}</span></div>`).join('')+'</div>':'')
+      +`<p class="note">${Board.uid?'To activate a plan, contact TypeAdda or your college. Once it is activated on your account, this page opens automatically.':'Login first. Then your college or TypeAdda can activate a plan on your account.'}</p>`
+      +(Board.uid?'':'<div class="ractions" style="margin-top:8px"><button class="btn" id="mPlanL">Login / Register</button></div>');
+    const lb=$('#mPlanL',m);if(lb)lb.onclick=()=>{m.hidden=true;Auth.open()};
+    m.hidden=false},
+  mark(){
+    if(!this.on()||this.has())return;const tag=()=>mk('span','plock','🔒 Premium'),c=this.cfg();
+    if(view==='games'&&!$('#gameMenu').hidden)$$('#gcards .gcard').forEach((b,i)=>{const d=GAMEDEFS[i];if(d&&this.needs('game',d.id)&&!$('.plock',b))b.appendChild(tag())});
+    if(view!=='lessons'||$('#lessonList').hidden)return;
+    if(LM.track==null){COURSES.filter(co=>!courseOff(co)||Board.admin).forEach((co,i)=>{const b=$$('#courses .lch')[i],cc=(c.courses||{})[co.id];if(b&&cc&&cc.on&&!$('.plock',b))$('.lt',b).appendChild(tag())});return}
+    const tr=LM.track,cc=(c.courses||{})[tr];if(!cc||!cc.on)return;
+    let ids,els;
+    if(tr==='en'){const ch=CHAP[Lesson.chIdx];ids=ch?ch[1]:[];els=$$('#courses .lrow .t')}
+    else{const ch=hInfo(tr)[HL.chIdx];ids=ch?ch.rows.map(r=>r.l.id):[];els=$$('#courses .lrow .t')}
+    els.forEach((e,i)=>{if(ids[i]&&!(cc.free||[]).includes(ids[i])&&!$('.plock',e))e.appendChild(tag())})},
+  refresh(){
+    if(view==='lessons'&&!$('#lessonList').hidden&&$('#lessonRun').hidden)Lesson.list();
+    else if(view==='games'&&!$('#gameMenu').hidden)Games.menu();
+    renderSubCard();if(view==='admin')renderAdmin()},
+  listen(u){
+    this.un.forEach(f=>{try{f()}catch(e){}});this.un=[];this.mine=null;this.all=new Map();this.credits=new Map();this.cs=new Map();
+    const db=Board.db;if(!db)return;
+    const W=(q,fn)=>this.un.push(q.onSnapshot(fn,()=>{}));
+    W(db.collection('plans').limit(200),x=>{this.plans=new Map(x.docs.map(d=>[d.id,d.data()]));this.refresh()});
+    if(!u)return;
+    W(db.doc('subs/'+u.uid),x=>{this.mine=x.exists?x.data():null;this.refresh()});
+    if(Board.admin){
+      W(db.collection('subs').limit(2000),x=>{this.all=new Map(x.docs.map(d=>[d.id,d.data()]));this.refresh()});
+      W(db.collection('credits').limit(1000),x=>{this.credits=new Map(x.docs.map(d=>[d.id,d.data()]));this.refresh()});
+    }else if(Board.college){const cid=Board.college.collegeId;
+      W(db.collection('subs').where('collegeId','==',cid),x=>{this.all=new Map(x.docs.map(d=>[d.id,d.data()]));this.refresh()});
+      W(db.collection('credits').where('collegeId','==',cid),x=>{this.credits=new Map(x.docs.map(d=>[d.id,d.data()]));this.refresh()});
+      W(db.collection('collegeStudents').where('collegeId','==',cid),x=>{this.cs=new Map(x.docs.map(d=>[d.id,d.data()]));this.refresh()});
+    }},
+  /* give a plan to a user. Extends if already active. */
+  async give(uid,plan,extra){
+    const old=this.all.get(uid),now=Date.now(),base=this.act(old)?old.end:now;
+    const rec=Object.assign({planId:plan.id,name:plan.name,days:plan.days,start:this.act(old)?old.start:now,end:base+plan.days*864e5,ts:now,by:Board.email||'admin'},extra||{});
+    try{await Board.db.doc('subs/'+uid).set(rec);return true}catch(e){toast('Failed: '+((e&&e.code)||'error'));return false}}
+};
+Sub.mine=null;
+Board.onUser=(function(prev){return async function(u){await prev.call(this,u);Sub.listen(u)}})(Board.onUser);
+if(Board.cloud&&Board.user)Sub.listen(Board.user);
+/* gates */
+{const o=Lesson.open;Lesson.open=function(id){if(!Sub.gate('lesson',id,'en'))return;return o.apply(this,arguments)}}
+{const o=HL.open;HL.open=function(id){if(!Sub.gate('lesson',id,LM.track))return;return o.apply(this,arguments)}}
+{const o=Games.open;Games.open=function(id){if(!Sub.gate('game',id))return;return o.apply(this,arguments)}}
+{const o=Games.menu;Games.menu=function(){o.apply(this,arguments);Sub.mark()}}
+{const o=Lesson.list;Lesson.list=function(){o.apply(this,arguments);Sub.mark()}}
+{const o=HL.list;HL.list=function(){o.apply(this,arguments);Sub.mark()}}
+/* a plain username works as a login on student accounts made by a college */
+{const o=Auth.go;Auth.go=function(){const e=$('#aMail'),v=e.value.trim();if(v&&!v.includes('@'))e.value=v.toLowerCase()+SUBDOM;return o.apply(this,arguments)}}
+/* student: my plan card on the profile page */
+function renderSubCard(){
+  const v=$('#v-profile');if(!v)return;let c=$('#subCard');
+  if(!Sub.on()||isStaff()||!Board.uid){if(c)c.remove();return}
+  if(!c){c=mk('div','card subcard');c.id='subCard';const h=v.querySelector('.head');h?h.after(c):v.prepend(c)}
+  const s=Sub.mine,a=Sub.act(s);
+  c.innerHTML=`<h3>💳 My plan</h3><p class="st">${a?`<span class="pill">Active</span> ${esc(s.name)} · valid till <b>${fmtD(s.end)}</b>`:`<span class="pill off">${s?'Expired':'No plan'}</span> ${s?'Your '+esc(s.name)+' plan ended on '+fmtD(s.end)+'.':'Free demo lessons are open. Ask your college or TypeAdda to activate a plan.'}`}</p>`}
+{const o=renderProfile;renderProfile=function(){o.apply(this,arguments);renderSubCard()}}
+
+/* ---------- admin: Subscriptions tab ---------- */
+const subSt={name:'',n:'1',unit:'months',price:'',q:'',user:'',plan:'',col:'',cplan:'',seats:'5'};
+const unitDays={days:1,months:30,years:365};
+function cfgSave(fn){const c=JSON.parse(JSON.stringify(SITE.sub||{}));c.games=c.games||{};c.courses=c.courses||{};fn(c);return setSite({sub:c})}
+function field(lbl,el){const w=mk('label','',lbl);w.appendChild(el);return w}
+function inp(k,type,ph,st){const i=mk('input','field');i.type=type||'text';i.placeholder=ph||'';i.value=(st||subSt)[k];i.oninput=()=>(st||subSt)[k]=i.value;return i}
+function sel(k,opts,first,st){const s=mk('select','field');if(first)s.appendChild(Object.assign(mk('option','',first),{value:''}));opts.forEach(([v,t])=>s.appendChild(Object.assign(mk('option','',t),{value:v})));s.value=(st||subSt)[k];s.onchange=()=>{(st||subSt)[k]=s.value};return s}
+function planOpts(){return [...Sub.plans].filter(([i,p])=>p.on!==false).map(([i,p])=>[i,p.name+' · '+durTxt(p.days)])}
+function adminSub(){
+  const out=[],c=Sub.cfg();
+  /* 1 master + where */
+  let k=mk('div','card subcard');k.appendChild(mk('h3','','💳 Subscription control'));
+  k.appendChild(mk('p','muted','Turn the subscription system on or off. When it is off, everything stays free for everyone.'));
+  const m=mk('button',c.on?'btn sec':'btn',c.on?'Subscription is ON: click to turn OFF':'Subscription is OFF: click to turn ON');
+  m.style.margin='10px 0';m.onclick=()=>cfgSave(x=>{x.on=!c.on});k.appendChild(m);
+  k.appendChild(mk('h4','','Games: which games need a plan'));
+  GAMEDEFS.forEach(d=>{const w=mk('label','ck'),i=mk('input');i.type='checkbox';i.checked=!!(c.games||{})[d.id];i.onchange=()=>cfgSave(x=>{x.games[d.id]=i.checked});w.append(i,document.createTextNode(((GI[d.id]||'')+' '+d.g.title).trim()));k.appendChild(w)});
+  k.appendChild(Object.assign(mk('h4','','Lessons: which courses need a plan'),{style:'margin-top:14px'}));
+  k.appendChild(mk('p','note','Tick "Plan required" for a course. Then open "Free demo lessons" and tick the lessons you want to keep free as a demo (for example the first F and J lesson). New courses added later show up here automatically.'));
+  COURSES.forEach(co=>{
+    const cc=(c.courses||{})[co.id]||{on:false,free:[]},d=mk('details');
+    const sm=mk('summary','',co.title+(cc.on?'  ·  plan required':'  ·  free')+((cc.on&&(cc.free||[]).length)?'  ·  '+cc.free.length+' free demo':''));d.appendChild(sm);
+    const w=mk('label','ck'),i=mk('input');i.type='checkbox';i.checked=!!cc.on;i.onchange=()=>cfgSave(x=>{x.courses[co.id]=Object.assign({free:[]},x.courses[co.id],{on:i.checked})});w.append(i,document.createTextNode('Plan required for this course'));d.appendChild(w);
+    d.appendChild(Object.assign(mk('p','note','Free demo lessons (open for everyone):'),{style:'margin:8px 0 2px'}));
+    const ls=co.id==='en'?LESSONS.map(l=>[l.id,l.title]):HLESS.map(l=>[l.id,hT(l)]);
+    ls.forEach(([id,t])=>{const w2=mk('label','ck'),i2=mk('input');i2.type='checkbox';i2.checked=(cc.free||[]).includes(id);
+      i2.onchange=()=>cfgSave(x=>{const o=x.courses[co.id]||{on:false,free:[]},f=new Set(o.free||[]);i2.checked?f.add(id):f.delete(id);x.courses[co.id]=Object.assign(o,{free:[...f]})});w2.append(i2,document.createTextNode(t));d.appendChild(w2)});
+    if(subSt.open===co.id)d.open=true;d.ontoggle=()=>{if(d.open)subSt.open=co.id};k.appendChild(d)});
+  out.push(k);
+  /* 2 create plan */
+  k=mk('div','card subcard');k.appendChild(mk('h3','','🧾 Create a plan'));
+  const pr=mk('div','ractions');pr.style.margin='4px 0';[['15 days','1','days','15'],['1 month','1','months','1'],['1 year','1','years','1']].forEach(([t,,u,n])=>{const b=mk('button','ghost',t);b.onclick=()=>{subSt.name=t;subSt.n=n;subSt.unit=u;renderAdmin()};pr.appendChild(b)});
+  k.appendChild(mk('p','note','Quick fill:'));k.appendChild(pr);
+  const g=mk('div','sg');g.append(field('Plan name',inp('name','text','e.g. Monthly plan')),field('Duration (number)',inp('n','number','1')),field('Duration unit',sel('unit',[['days','Days'],['months','Months'],['years','Years']])),field('Price in ₹ (optional)',inp('price','number','e.g. 199')));
+  const cb=mk('button','btn','Create plan');cb.onclick=async()=>{const n=Math.round(+subSt.n),days=n*unitDays[subSt.unit];if(!subSt.name.trim()||!(n>0)){toast('Enter plan name and a duration');return}
+    if(await dset('plans/p'+Date.now().toString(36),{name:subSt.name.trim().slice(0,40),days,price:subSt.price.trim(),on:true,ts:Date.now()})){subSt.name='';toast('Plan created');renderAdmin()}};
+  k.append(g,cb);
+  [...Sub.plans].forEach(([id,p])=>{const r=mk('div','crow');r.appendChild(mk('span','',p.name+' · '+durTxt(p.days)+(p.price?' · ₹'+p.price:'')+(p.on===false?' · hidden':'')));
+    const a=mk('div','ractions');a.style.margin=0;const t=mk('button','ghost',p.on===false?'Show':'Hide'),x=mk('button','x','✕');
+    t.onclick=()=>dset('plans/'+id,Object.assign({},p,{on:p.on===false}));x.onclick=()=>{if(confirm('Delete plan '+p.name+'? Users who already have it keep it.'))ddel('plans/'+id)};a.append(t,x);r.appendChild(a);k.appendChild(r)});
+  out.push(k);
+  /* 3 upgrade user */
+  k=mk('div','card subcard');k.appendChild(mk('h3','','⬆️ Upgrade a user'));
+  const q=subSt.q.trim().toLowerCase(),us=[...Board.users].map(([id,u])=>[id,(u.name||'No name')+' · '+(u.email||id.slice(0,6))]).filter(([id,t])=>!q||t.toLowerCase().includes(q)).slice(0,60);
+  const qi=inp('q','text','Type name or email to search');qi.oninput=()=>{subSt.q=qi.value;clearTimeout(subSt.t);subSt.t=setTimeout(()=>{qi.blur();renderAdmin()},500)};
+  const g2=mk('div','sg');g2.append(field('1. Search user',qi),field('2. Select user',sel('user',us,'Select user')),field('3. Select plan',sel('plan',planOpts(),'Select plan')));
+  const ub=mk('button','btn','Activate plan'),rb=mk('button','ghost','Remove plan');
+  const cs=Sub.all.get(subSt.user);const stt=mk('p','st','');stt.textContent=subSt.user?(Sub.act(cs)?'Current plan: '+cs.name+', valid till '+fmtD(cs.end)+'. Activating a plan again extends it.':'This user has no active plan.'):'';
+  ub.onclick=async()=>{const p=Sub.plans.get(subSt.plan);if(!subSt.user||!p){toast('Select a user and a plan');return}if(await Sub.give(subSt.user,Object.assign({id:subSt.plan},p),{by:'admin'}))toast('Plan activated')};
+  rb.onclick=()=>{if(subSt.user&&confirm('Remove this user\'s plan?'))ddel('subs/'+subSt.user)};
+  const ar=mk('div','ractions');ar.style.margin='0';ar.append(ub,rb);k.append(g2,stt,ar);
+  const act=[...Sub.all].filter(([i,s])=>Sub.act(s));if(act.length){k.appendChild(Object.assign(mk('h4','','Users with an active plan ('+act.length+')'),{style:'margin-top:16px'}));
+    act.slice(0,50).forEach(([id,s])=>{const u=Board.users.get(id)||{};k.appendChild(mk('div','crow',(u.name||u.email||id.slice(0,8))+' · '+s.name+' · till '+fmtD(s.end)+(s.collegeId?' · via college':'')))})}
+  out.push(k);
+  /* 4 bulk */
+  k=mk('div','card subcard');k.appendChild(mk('h3','','🏫 Bulk plans for colleges'));
+  k.appendChild(mk('p','muted','Give a college a number of plan seats. The college then upgrades its own students from its panel.'));
+  const cols=[...(Board.collAdmins||new Map())].map(([i,d])=>[d.collegeId,d.collegeName]).filter((x,i,a)=>a.findIndex(y=>y[0]===x[0])===i);
+  const g3=mk('div','sg');g3.append(field('1. College',sel('col',cols,'Select college')),field('2. Plan',sel('cplan',planOpts(),'Select plan')),field('3. Number of students (seats)',inp('seats','number','5')));
+  const bb=mk('button','btn','Give bulk plan');bb.onclick=async()=>{const p=Sub.plans.get(subSt.cplan),s=Math.round(+subSt.seats),cn=(cols.find(x=>x[0]===subSt.col)||[])[1];
+    if(!subSt.col||!p||!(s>0)){toast('Select college, plan and seats');return}
+    if(await dset('credits/c'+Date.now().toString(36),{collegeId:subSt.col,collegeName:cn,planId:subSt.cplan,planName:p.name,days:p.days,seats:s,used:0,ts:Date.now()}))toast('Bulk plan added to '+cn)};
+  k.append(g3,bb);
+  [...Sub.credits].sort((a,b)=>b[1].ts-a[1].ts).forEach(([id,c2])=>{const r=mk('div','crow');r.appendChild(mk('span','',c2.collegeName+' · '+c2.planName+' · '+(c2.seats-c2.used)+' of '+c2.seats+' seats left'));
+    const x=mk('button','x','✕');x.onclick=()=>{if(confirm('Remove this bulk plan?'))ddel('credits/'+id)};r.appendChild(x);k.appendChild(r)});
+  out.push(k);return out}
+
+/* ---------- college panel: plans for students ---------- */
+const csSt={name:'',login:'',pw:'',stu:'',cred:''};
+function collegeSub(){
+  const C=Board.college,cid=C.collegeId,out=[];
+  const stu=new Map();[...Board.verified].filter(([i,v])=>v.collegeId===cid).forEach(([i,v])=>stu.set(i,v.name||v.username||i.slice(0,6)));
+  Sub.cs.forEach((d,i)=>stu.set(i,d.name||d.loginId));
+  const cr=[...Sub.credits].filter(([i,c])=>c.seats-c.used>0);
+  let k=mk('div','card subcard');k.appendChild(mk('h3','','💳 Plan credits'));
+  if(!Sub.credits.size)k.appendChild(mk('p','muted','No bulk plan yet. Contact TypeAdda to buy plans for your students.'));
+  Sub.credits.forEach(c=>k.appendChild(mk('div','crow',c.planName+' · '+durTxt(c.days)+' · '+(c.seats-c.used)+' of '+c.seats+' seats left')));
+  out.push(k);
+  k=mk('div','card subcard');k.appendChild(mk('h3','','⬆️ Upgrade a student'));
+  const so=[...stu].map(([i,n])=>{const s=Sub.all.get(i);return [i,n+(Sub.act(s)?' · '+s.name+' till '+fmtD(s.end):' · no plan')]});
+  const g=mk('div','sg');g.append(field('1. Select student',sel('stu',so,'Select student',csSt)),field('2. Select plan credit',sel('cred',cr.map(([i,c])=>[i,c.planName+' · '+(c.seats-c.used)+' left'].concat()),'Select plan',csSt)));
+  const ub=mk('button','btn','Upgrade student');
+  ub.onclick=async()=>{const cd=Sub.credits.get(csSt.cred),uid=csSt.stu;if(!uid||!cd){toast('Select a student and a plan');return}
+    ub.disabled=true;try{
+      const old=Sub.all.get(uid),now=Date.now(),base=Sub.act(old)?old.end:now,rec={planId:cd.planId,name:cd.planName,days:cd.days,start:Sub.act(old)?old.start:now,end:base+cd.days*864e5,ts:now,by:Board.email||'college',collegeId:cid,creditId:csSt.cred};
+      await Board.db.runTransaction(async t=>{const ref=Board.db.doc('credits/'+csSt.cred),s=await t.get(ref);if(!s.exists||s.data().used>=s.data().seats)throw new Error('nocredit');t.update(ref,{used:s.data().used+1});t.set(Board.db.doc('subs/'+uid),rec)});
+      toast('Student upgraded')}catch(e){toast(e.message==='nocredit'?'No seats left in this plan':'Failed: '+((e&&e.code)||'error'))}ub.disabled=false};
+  k.append(g,ub);out.push(k);
+  k=mk('div','card subcard');k.appendChild(mk('h3','','👩‍🎓 Create a student account'));
+  k.appendChild(mk('p','muted','Enter the details below and set a password. Share the login ID and password with the student.'));
+  const g2=mk('div','sg');g2.append(field('Student name',inp('name','text','Full name',csSt)),field('Email or username',inp('login','text','email or username',csSt)),field('Password (6+ characters)',inp('pw','text','set a password',csSt)));
+  const mb=mk('button','btn','Create student account');
+  mb.onclick=async()=>{const nm=csSt.name.trim(),lg=csSt.login.trim().toLowerCase().replace(/\s+/g,''),pw=csSt.pw;
+    if(!nm||!lg||pw.length<6){toast('Enter name, email or username, and a password of 6+ characters');return}
+    const em=lg.includes('@')?lg:lg+SUBDOM,cfg=(window.TYPEADDA_CONFIG||{}).firebase;mb.disabled=true;let sec;
+    try{sec=firebase.initializeApp(cfg,'sec'+Date.now());const r=await sec.auth().createUserWithEmailAndPassword(em,pw);const uid=r.user.uid;await sec.auth().signOut();
+      await Board.db.doc('verified/'+uid).set({ok:true,name:nm,username:'',college:C.collegeName,collegeId:cid,by:'college',ts:Date.now()});
+      await Board.db.doc('collegeStudents/'+uid).set({collegeId:cid,name:nm,loginId:lg,ts:Date.now()});
+      csSt.name=csSt.login=csSt.pw='';toast('Account created. Login ID: '+lg);renderAdmin()}catch(e){toast(Auth.err(e))}
+    finally{try{if(sec)await sec.delete()}catch(e){}mb.disabled=false}};
+  k.append(g2,mb);
+  Sub.cs.forEach((d,i)=>k.appendChild(mk('div','crow',d.name+' · login ID: '+d.loginId)));
+  out.push(k);return out}
+renderAdmin=(function(prev){return function(){
+  const l=$('#aList'),ae=document.activeElement;if(l.contains(ae)&&/INPUT|TEXTAREA|SELECT/.test(ae.tagName))return;
+  prev();if(Board.admin||!isCollAdmin())return;l.append(...collegeSub())}})(renderAdmin);
+/* ================= Online payments: Razorpay + PhonePe ================= */
+/* Keep PAY_REGION the same as PAY_REGION in functions/payments.js */
+const PAY_REGION='asia-south1';
+const Pay={
+  pub:null,un:null,busy:false,cst:{plan:'',seats:'10'},
+  on(){return !!(this.pub&&this.pub.enabled&&Board.cloud)},
+  listen(){if(this.un||!Board.db)return;
+    this.un=Board.db.doc('payPublic/config').onSnapshot(x=>{this.pub=x.exists?x.data():null;if(this.pub&&this.pub.enabled&&this.pub.active==='razorpay')this.loadRz().catch(()=>{});try{Sub.refresh()}catch(e){}},()=>{})},
+  fn(n){return firebase.app().functions(PAY_REGION).httpsCallable(n)},
+  warm(){const n=Date.now();if(!Board.cloud||n-(this.wt||0)<240000)return;this.wt=n;try{this.fn('payCreate')({warm:true}).catch(()=>{})}catch(e){}},
+  plans(){return [...Sub.plans].filter(([i,p])=>p.on!==false&&Number(p.price)>=1)},
+  loadRz(){return window.Razorpay?Promise.resolve():new Promise((res,rej)=>{const s=document.createElement('script');s.src='https://checkout.razorpay.com/v1/checkout.js';s.onload=res;s.onerror=()=>rej(new Error('Could not load Razorpay. Check your internet.'));document.head.appendChild(s)})},
+  async buy(planId,seats,btn){
+    if(!Board.uid){toast('Login first');Auth.open();return}
+    if(this.busy)return;this.busy=true;const bt=btn&&btn.textContent;if(btn){btn.disabled=true;btn.textContent='Please wait...'}toast('Starting payment...');const t0=performance.now();
+    try{
+      const r=(await this.fn('payCreate')({planId,kind:seats?'college':'user',seats:seats||1,returnUrl:location.origin+location.pathname})).data;
+      console.log('[pay] click to response',Math.round(performance.now()-t0),'ms | server',r.ms,'ms');
+      if(r.gateway==='phonepe'){toast('Opening PhonePe...');location.href=r.redirectUrl;return}
+      await this.razor(r);
+    }catch(e){toast((e&&e.message)||'Payment could not start')}
+    finally{this.busy=false;if(btn){btn.disabled=false;btn.textContent=bt}}
+  },
+  async razor(r){
+    await this.loadRz();
+    await new Promise(done=>{
+      let fin=false;
+      const rz=new Razorpay({key:r.keyId,order_id:r.orderId,amount:r.amount,currency:'INR',
+        name:(typeof SITE==='object'&&SITE.name)||document.title,description:r.desc,prefill:{email:Board.email||''},
+        handler:async resp=>{fin=true;toast('Confirming payment...');
+          await this.settle({orderId:r.payId,razorpay_payment_id:resp.razorpay_payment_id,razorpay_order_id:resp.razorpay_order_id,razorpay_signature:resp.razorpay_signature});done()},
+        modal:{ondismiss:()=>{if(!fin){toast('Payment cancelled');done()}}}});
+      rz.on('payment.failed',x=>toast('Payment failed: '+((x&&x.error&&x.error.description)||'please try again')));
+      rz.open()});
+  },
+  async settle(data){
+    try{const r=(await this.fn('payVerify')(data)).data;
+      if(r.status==='paid'){toast('✅ Payment successful. Your plan is active.');return 'paid'}
+      if(r.status==='failed'){toast('Payment failed. If money was deducted, your bank will refund it.');return 'failed'}
+      return 'pending'}
+    catch(e){toast((e&&e.message)||'Could not confirm payment');return 'error'}
+  },
+  /* PhonePe sends the user back to  ?pay=ORDERID */
+  async back(){
+    const q=new URLSearchParams(location.search),id=q.get('pay');if(!id)return;
+    let w=0;await new Promise(res=>{const t=setInterval(()=>{if((Board.db&&Board.uid)||++w>100){clearInterval(t);res()}},200)});
+    if(!Board.uid){toast('Login to see your payment status');return}
+    toast('Checking your payment...');
+    let st='pending';
+    for(let i=0;i<12&&st==='pending';i++){st=await this.settle({orderId:id});if(st==='pending')await new Promise(r=>setTimeout(r,2000))}
+    if(st==='pending')toast('Payment is still pending. Your plan activates automatically once it is confirmed.');
+    try{q.delete('pay');history.replaceState(null,'',location.pathname+(q.toString()?'?'+q.toString():'')+location.hash)}catch(e){}
+  },
+  /* buy rows for a student */
+  rows(){
+    const w=mk('div');w.style.margin='10px 0';
+    this.plans().forEach(([id,p])=>{const r=mk('div','crow');r.appendChild(mk('span','',p.name+' · '+durTxt(p.days)+' · ₹'+p.price));
+      const b=mk('button','btn','Buy now');b.style.padding='6px 14px';b.onclick=()=>this.buy(id,0,b);r.appendChild(b);w.appendChild(r)});
+    return w},
+  /* inside the "Premium feature" popup */
+  decorate(b){
+    if(!b||!this.on()||isStaff())return;this.warm();
+    const note=b.querySelector('.note');
+    if(!Board.uid){if(note)note.textContent='Login first. Then you can buy a plan online.';return}
+    if(!this.plans().length)return;
+    if(note)note.textContent='Choose a plan and pay online. Your plan activates automatically after payment.';
+    const old=b.querySelector('div[style*="margin:12px 0"]'),rows=this.rows();
+    if(old)old.replaceWith(rows);else b.appendChild(rows)},
+  /* college panel: buy seats */
+  collegeCard(){
+    if(!this.on()||!this.plans().length)return null;
+    const k=mk('div','card subcard');k.appendChild(mk('h3','','🛒 Buy plan seats online'));
+    k.appendChild(mk('p','muted','Pay online and the seats are added to your plan credits. Then upgrade your students from the box below.'));
+    const st=this.cst;
+    const g=mk('div','sg');g.append(
+      field('1. Plan',sel('plan',this.plans().map(([i,p])=>[i,p.name+' · '+durTxt(p.days)+' · ₹'+p.price+' per student']),'Select plan',st)),
+      field('2. Number of students (seats)',inp('seats','number','e.g. 50',st)));
+    const b=mk('button','btn','Pay online');
+    b.onclick=()=>{const p=Sub.plans.get(st.plan),n=Math.round(+st.seats);
+      if(!p||!(n>=1)){toast('Select a plan and enter the number of seats');return}
+      if(!confirm('Pay ₹'+(Number(p.price)*n)+' for '+n+' seat'+(n>1?'s':'')+' of '+p.name+'?'))return;
+      this.buy(st.plan,n,b)};
+    k.append(g,b);return k}
+};
+Board.onUser=(function(prev){return async function(u){await prev.call(this,u);Pay.listen()}})(Board.onUser);
+if(Board.db)Pay.listen();
+{const o=Sub.wall;Sub.wall=function(){o.apply(this,arguments);Pay.decorate($('#mPlanB'))}}
+{const o=renderSubCard;renderSubCard=function(){o.apply(this,arguments);
+  const c=$('#subCard');if(!c||!Pay.on()||!Pay.plans().length)return;Pay.warm();
+  const h=mk('h4','',Sub.act(Sub.mine)?'Extend your plan':'Buy a plan');h.style.margin='10px 0 0';c.append(h,Pay.rows())}}
+{const o=collegeSub;collegeSub=function(){const out=o.apply(this,arguments),c=Pay.collegeCard();if(c)out.splice(1,0,c);return out}}
+Pay.back();
+
+/* ---------- admin: Payments tab ---------- */
+const PAYDEF={enabled:false,active:'phonepe',mode:'live',fast:{mode:'off',from:'09:00',to:'22:00'},
+  phonepe:{clientId:'',clientVersion:'1',clientSecret:'',webhookUser:'',webhookPass:''},
+  razorpay:{keyId:'',keySecret:'',webhookSecret:''}};
+let PC=null,PQ=null,pcLoading=false,pqLoading=false;
+function loadPC(){if(pcLoading||!Board.db)return;pcLoading=true;
+  Board.db.doc('paySettings/config').get().then(sn=>{PC=mcMerge(PAYDEF,sn.exists?sn.data():{})}).catch(e=>{PC=mcMerge(PAYDEF,{});toast('Could not read payment settings ('+((e&&e.code)||'error')+')')}).finally(()=>{pcLoading=false;if(view==='admin')renderAdmin()})}
+function loadPQ(){if(pqLoading||!Board.db)return;pqLoading=true;
+  Board.db.collection('payments').orderBy('ts','desc').limit(20).get().then(x=>{PQ=x.docs.map(d=>Object.assign({id:d.id},d.data()))}).catch(()=>{PQ=[]}).finally(()=>{pqLoading=false;if(view==='admin')renderAdmin()})}
+async function paySave(D){
+  ['phonepe','razorpay'].forEach(g=>{for(const k in D[g])D[g][k]=String(D[g][k]||'').trim()});
+  if(D.enabled){
+    if(D.active==='phonepe'&&!(D.phonepe.clientId&&D.phonepe.clientVersion&&D.phonepe.clientSecret)){toast('Fill PhonePe Client Id, Client Version and Client Secret first');return false}
+    if(D.active==='razorpay'&&!(D.razorpay.keyId&&D.razorpay.keySecret)){toast('Fill Razorpay Key Id and Key Secret first');return false}
+  }
+  if(!(await dset('paySettings/config',Object.assign({},D,{ts:Date.now()}))))return false;
+  return dset('payPublic/config',{enabled:!!D.enabled,active:D.active,ts:Date.now()})}
+function adminPay(){
+  const c=mk('div','card');c.appendChild(mk('h3','','💰 Online payments (PhonePe + Razorpay)'));c.firstChild.style.marginBottom='4px';
+  if(PC===null){loadPC();c.appendChild(mk('p','muted','Loading payment settings...'));return c}
+  const D=PC;
+  c.appendChild(mk('p','muted','Paste the keys of both gateways once. After that you can switch the active gateway with one click. Keys are saved in Firestore (admin only). Plans and prices come from the Subscriptions tab: a plan needs a price of ₹1 or more to be sold online.'));
+  /* master switch */
+  const tg=mk('div');tg.style.margin='10px 0';
+  const r=mk('div','frow'),w=mk('div');w.appendChild(mk('b','','Accept online payments'));w.appendChild(mk('p','muted','When off, no Buy button is shown anywhere.'));
+  const sw=mk('button','sw'+(D.enabled?' on':''));
+  sw.onclick=async()=>{const prev=D.enabled;D.enabled=!prev;if(!(await paySave(D)))D.enabled=prev;else toast(D.enabled?'Payments ON':'Payments OFF');renderAdmin()};
+  r.append(w,sw);tg.appendChild(r);c.appendChild(tg);
+  /* payment speed */
+  c.appendChild(mk('h4','','Payment speed'));c.lastChild.style.margin='14px 0 6px';
+  c.appendChild(mk('p','note','Fast: Buy now opens instantly, but a small keep-awake job runs every 5 minutes (a few dollars a month at most). Slow: no extra cost, but the first click after a quiet time can take 4-5 seconds. "Fast in hours" keeps it fast only during your busy hours (India time).'));
+  const sp=mk('div','seg');sp.style.margin='8px 0';
+  [['off','Slow (no extra cost)'],['on','Fast (always)'],['hours','Fast in hours']].forEach(([v,t])=>{const b=mk('button',D.fast.mode===v?'on':'',t);
+    b.onclick=async()=>{if(D.fast.mode===v)return;const prev=D.fast.mode;D.fast.mode=v;if(await paySave(D))toast('Speed: '+t);else D.fast.mode=prev;renderAdmin()};sp.appendChild(b)});
+  c.appendChild(sp);
+  if(D.fast.mode==='hours'){const fh=mk('div','form');
+    [['Fast from','from'],['Fast until','to']].forEach(([lab,k])=>{const wl=mk('label','',lab),i=mk('input');i.type='time';i.value=D.fast[k]||'';i.oninput=()=>{D.fast[k]=i.value};wl.appendChild(i);fh.appendChild(wl)});
+    c.appendChild(fh);c.appendChild(mk('p','note','Press "Save payment settings" below after changing the hours.'))}
+  /* gateway switch */
+  c.appendChild(mk('h4','','Active gateway (users pay through this one)'));c.lastChild.style.margin='12px 0 6px';
+  const pr=mk('div','seg');pr.style.marginBottom='10px';
+  [['phonepe','PhonePe'],['razorpay','Razorpay']].forEach(([v,t])=>{const b=mk('button',D.active===v?'on':'',t);
+    b.onclick=async()=>{if(D.active===v)return;const prev=D.active;D.active=v;if(await paySave(D))toast('Active gateway: '+t);else D.active=prev;renderAdmin()};pr.appendChild(b)});
+  c.appendChild(pr);
+  const F=(f,lab,obj,key,type,ph,full)=>{const wl=mk('label',full?'full':'',lab),i=mk('input');i.type=type||'text';i.placeholder=ph||'';i.value=obj[key]||'';i.autocomplete='off';i.oninput=()=>{obj[key]=i.value};wl.appendChild(i);f.appendChild(wl)};
+  /* PhonePe */
+  c.appendChild(mk('h4','','PhonePe'));c.lastChild.style.margin='14px 0 6px';
+  c.appendChild(mk('p','note','From PhonePe Business dashboard > Developer settings: Client Id, Client Version, Client Secret. Use "Test" mode only with PhonePe sandbox keys.'));
+  const mm=mk('div','seg');mm.style.margin='8px 0';
+  [['live','Live'],['sandbox','Test (sandbox)']].forEach(([v,t])=>{const b=mk('button',D.mode===v?'on':'',t);b.onclick=()=>{D.mode=v;renderAdmin()};mm.appendChild(b)});
+  c.appendChild(mm);
+  const f1=mk('div','form');
+  F(f1,'Client Id',D.phonepe,'clientId','text','');F(f1,'Client Version',D.phonepe,'clientVersion','text','1');F(f1,'Client Secret',D.phonepe,'clientSecret','password','',true);
+  F(f1,'Webhook username (optional)',D.phonepe,'webhookUser','text','');F(f1,'Webhook password (optional)',D.phonepe,'webhookPass','password','');
+  c.appendChild(f1);
+  /* Razorpay */
+  c.appendChild(mk('h4','','Razorpay'));c.lastChild.style.margin='18px 0 6px';
+  c.appendChild(mk('p','note','From Razorpay Dashboard > Account & Settings > API keys. A key starting with rzp_test_ is test mode, rzp_live_ is live.'));
+  const f2=mk('div','form');
+  F(f2,'Key Id',D.razorpay,'keyId','text','rzp_live_xxxxxxxx');F(f2,'Key Secret',D.razorpay,'keySecret','password','');F(f2,'Webhook secret (optional)',D.razorpay,'webhookSecret','password','',true);
+  c.appendChild(f2);
+  const ac=mk('div','ractions'),sv=mk('button','btn','Save payment settings');
+  sv.onclick=async()=>{if(await paySave(D))toast('Payment settings saved')};ac.appendChild(sv);c.appendChild(ac);
+  /* webhooks */
+  const pid=((window.TYPEADDA_CONFIG||{}).firebase||{}).projectId||'YOUR-PROJECT';
+  c.appendChild(mk('h4','','Webhook links (recommended)'));c.lastChild.style.margin='18px 0 6px';
+  c.appendChild(mk('p','note','Optional but recommended: it activates the plan even if the user closes the browser right after paying. Paste these links in the gateway dashboards. If a link does not open, copy the exact URL from Firebase console > Functions.'));
+  const f3=mk('div','form');
+  [['PhonePe webhook URL','phonepeWebhook'],['Razorpay webhook URL','razorpayWebhook']].forEach(([lab,fn])=>{const wl=mk('label','full',lab),i=mk('input');i.readOnly=true;i.value='https://'+PAY_REGION+'-'+pid+'.cloudfunctions.net/'+fn;i.onclick=()=>i.select();wl.appendChild(i);f3.appendChild(wl)});
+  c.appendChild(f3);
+  c.appendChild(mk('p','note','Razorpay: Settings > Webhooks, tick payment.captured and order.paid, and use the same secret as above. PhonePe: Developer settings > Webhook, set the same username and password as above.'));
+  /* recent */
+  c.appendChild(mk('h4','','Recent payments'));c.lastChild.style.margin='18px 0 6px';
+  const rf=mk('button','ghost','Refresh');rf.onclick=()=>{PQ=null;renderAdmin()};c.appendChild(rf);
+  if(PQ===null){loadPQ();c.appendChild(mk('p','muted','Loading...'))}
+  else if(!PQ.length)c.appendChild(mk('p','muted','No payments yet.'));
+  else{const t=mk('div','scroll-x');t.innerHTML='<table><thead><tr><th>When</th><th>User</th><th>Gateway</th><th>Plan</th><th>Amount</th><th>Status</th></tr></thead><tbody>'+PQ.map(m=>`<tr><td>${esc(new Date(m.ts||0).toLocaleString())}</td><td>${esc(m.email||'')}</td><td>${esc(m.gateway||'')}</td><td>${esc((m.planName||'')+(m.kind==='college'?' x '+m.seats:''))}</td><td>₹${esc(m.amount||0)}</td><td>${esc(m.status||'')}${m.error?': '+esc(m.error):''}</td></tr>`).join('')+'</tbody></table>';c.appendChild(t)}
+  return c}
+
+Sub.listen(Board.user||null);
 </script>
 </body>
 </html>
