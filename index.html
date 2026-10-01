@@ -2,6 +2,11 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
+<link rel="preconnect" href="https://www.gstatic.com" crossorigin>
+<link rel="preload" as="script" href="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js">
+<link rel="preload" as="script" href="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js">
+<link rel="preload" as="script" href="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js">
+<link rel="preload" as="script" href="https://www.gstatic.com/firebasejs/10.12.2/firebase-functions-compat.js">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>TypeAdda - typing tests, lessons, games and ranks</title>
 <meta name="description" content="TypeAdda is a free place to practise typing: timed typing tests, step-by-step lessons, typing games, and leaderboards for India.">
@@ -2657,6 +2662,7 @@ Board.onUser=async function(u){
   if(u){
     this.admin=(cfg.adminEmails||[]).map(x=>x.toLowerCase()).includes((u.email||'').toLowerCase());
     if(!this.admin){try{this.admin=(await this.db.doc('admins/'+u.uid).get()).exists}catch(e){}}
+    try{Board.earlyReady&&Board.earlyReady(u)}catch(e){}
     await Sync.pull();
   }
   this.canWrite=!!u&&!this.blocked.has(this.uid);
@@ -4630,7 +4636,7 @@ const Pay={
   /* PhonePe sends the user back to  ?pay=ORDERID */
   async back(){
     const q=new URLSearchParams(location.search),id=q.get('pay');if(!id)return;
-    let w=0;await new Promise(res=>{const t=setInterval(()=>{if((Board.db&&Board.uid)||++w>100){clearInterval(t);res()}},200)});
+    let w=0;await new Promise(res=>{const t=setInterval(()=>{if(Board.authReady||++w>100){clearInterval(t);res()}},200)});
     if(!Board.uid){toast('Login to see your payment status');return}
     toast('Checking your payment...');
     let st='pending';
@@ -4758,6 +4764,80 @@ function adminPay(){
   return c}
 
 Sub.listen(Board.user||null);
+
+/* ===== Fix: no "logged out" flash while Firebase restores the session =====
+   We remember the last signed-in state (name / role) on this device and show it
+   until Firebase has really confirmed the user and the role (user / admin / college). */
+{
+  const HK='typeadda:authHint',rd=()=>{try{return JSON.parse(localStorage.getItem(HK)||'null')}catch(e){return null}};
+  let hint=rd();const waiters=[];
+  Board.authReady=false;
+  Board.whenReady=f=>Board.authReady?f():waiters.push(f);
+  const ready=()=>{if(Board.authReady)return;Board.authReady=true;try{applyRoleUI();updateChip();renderProfile()}catch(e){}waiters.splice(0).forEach(f=>{try{f()}catch(e){}})};
+  const pending=()=>!Board.authReady&&!!hint;   // true = still verifying a remembered login
+
+  // chip: show remembered account instead of "Login / Register"
+  updateChip=(function(prev){return function(){
+    if(!pending())return prev.apply(this,arguments);
+    const c=$('#chip');
+    if(hint.role==='college'){c.textContent='🏫 '+(hint.college||'College');return}
+    const n=P.username?'@'+P.username:(P.name||hint.name||hint.email||'Profile');
+    c.innerHTML=(typeof avaHTML==='function'?avaHTML(P.thumb,P.name||n,'sm'):'')+esc(n)}})(updateChip);
+
+  // admin / college nav button: keep it visible while verifying
+  applyRoleUI=(function(prev){return function(){
+    prev.apply(this,arguments);
+    if(!pending())return;
+    const ad=$('#nav [data-v=admin]');
+    if(ad&&(hint.role==='admin'||hint.role==='college')){ad.hidden=false;ad.textContent=hint.role==='college'?'College Panel':'Admin'}}})(applyRoleUI);
+
+  // profile page text
+  renderProfile=(function(prev){return function(){
+    const r=prev.apply(this,arguments);
+    if(pending()){const a=$('#pAcct');if(a)a.textContent='Signed in as '+(hint.email||'')}
+    return r}})(renderProfile);
+
+  // ---- clicks while auth is still being confirmed: never "dead" ----
+  const SOON=()=>toast('Checking your login, one moment...');
+  // run fn now if auth is confirmed, otherwise tell the user and run it automatically as soon as it is
+  Board.gate=fn=>{if(Board.authReady)return fn();SOON();Board.whenReady(fn)};
+  const chipGo=()=>{
+    if(Board.authReady){if(!Board.uid)Auth.open();else if(isCollAdmin())show('admin');else show('profile');return}
+    // remembered user: go straight to where they want to be (no waiting)
+    if(hint){if(hint.role==='admin'||hint.role==='college')show('admin');else show('profile');return}
+    Auth.open()};                       // nobody remembered: they are a guest, open login at once
+  $('#chip').onclick=chipGo;
+  $('#btnAdminLogin').onclick=()=>{
+    if(Board.authReady){if(Board.admin||Board.college)show('admin');else if(Board.uid)toast('This account is not an admin');else Auth.open(true);return}
+    if(hint&&(hint.role==='admin'||hint.role==='college')){show('admin');return}
+    if(hint){toast('This account is not an admin');return}
+    Auth.open(true)};
+  // login box: open at once for guests; if the session turns out to be valid, close it again
+  Auth.open=(function(o){return function(admin){
+    if(!Board.authReady&&hint){Board.gate(()=>{if(!Board.uid)o.call(Auth,admin)});return}
+    o.call(this,admin);
+    if(!Board.authReady)Board.whenReady(()=>{if(Board.uid&&!$('#mAuth').hidden)closeModals()})}})(Auth.open);
+  // actions that need a login: wait for auth instead of saying "login first"
+  ['create','join'].forEach(m=>{const o=Room[m];Room[m]=function(...a){if(!Board.authReady){Board.gate(()=>Room[m](...a));return}return o.apply(this,a)}});
+  {const o=Pay.buy;Pay.buy=function(...a){if(!Board.authReady){Board.gate(()=>Pay.buy.apply(Pay,a));return}return o.apply(this,a)}}
+  {const o=Pay.decorate;Pay.decorate=function(b){const r=o.apply(this,arguments);if(!Board.authReady)Board.whenReady(()=>{try{if(b&&!b.closest('[hidden]'))Pay.decorate(b)}catch(e){}});return r}}
+
+  // role is known (user / admin / college): UI becomes fully live here; profile sync continues in background
+  const save=u=>{if(u){hint={uid:u.uid,email:u.email||'',name:P.name||u.displayName||'',
+      role:Board.admin?'admin':(Board.college?'college':'user'),college:Board.college?Board.college.collegeName:''};
+    localStorage.setItem(HK,JSON.stringify(hint))}else{hint=null;localStorage.removeItem(HK)}};
+  Board.earlyReady=u=>{try{Board.uid=u.uid;save(u)}catch(e){}ready()};
+  Board.onUser=(function(prev){return async function(u){
+    try{await prev.call(this,u)}finally{try{save(u)}catch(e){}ready()}}})(Board.onUser);
+
+  // Firebase not configured / failed to load / offline: stop waiting
+  Board.init=(function(prev){return async function(){try{await prev.apply(this,arguments)}finally{if(!this.auth)ready()}}})(Board.init);
+  if(!(window.TYPEADDA_CONFIG&&window.TYPEADDA_CONFIG.firebase&&window.TYPEADDA_CONFIG.firebase.apiKey))ready();
+  setTimeout(()=>{if(!Board.authReady){hint=null;ready()}},15000);   // safety net
+
+  // paint remembered state right now (before first frame)
+  try{applyRoleUI();updateChip()}catch(e){}
+}
 </script>
 </body>
 </html>
