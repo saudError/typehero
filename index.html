@@ -3147,13 +3147,13 @@ Pub.open=async function(id){let d=Board.scores.get(id);if(!d)return;const v=Boar
   try{const sn=await Board.db.doc('avatars/'+id).get();if(sn.exists&&sn.data().pic)this.show(d,v,sn.data().pic)}catch(e){}};
 $('#pView').onclick=()=>{
   const mine=Board.scores.get(Board.uid)||{};
-  const d=Object.assign({},mine,{username:P.username,name:P.name||'You',country:P.country,state:P.state,district:P.district,college:P.college,bio:P.bio,about:P.about,links:P.links,best:Object.assign({},PB&&Object.fromEntries(LBKEYS.filter(k=>PB[k]).map(k=>[k,PB[k]]))),pb:PB,_id:Board.uid||'local',tests:Math.max(TC,H.length,cur.tests||0),time:Math.round(TT),lessons:LESSONS.filter(l=>lessonStars(l)>0).length});
+  const d=Object.assign({},mine,{username:P.username,name:P.name||'You',country:P.country,state:P.state,district:P.district,college:P.college,bio:P.bio,about:P.about,links:P.links,best:Object.assign({},PB&&Object.fromEntries(LBKEYS.filter(k=>PB[k]).map(k=>[k,PB[k]]))),pb:PB,_id:Board.uid||'local',tests:Math.max(TC,H.length,mine.tests||0),time:Math.round(TT),lessons:LESSONS.filter(l=>lessonStars(l)>0).length});
   Pub.show(d,Board.verified.get(Board.uid),P.pic||d.thumb)};
 
 /* ================= v7: usernames, college logins, events, college pages ================= */
 Board.collProfiles=new Map();Board.collAdmins=new Map();Board.events=new Map();Board.evRes=new Map();Board.college=null;
 const isCollAdmin=()=>!!Board.college&&!Board.admin;
-const canEvents=()=>!!((SITE.showEvents!==false||Board.admin)&&(Board.admin||Board.college||(Board.uid&&myVerified())));
+const canEvents=()=>{if(SITE.showEvents===false&&!Board.admin)return false;if(Board.admin||Board.college)return true;if(Board.uid&&myVerified())return true;try{return Ev.visible().length>0}catch(e){return false}};
 const myColId=()=>{const v=Board.verified.get(Board.uid);return v&&v.ok?(v.collegeId||slug(v.college||'')):''};
 const fmtDT=t=>new Date(t).toLocaleString(undefined,{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'});
 const baseURL=()=>location.href.split(/[?#]/)[0];
@@ -3250,19 +3250,23 @@ Board.onUser=(function(prev){return async function(u){
   if(this.admin&&!this.caOn){this.caOn=true;this.db.collection('collegeAdmins').limit(500).onSnapshot(x=>{this.collAdmins=new Map(x.docs.map(d=>[d.id,d.data()]));this.changed()},()=>{})}
   if(this.college&&!this.admin&&!this.crOn){this.crOn=true;this.db.collection('verifyReq').where('collegeId','==',this.college.collegeId).onSnapshot(x=>{this.reqs=new Map(x.docs.map(d=>[d.id,d.data()]));this.changed()},()=>{})}
   applyRoleUI();updateChip();this.changed()}})(Board.onUser);
-function ensureEvents(){if(!Board.db||Board.evOn||!canEvents())return;Board.evOn=true;const bad=()=>{};
-  Board.db.collection('events').limit(300).onSnapshot(x=>{Board.events=new Map(x.docs.map(d=>[d.id,Object.assign({id:d.id},d.data())]));Board.changed()},bad);
-  Board.db.collection('eventResults').limit(3000).onSnapshot(x=>{Board.evRes=new Map(x.docs.map(d=>[d.id,d.data()]));Board.changed()},bad)}
+function ensureEvents(){if(!Board.db)return;const bad=()=>{};
+  if(!Board.evOn){Board.evOn=true;Board.db.collection('events').limit(300).onSnapshot(x=>{Board.events=new Map(x.docs.map(d=>[d.id,Object.assign({id:d.id},d.data())]));Board.changed()},bad)}
+  if(view==='events'&&!Board.erOn){Board.erOn=true;Board.db.collection('eventResults').limit(3000).onSnapshot(x=>{Board.evRes=new Map(x.docs.map(d=>[d.id,d.data()]));Board.changed()},bad)}
+  const key=Board.admin?'a':(Board.college?'c'+Board.college.collegeId:(Board.uid?'u'+Board.uid:''));
+  if(key!==Board.jKey){Board.jKey=key;if(Board.jUn){Board.jUn();Board.jUn=null}Board.joins=new Map();
+    if(key){let q=Board.db.collection('eventJoins');if(key[0]==='c')q=q.where('collegeId','==',Board.college.collegeId);else if(key[0]==='u')q=q.where('uid','==',Board.uid);
+      Board.jUn=q.limit(3000).onSnapshot(x=>{Board.joins=new Map(x.docs.map(d=>[d.id,d.data()]));Board.changed()},bad)}}}
 Board.changed=(function(prev){return function(){prev.call(this);applyRoleUI();ensureEvents();
   if(view==='events')Ev.render();if(view==='colleges')Colleges.render();
   if(Colleges.pending&&Board.collProfiles.has(Colleges.pending)){const id=Colleges.pending;Colleges.pending=null;show('colleges');Colleges.open(id,false)}}})(Board.changed);
 show=(function(prev){return function(v){
   if(view==='events'&&v!=='events'&&Ev.mode==='run')Ev.abort();
   if(v==='colleges'&&SITE.showColleges===false&&!Board.admin){toast('This page is not available');return}
-  if(v==='events'&&!canEvents()){toast('Events are only for college-verified students');return}
+  if(v==='events'&&!canEvents()){toast('No events available right now');return}
   if(view==='colleges'&&v!=='colleges')resetSEO();
   prev(v);
-  if(v==='events'){Ev.mode='list';Ev.render()}
+  if(v==='events'){ensureEvents();Ev.mode='list';Ev.render()}
   if(v==='colleges'){if(!Colleges.pending)Colleges.cur=null;Colleges.render()}
 }})(show);
 
@@ -3299,7 +3303,7 @@ const Ev={mode:'list',cur:null,formOpen:false,draft:{},cleanup:null,
     const st=mk('div','stack');
     list.forEach(ev=>{const c=mk('div','card evc'),s=this.status(ev),done=this.result(ev);
       c.innerHTML=`<div><h3>${esc(ev.title)}</h3><p style="margin:6px 0"><span class="pill ${s==='live'?'ok':s==='ended'?'no':''}">${s==='live'?'Live':s==='ended'?'Ended':'Starts '+fmtDT(ev.startsAt)}</span><span class="pill">${ev.collegeId?esc(ev.collegeName||'College only'):'All colleges'}</span>${done?'<span class="pill ok">You took part</span>':''}</p><div>${this.rules(ev)}</div></div>`;
-      const a=mk('div','ractions');const o=mk('button','btn',done||s==='ended'?'Results':'Open');o.onclick=()=>{this.cur=ev.id;this.mode='detail';this.detail()};a.appendChild(o);
+      c.insertAdjacentHTML('beforeend',cdHTML(ev,false));const a=mk('div','ractions');const o=mk('button','btn',done||s==='ended'?'Results':'Open');o.onclick=()=>{this.cur=ev.id;this.mode='detail';this.detail()};a.appendChild(o);
       if(this.canManage(ev)){const d=mk('button','ghost','Delete');d.onclick=async()=>{if(!confirm('Delete this event and its results?'))return;
         for(const [rid,r] of Board.evRes)if(r.eventId===ev.id)await ddel('eventResults/'+rid);
         if(await ddel('events/'+ev.id))toast('Event deleted')};a.appendChild(d)}
@@ -3345,7 +3349,7 @@ const Ev={mode:'list',cur:null,formOpen:false,draft:{},cleanup:null,
     else if(stud&&same&&s==='live'){const b=mk('button','btn','Start event ('+ev.minutes+' min)');b.onclick=()=>{
         if(!P.username&&!P.name){toast('Add your name in Profile first');return}
         if(store.get('evstart:'+ev.id,0)){toast('Your attempt was already started on this device');return}
-        if(confirm('Only one attempt. The timer starts on your first key. Start now?')){store.set('evstart:'+ev.id,Date.now());this.play(ev,false)}};a.appendChild(b)}
+        if(confirm('Only one attempt. The timer starts on your first key. Start now?')){this.play(ev,false)}};a.appendChild(b)}
     else if(stud&&!same)a.appendChild(mk('span','note','This event is only for another college.'));
     else if(s==='upcoming')a.appendChild(mk('span','note','Not started yet.'));
     else if(s==='ended')a.appendChild(mk('span','note','This event has ended.'));
@@ -3392,6 +3396,240 @@ const Ev={mode:'list',cur:null,formOpen:false,draft:{},cleanup:null,
     catch(e){$('#evSave').textContent='Could not save your result ('+((e&&e.code)||'error')+'). Tell the organiser.'}
   }
 };
+
+/* ===== Events v2: audience control, prizes + payout details, join form, home popup ===== */
+Board.joins=Board.joins||new Map();
+const ss=(k,v)=>{try{if(v===undefined)return sessionStorage.getItem(k);sessionStorage.setItem(k,v)}catch(e){return null}};
+const evPatch=async(id,p)=>{try{await Board.db.doc('events/'+id).set(p,{merge:true});toast('Saved');return true}catch(e){toast('Failed: '+((e&&e.code)||'error'));return false}};
+Object.assign(Ev,{
+  vis(ev){return ev.vis||{college:true}},
+  canSee(ev){if(Board.admin)return true;if(ev.hidden)return this.canManage(ev);
+    if(isCollAdmin())return !ev.collegeId||ev.collegeId===Board.college.collegeId;
+    if(ev.collegeId)return !!Board.uid&&ev.collegeId===myColId();
+    const v=this.vis(ev);return Board.uid?!!(v.users||(v.college&&myVerified())):!!v.guests},
+  canJoin(ev){if(!Board.uid||Board.admin||Board.college)return false;if(ev.collegeId)return ev.collegeId===myColId();const v=this.vis(ev);return !!(v.users||(v.college&&myVerified()))},
+  needsJoin(ev){return !!(ev.joinReq||(ev.collect&&ev.collect!=='none'))},
+  joined(ev){return Board.joins.get(ev.id+'_'+Board.uid)||(Board.uid&&store.get('evjoin:'+ev.id,0)?{}:null)},
+  visible(){return [...Board.events.values()].filter(e=>this.canSee(e)).sort((a,b)=>(b.ts||0)-(a.ts||0))}
+});
+Ev.rules=(p=>function(ev){return p.call(this,ev)+(ev.prizeTitle?'<span class="pill ok">🎁 '+esc(ev.prizeTitle)+'</span>':'')})(Ev.rules);
+
+Ev.form=function(){
+  const D=this.draft,c=mk('div','card');c.style.margin='0 0 16px';c.appendChild(mk('h3','','New event'));c.firstChild.style.marginBottom='12px';
+  const f=mk('div','form');
+  const F=(lab,key,el,def,full)=>{const w=mk('label',full?'full':'',lab);el.value=D[key]!==undefined?D[key]:(def||'');el.oninput=el.onchange=()=>D[key]=el.value;w.appendChild(el);f.appendChild(w);return el};
+  const sel=o=>{const s=mk('select');o.forEach(([v,t])=>{const x=mk('option','',t);x.value=v;s.appendChild(x)});return s};
+  const t=F('Event title','title',mk('input'),'',1);t.maxLength=80;t.placeholder='e.g. Freshers Typing Cup';
+  const m=mk('input');m.type='number';m.min=1;m.max=60;F('Typing time (minutes)','minutes',m,'10');
+  F('Capital letters','caps',sel([['off','OFF (small letters only)'],['on','ON']]),'off');
+  F('Symbols ( , . ; ! ? @ # ... )','symbols',sel([['off','OFF'],['on','ON']]),'off');
+  F('Numbers','numbers',sel([['off','OFF'],['on','ON']]),'off');
+  F('2 minute demo before the event','demo',sel([['on','ON'],['off','OFF']]),'on');
+  F('Prize type','prizeType',sel([['none','No prize'],['cash','Cash'],['product','Physical product'],['other','Other']]),'none');
+  const pt=F('Winning prize (shown to users)','prizeTitle',mk('input'),'');pt.maxLength=80;pt.placeholder='e.g. ₹500 cash / Bluetooth keyboard';
+  F('Details to collect when user joins','collect',sel([['auto','Automatic (Cash → UPI, Product → Address)'],['none','Nothing'],['upi','PhonePe / Google Pay number or UPI ID'],['addr','Address + phone number'],['both','Both']]),'auto');
+  F('Home page popup banner','popup',sel([['off','OFF'],['on','ON']]),'off');
+  if(Board.admin){
+    const opts=[['','All colleges (every verified student)']].concat([...Board.colleges].map(([id,d])=>[id,d.name]).sort((a,b)=>a[1].localeCompare(b[1])));F('Only for one college? (optional)','scope',sel(opts),'');
+    const w=mk('div','full');w.appendChild(mk('b','','Who can see this event'));
+    [['vg','Logged-out visitors'],['vu','Logged-in users'],['vc','College students']].forEach(([k,l])=>{const lb=mk('label','');lb.style.cssText='display:inline-flex;gap:6px;align-items:center;margin:6px 14px 0 0;flex-direction:row';const ck=mk('input');ck.type='checkbox';ck.style.width='auto';ck.checked=D[k]!==false;ck.onchange=()=>D[k]=ck.checked;lb.append(ck,document.createTextNode(l));w.appendChild(lb)});
+    f.appendChild(w);
+  }else{const w=mk('label','','Who can join');const i=mk('input');i.value='Only '+Board.college.collegeName+' students';i.disabled=true;w.appendChild(i);f.appendChild(w)}
+  const s1=mk('input');s1.type='datetime-local';F('Start date & time (optional)','start',s1,'');
+  const hn=mk('p','note','If you set a start time, the event starts exactly then and ends automatically after the typing time. Leave empty for an always-open event. Joined users\' prize details are visible only to admin.');hn.style.gridColumn='1/-1';f.appendChild(hn);
+  const ta=mk('textarea');ta.rows=3;ta.placeholder='Leave empty for random words. Or paste your own passage.';F('Custom text (optional)','passage',ta,'',1);
+  const a=mk('div','ractions'),sv=mk('button','btn','Publish event');
+  sv.onclick=async()=>{
+    const title=(D.title||'').trim(),min=Math.round(+D.minutes||10),pty=D.prizeType||'none',pz=(D.prizeTitle||'').trim();
+    if(title.length<3){toast('Enter an event title');return}if(min<1||min>60){toast('Time must be 1 to 60 minutes');return}
+    if(pty!=='none'&&!pz){toast('Write the prize (example: ₹500 cash)');return}
+    let col=D.collect||'auto';if(col==='auto')col=pty==='cash'?'upi':pty==='product'?'addr':'none';
+    const cid=Board.admin?(D.scope||''):Board.college.collegeId,cname=cid?(Board.admin?((Board.colleges.get(cid)||{}).name||''):Board.college.collegeName):'';
+    const vis=Board.admin?{guests:D.vg!==false,users:D.vu!==false,college:D.vc!==false}:{college:true};
+    const id='e'+Date.now(),st=D.start?new Date(D.start).getTime():0;
+    const doc={title,minutes:min,caps:D.caps==='on',symbols:D.symbols==='on',numbers:D.numbers==='on',demo:D.demo!=='off',collegeId:cid,collegeName:cname,seed:Math.floor(Math.random()*2147483647),passage:(D.passage||'').trim(),startsAt:st,endsAt:st?st+min*60000:0,vis,hidden:false,popup:D.popup==='on',prizeType:pty,prizeTitle:pz,collect:col,joinReq:true,by:Board.uid,ts:Date.now()};
+    if(await dset('events/'+id,doc)){this.draft={};this.formOpen=false;toast('Event published');this.render()}};
+  a.appendChild(sv);c.append(f,a);return c};
+
+Ev.joinModal=function(ev){
+  const old=$('#mEvJoin');if(old)old.remove();
+  const col=ev.collect||'none',old0=Board.joins.get(ev.id+'_'+Board.uid)||{};
+  const m=mk('div','modal');m.id='mEvJoin';const b=mk('div','box');m.appendChild(b);
+  b.innerHTML='<h3>Join: '+esc(ev.title)+'</h3>'+(ev.prizeTitle?'<p style="margin-bottom:10px"><b>🎁 Prize:</b> '+esc(ev.prizeTitle)+'</p>':'')+
+   (col==='upi'||col==='both'?'<label class="full">Prize payment app<select id="jApp"><option>PhonePe</option><option>Google Pay</option><option>Paytm</option><option>Other UPI</option></select></label><label class="full">PhonePe / Google Pay number or UPI ID<input id="jPay" placeholder="9876543210 or name@upi" maxlength="60"></label>':'')+
+   (col==='addr'||col==='both'?'<label class="full">Full address<textarea id="jAdr" rows="3" maxlength="300"></textarea></label><label class="full">Pincode<input id="jPin" inputmode="numeric" maxlength="6"></label><label class="full">Phone number<input id="jPh" inputmode="numeric" maxlength="10"></label>':'')+
+   '<p class="note" style="margin:8px 0">Your details are seen only by the admin and used only to send your prize.</p><div class="ractions"><button class="btn" id="jGo">'+(old0.ts?'Save details':'Join now')+'</button><button class="btn sec" data-close>Cancel</button></div>';
+  document.body.appendChild(m);m.addEventListener('click',e=>{if(e.target===m||e.target.hasAttribute('data-close'))m.remove()});
+  const g=id=>$('#'+id,m);if(g('jApp'))g('jApp').value=old0.payApp||'PhonePe';if(g('jPay'))g('jPay').value=old0.pay||'';if(g('jAdr'))g('jAdr').value=old0.address||'';if(g('jPin'))g('jPin').value=old0.pincode||'';if(g('jPh'))g('jPh').value=old0.phone||'';
+  g('jGo').onclick=async()=>{
+    const r={eventId:ev.id,uid:Board.uid,username:P.username||'',name:P.name||'',email:Board.email||'',collegeId:ev.collegeId||'',ts:Date.now()};
+    if(g('jPay')){const v=g('jPay').value.trim();if(!(/^[6-9]\d{9}$/.test(v)||/^[\w.\-]{2,256}@[a-zA-Z]{2,64}$/.test(v))){toast('Enter a valid 10 digit number or UPI ID');return}r.pay=v;r.payApp=g('jApp').value}
+    if(g('jAdr')){const a=g('jAdr').value.trim(),pn=g('jPin').value.trim(),ph=g('jPh').value.trim();
+      if(a.length<10){toast('Enter your full address');return}if(!/^\d{6}$/.test(pn)){toast('Enter a 6 digit pincode');return}if(!/^[6-9]\d{9}$/.test(ph)){toast('Enter a valid 10 digit phone number');return}r.address=a;r.pincode=pn;r.phone=ph}
+    g('jGo').disabled=true;
+    if(await dset('eventJoins/'+ev.id+'_'+Board.uid,r)){Board.joins.set(ev.id+'_'+Board.uid,r);store.set('evjoin:'+ev.id,1);m.remove();toast('You have joined this event ✅');if(view==='events'&&this.mode==='detail')this.detail()}else g('jGo').disabled=false}};
+
+Ev.detail=function(){
+  const root=$('#evRoot'),ev=Board.events.get(this.cur);
+  if(!ev||!this.canSee(ev)){this.mode='list';return this.render()}
+  const s=this.status(ev),done=this.result(ev),can=this.canJoin(ev),jn=this.joined(ev),need=this.needsJoin(ev),org=Board.admin||Board.college;
+  root.innerHTML='';
+  const back=mk('button','ghost','← All events');back.onclick=()=>{this.mode='list';this.cur=null;this.render()};root.appendChild(back);
+  const c=mk('div','card');c.style.margin='14px 0';
+  const ph=ev.prizeTitle?'<p style="margin:10px 0"><b>🎁 Prize:</b> '+esc(ev.prizeTitle)+'</p>':'';
+  c.innerHTML=`<h2>${esc(ev.title)}</h2><p style="margin:8px 0"><span class="pill">${ev.collegeId?esc(ev.collegeName):'All colleges'}</span>${ev.startsAt?`<span class="pill">Start: ${fmtDT(ev.startsAt)}</span>`:''}${ev.endsAt?`<span class="pill">End: ${fmtDT(ev.endsAt)}</span>`:''}</p>${ph}<div>${this.rules(ev)}</div><p class="note" style="margin-top:10px">${ev.startsAt&&ev.endsAt?'Scheduled event: it ends at '+fmtDT(ev.endsAt)+' for everyone, whether you join or not. ':''}One attempt only. Everyone types the same text. Mistakes stay on screen, use Backspace to fix them.</p>`;
+  c.querySelector('h2').insertAdjacentHTML('afterend','<div style="margin:14px 0">'+cdHTML(ev,true)+'</div>');
+  const a=mk('div','ractions');
+  if(ev.demo){const d=mk('button','btn sec','Try 2 min demo');d.onclick=()=>this.play(ev,true);a.appendChild(d)}
+  if(done)a.appendChild(mk('span','note','Your result: '+done.wpm+' WPM, '+done.acc+'% accuracy'));
+  else if(s==='ended')a.appendChild(mk('span','note','This event has ended.'));
+  else if(!Board.uid){const b=mk('button','btn','Login to join');b.onclick=()=>{this.pendingJoin=ev.id;Auth.open()};a.appendChild(b)}
+  else if(org)a.appendChild(mk('span','note','You are viewing as organiser.'));
+  else if(!can)a.appendChild(mk('span','note',ev.collegeId?'This event is only for another college.':'Only college-verified students can take part.'));
+  else if(need&&!jn){const b=mk('button','btn','Join now');b.onclick=()=>this.joinModal(ev);a.appendChild(b)}
+  else{
+    if(need&&ev.collect&&ev.collect!=='none'){const e2=mk('button','ghost','Edit my details');e2.onclick=()=>this.joinModal(ev);a.appendChild(e2)}
+    if(s==='upcoming'){const ob=mk('button','btn','Open typing screen');ob.onclick=()=>this.play(ev,false);a.appendChild(ob);a.appendChild(mk('span','note',(jn?'You have joined ✅ ':'')+'You can read the text now. Typing unlocks automatically at '+fmtDT(ev.startsAt)+'.'))}
+    else{const b=mk('button','btn','Start event ('+ev.minutes+' min)');b.onclick=()=>{
+      if(!P.username&&!P.name){toast('Add your name in Profile first');return}
+      if(store.get('evstart:'+ev.id,0)){toast('Your attempt was already started on this device');return}
+      if(confirm('Only one attempt. The timer starts on your first key. Start now?')){this.play(ev,false)}};a.appendChild(b)}}
+  c.appendChild(a);root.appendChild(c);
+  const rows=[...Board.evRes.values()].filter(r=>r.eventId===ev.id).sort((x,y)=>y.wpm-x.wpm||y.acc-x.acc||x.ts-y.ts);
+  const t=mk('div','card scroll-x');t.innerHTML='<h3 style="margin-bottom:8px">Leaderboard</h3>'+(rows.length?`<table><thead><tr><th class="n">#</th><th>Username</th>${ev.collegeId?'':'<th>College</th>'}<th class="n">WPM</th><th class="n">Accuracy</th></tr></thead><tbody>${rows.map((r,i)=>`<tr class="${r.uid===Board.uid?'me':''}"><td class="n">${i+1}</td><td>${esc(r.username||'-')}</td>${ev.collegeId?'':'<td>'+esc(r.college||'-')+'</td>'}<td class="n">${r.wpm}</td><td class="n">${r.acc}%</td></tr>`).join('')}</tbody></table>`:'<div class="empty">No results yet.</div>');
+  root.appendChild(t);
+  if(this.canManage(ev))root.append(this.manage(ev),this.people(ev));
+};
+
+Ev.manage=function(ev){
+  const c=mk('div','card');c.style.marginTop='14px';c.appendChild(mk('h3','','⚙️ Event settings'));c.firstChild.style.marginBottom='8px';
+  const v=this.vis(ev),D={guests:!!v.guests,users:!!v.users,college:!!v.college,hidden:!!ev.hidden,popup:!!ev.popup};
+  const row=(l,k)=>{const lb=mk('label','');lb.style.cssText='display:flex;gap:8px;align-items:center;margin:6px 0;flex-direction:row';const ck=mk('input');ck.type='checkbox';ck.style.width='auto';ck.checked=k==='hidden'?!D.hidden:D[k];ck.onchange=()=>D[k]=k==='hidden'?!ck.checked:ck.checked;lb.append(ck,document.createTextNode(l));c.appendChild(lb)};
+  if(Board.admin){row('Show to logged-out visitors','guests');row('Show to logged-in users','users');row('Show to college students','college')}
+  row('Event is visible (untick to hide it from everyone)','hidden');row('Show popup banner on home page','popup');
+  const sv=mk('button','btn','Save settings');sv.style.marginTop='8px';
+  sv.onclick=()=>evPatch(ev.id,Object.assign({hidden:D.hidden,popup:D.popup},Board.admin?{vis:{guests:D.guests,users:D.users,college:D.college}}:{})).then(ok=>{if(ok)ss('evpop:'+ev.id,null)});
+  c.appendChild(sv);return c};
+
+Ev.people=function(ev){
+  const rows=[...Board.joins.values()].filter(j=>j.eventId===ev.id).sort((a,b)=>a.ts-b.ts);
+  const c=mk('div','card scroll-x');c.style.marginTop='14px';c.innerHTML='<h3 style="margin-bottom:8px">👥 Joined users ('+rows.length+')</h3>'+(rows.length?`<table><thead><tr><th>User</th><th>Phone</th><th>Pay</th><th>Address</th></tr></thead><tbody>${rows.map(r=>`<tr><td>${esc(r.username||r.name||r.email||'-')}</td><td>${esc(r.phone||'-')}</td><td>${r.pay?esc((r.payApp||'')+' '+r.pay):'-'}</td><td>${r.address?esc(r.address+' - '+(r.pincode||'')):'-'}</td></tr>`).join('')}</tbody></table>`:'<div class="empty">Nobody has joined yet.</div>');
+  if(rows.length){const b=mk('button','btn sec','⬇ Download CSV');b.style.marginTop='10px';b.onclick=()=>{const q=x=>'"'+String(x||'').replace(/"/g,'""')+'"',L=[['Username','Name','Email','Phone','Pay app','UPI / number','Address','Pincode'].join(',')].concat(rows.map(r=>[r.username,r.name,r.email,r.phone,r.payApp,r.pay,r.address,r.pincode].map(q).join(',')));
+    const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([L.join('\n')],{type:'text/csv'}));a.download=(ev.title||'event').replace(/\W+/g,'_')+'_joined.csv';a.click()};c.appendChild(b)}
+  return c};
+
+function adminEvents(){
+  const c=mk('div','card');c.appendChild(mk('h3','','🎁 Events control'));c.firstChild.style.marginBottom='4px';
+  c.appendChild(mk('p','muted','Show or hide an event, switch the home popup banner on or off, and open an event to set who can see it and to see who joined.'));
+  const list=[...Board.events.values()].sort((a,b)=>(b.ts||0)-(a.ts||0));
+  if(!list.length){c.appendChild(mk('p','note','No events yet. Create one from the Events tab.'));return c}
+  list.forEach(ev=>{const v=Ev.vis(ev),n=[...Board.joins.values()].filter(j=>j.eventId===ev.id).length;
+    const r=mk('div','frow'),w=mk('div');w.appendChild(mk('b','',ev.title));
+    w.appendChild(mk('p','note',[ev.prizeTitle?'🎁 '+ev.prizeTitle:'No prize',[v.guests&&'Logged-out',v.users&&'Logged-in',v.college&&'College'].filter(Boolean).join(' + ')||'Nobody',n+' joined'].join(' · ')));
+    const sw=(lab,on,fn)=>{const x=mk('label','note',lab+' ');x.style.cssText='display:inline-flex;gap:6px;align-items:center;margin-right:12px';const b=mk('button','sw'+(on?' on':''));b.onclick=()=>{b.disabled=true;fn().then(()=>b.disabled=false)};x.appendChild(b);return x};
+    const ctl=mk('div','');ctl.style.cssText='display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-top:6px';
+    ctl.append(sw('Visible',!ev.hidden,()=>evPatch(ev.id,{hidden:!ev.hidden})),sw('Home popup',!!ev.popup,()=>evPatch(ev.id,{popup:!ev.popup})));
+    const o=mk('button','ghost','Open / manage');o.onclick=()=>{show('events');Ev.cur=ev.id;Ev.mode='detail';Ev.detail()};ctl.appendChild(o);
+    w.appendChild(ctl);r.appendChild(w);c.appendChild(r)});
+  return c}
+
+/* ----- home popup banner ----- */
+const EvPop={t:null,t0:Date.now(),
+  try(){
+    if(view!=='type'||$('#evPop')||SITE.showEvents===false||(T&&T.started&&!T.ended))return;
+    const w=1600-(Date.now()-this.t0);if(w>0){clearTimeout(this.w);this.w=setTimeout(()=>this.try(),w);return}
+    const ev=Ev.visible().find(e=>e.popup&&!e.hidden&&Ev.status(e)!=='ended'&&!Ev.joined(e)&&!Ev.result(e)&&!ss('evpop:'+e.id));
+    if(ev)this.open(ev)},
+  close(ev){clearInterval(this.t);ss('evpop:'+ev.id,'1');const p=$('#evPop');if(p)p.remove()},
+  open(ev){
+    const p=mk('div','');p.id='evPop';
+    p.innerHTML=`<div class="epc" role="dialog" aria-label="Event"><button class="epx" aria-label="Close">✕</button><div class="epb">🎉 NEW EVENT</div><h2>${esc(ev.title)}</h2>${ev.prizeTitle?`<div class="epz">🏆 Prize: <b>${esc(ev.prizeTitle)}</b></div>`:''}<div class="epl" id="epL"></div><div class="epd" id="epD"></div><div class="epa"><button class="btn" id="epJ">Join now</button><button class="btn sec" id="epLt">Join later</button></div></div>`;
+    document.body.appendChild(p);
+    const tick=()=>{const n=Date.now();let tg=0,lb='';if(ev.startsAt&&n<ev.startsAt){tg=ev.startsAt;lb='Starts in'}else if(ev.endsAt&&n<ev.endsAt){tg=ev.endsAt;lb='Ends in'}else if(ev.endsAt){this.close(ev);return}
+      $('#epL').textContent=tg?lb:'Live now';
+      if(tg){let s=Math.max(0,Math.floor((tg-n)/1000));const d=Math.floor(s/86400);s%=86400;const h=Math.floor(s/3600),m=Math.floor(s%3600/60),x=s%60,z=v=>String(v).padStart(2,'0');$('#epD').textContent=(d?d+'d ':'')+z(h)+':'+z(m)+':'+z(x)}else $('#epD').textContent=''};
+    tick();this.t=setInterval(tick,1000);
+    p.querySelector('.epx').onclick=$('#epLt').onclick=()=>this.close(ev);
+    $('#epJ').onclick=()=>{this.close(ev);
+      if(!Board.uid){Ev.pendingJoin=ev.id;Auth.open();return}
+      Ev.openJoin(ev.id)}}};
+Ev.openJoin=function(id){const ev=Board.events.get(id);if(!ev)return;show('events');this.cur=id;this.mode='detail';this.detail();if(this.canJoin(ev)&&this.needsJoin(ev)&&!this.joined(ev)&&this.status(ev)!=='ended')this.joinModal(ev)};
+Board.changed=(p=>function(){p.call(this);EvPop.try();if(Ev.pendingJoin&&Board.uid){const id=Ev.pendingJoin;Ev.pendingJoin=null;setTimeout(()=>Ev.openJoin(id),400)}})(Board.changed);
+show=(p=>function(v){p(v);if(v==='type')setTimeout(()=>EvPop.try(),300)})(show);
+(()=>{const s=document.createElement('style');s.textContent=`#evPop{position:fixed;inset:0;z-index:55;background:rgba(10,15,30,.55);display:flex;align-items:center;justify-content:center;padding:16px}
+.epc{position:relative;max-width:440px;width:100%;border-radius:18px;padding:28px 22px 22px;text-align:center;color:#fff;background:linear-gradient(135deg,#4f46e5,#9333ea 60%,#ec4899);box-shadow:0 20px 50px rgba(0,0,0,.45)}
+.epc h2{font-size:24px;margin:8px 0}.epb{display:inline-block;background:rgba(255,255,255,.2);border-radius:99px;padding:3px 12px;font-size:12px;font-weight:800;letter-spacing:.06em}
+.epz{background:rgba(255,255,255,.18);border-radius:12px;padding:10px;margin:10px 0;font-size:17px}.epl{font-size:13px;opacity:.9;margin-top:10px}
+.epd{font-size:34px;font-weight:800;font-family:var(--mono);min-height:42px}.epa{display:flex;gap:10px;justify-content:center;margin-top:14px;flex-wrap:wrap}
+.epx{position:absolute;top:10px;right:12px;width:32px;height:32px;border-radius:50%;border:0;background:rgba(0,0,0,.28);color:#fff;font-size:16px;cursor:pointer}`;document.head.appendChild(s)})();
+
+/* ===== Events v3: live countdowns (list, detail, typing screen) + auto-unlock typing ===== */
+const cdZ=v=>String(v).padStart(2,'0');
+function cdFill(el){
+  const n=Date.now(),s=+el.dataset.s,e=+el.dataset.e;let st,tg=0;
+  if(!s)st='open';else if(n<s){st='up';tg=s}else if(e&&n<e){st='live';tg=e}else st='end';
+  if(el.dataset.st!==st){el.dataset.st=st;el.classList.toggle('live',st==='live');el.classList.toggle('end',st==='end');
+    el.innerHTML=st==='open'?'<div class="cdt">● Open anytime</div>':st==='end'?'<div class="cdt">✔ Completed</div>':'<div class="cdl"></div><div class="cdb"><div><b>00</b><span>Days</span></div><div><b>00</b><span>Hours</span></div><div><b>00</b><span>Min</span></div><div><b>00</b><span>Sec</span></div></div>'}
+  if(tg){const t=Math.max(0,Math.floor((tg-n)/1000)),p=[Math.floor(t/86400),Math.floor(t%86400/3600),Math.floor(t%3600/60),t%60],b=el.querySelectorAll('.cdb b');
+    el.querySelector('.cdl').textContent=st==='up'?'⏳ Starts in':'🔴 Live · ends in';p.forEach((v,i)=>{if(b[i])b[i].textContent=cdZ(v)})}
+}
+function cdHTML(ev,big){const d=document.createElement('div');d.className='evcd'+(big?' big':'');d.dataset.s=ev.startsAt||0;d.dataset.e=ev.endsAt||0;cdFill(d);return d.outerHTML}
+setInterval(()=>{let ch=false;document.querySelectorAll('.evcd').forEach(el=>{const p=el.dataset.st;cdFill(el);if(p&&p!==el.dataset.st)ch=true});
+  if(ch&&view==='events'&&Ev.mode!=='run')setTimeout(()=>Ev.render(),60)},1000);
+
+Ev.play=function(ev,demo){
+  if(!demo&&store.get('evstart:'+ev.id,0)){toast('Your attempt was already started on this device');return}
+  const sched=!demo&&ev.startsAt&&ev.endsAt;
+  if(sched&&Date.now()>=ev.endsAt){toast('This event has ended');return}
+  this.mode='run';
+  const secs=demo?120:ev.minutes*60,text=evText(ev,demo),root=$('#evRoot');let locked=!!(sched&&Date.now()<ev.startsAt);
+  const t0txt=locked?ev.minutes*60:(sched?Math.max(0,(ev.endsAt-Date.now())/1000):secs);
+  root.innerHTML=`<div class="lesson-top"><button class="ghost" id="evX">${demo?'Stop demo':'Quit'}</button><b>${esc(ev.title)}${demo?' (demo)':''}</b></div>${locked?'<div class="card" id="evPre" style="text-align:center;margin-bottom:12px">'+cdHTML(ev,true)+'<p class="note" style="margin-top:12px">🔒 Typing is locked. You can read the text below. When this timer reaches zero, typing starts automatically: just press the keys, no need to click anywhere.</p></div>':''}<div class="hud"><div><b id="evT">${mmss(t0txt)}</b><span>time left</span></div><div><b id="evW">0</b><span>WPM</span></div><div><b id="evA">100%</b><span>accuracy</span></div></div><div class="card"><div class="evbox" id="evBox"><div class="evin" id="evIn"></div></div><p class="note" id="evHint" style="margin-top:8px">${locked?'Locked until the event starts.':'Just start typing, no need to click the text. '+(sched?'':'The timer starts on your first key.')}</p></div><input class="capin" id="evCap" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" value=" ">`;
+  const inner=$('#evIn'),spans=[];
+  text.split(' ').forEach((w,i,arr)=>{const wr=mk('span','evw');(w+(i<arr.length-1?' ':'')).split('').forEach(ch=>{const sp=mk('span','c',ch);wr.appendChild(sp);spans.push(sp)});inner.appendChild(wr)});
+  const typed=[];let ok=0,tot=0,started=false,t0=0,timer=null,done=false;
+  const cap=$('#evCap'),fc=()=>{try{cap.focus({preventScroll:true})}catch(e){}};
+  const paint=k=>{const sp=spans[k];if(!sp)return;sp.className='c'+(k<typed.length?(typed[k]===text[k]?' ok':' bad'):'')+(k===typed.length?' cur':'')};
+  const scroll=()=>{const sp=spans[Math.min(typed.length,spans.length-1)],w=sp.parentNode;inner.style.transform='translateY('+(-Math.max(0,w.offsetTop-w.offsetHeight))+'px)'};
+  const stats=()=>{let c=0;for(let i=0;i<typed.length;i++)if(typed[i]===text[i])c++;const el=Math.max(1,Math.min(secs,(Date.now()-t0)/1000));return{c,wpm:Math.round(c/5/(el/60)*10)/10,acc:tot?Math.round(ok/tot*1000)/10:100}};
+  const live=()=>{if(!started)return;const st=stats();$('#evW').textContent=st.wpm;$('#evA').textContent=st.acc+'%'};
+  const stop=()=>{done=true;clearInterval(timer);document.removeEventListener('keydown',kd);document.removeEventListener('click',fc);cap.removeEventListener('input',inp);this.cleanup=null};
+  const unlock=()=>{locked=false;const pre=$('#evPre');if(pre){pre.className='card evgo';pre.innerHTML='🚀 GO! Typing is live. Start typing now!';setTimeout(()=>{if(pre.parentNode)pre.remove()},4000)}
+    const h=$('#evHint');if(h)h.textContent='Just start typing, no need to click the text.';fc()};
+  const tick=()=>{if(locked&&Date.now()>=ev.startsAt)unlock();if(locked)return;
+    const rem=sched?(ev.endsAt-Date.now())/1000:secs-(Date.now()-t0)/1000;$('#evT').textContent=mmss(Math.max(0,rem));live();if(rem<=0)finish()};
+  const typeCh=ch=>{if(done||locked)return;
+    if(!started){started=true;t0=Date.now();if(!timer)timer=setInterval(tick,250);const h=$('#evHint');if(h)h.hidden=true;if(!demo)store.set('evstart:'+ev.id,Date.now())}
+    if(typed.length>=text.length)return;const k=typed.length;tot++;typed.push(ch);if(ch===text[k])ok++;paint(k);paint(k+1);scroll();if(typed.length>=text.length)finish()};
+  const back=()=>{if(done||locked||!typed.length)return;typed.pop();const k=typed.length;paint(k);paint(k+1);scroll()};
+  const finish=()=>{if(done)return;const st=stats(),was=started;stop();
+    if(!was&&!demo){root.innerHTML='';const c=mk('div','card');c.innerHTML='<h2>Event ended</h2><p class="note" style="margin-top:8px">You did not type anything, so no result was saved.</p>';const b=mk('button','btn','Back to event');b.style.marginTop='12px';b.onclick=()=>{this.mode='detail';this.detail()};c.appendChild(b);root.appendChild(c);return}
+    this.result_(ev,demo,st)};
+  const kd=e=>{if(done||e.ctrlKey||e.metaKey||e.altKey||modalOpen())return;
+    const tg=e.target,tag=tg.tagName;if((tag==='INPUT'&&tg!==cap)||tag==='TEXTAREA'||tag==='SELECT')return;
+    if(e.key==='Backspace'||e.key.length===1){e.preventDefault();
+      if(locked){const pre=$('#evPre');if(pre){pre.classList.remove('shake');void pre.offsetWidth;pre.classList.add('shake')}return}
+      if(e.key==='Backspace')back();else typeCh(e.key)}};
+  const inp=e=>{if(locked){cap.value=' ';return}if(e.inputType==='deleteContentBackward')back();else if(e.data)[...e.data].forEach(typeCh);cap.value=' '};
+  document.addEventListener('keydown',kd);document.addEventListener('click',fc);cap.addEventListener('input',inp);
+  if(sched)timer=setInterval(tick,250);
+  this.cleanup=stop;paint(0);fc();
+  $('#evX').onclick=()=>{stop();this.mode='detail';this.detail()};
+};
+(()=>{const s=document.createElement('style');s.textContent=`.evcd{display:flex;flex-direction:column;align-items:center;gap:6px}
+.evcd .cdl{font-size:12px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.evcd .cdt{font-size:14px;font-weight:800;color:var(--muted);padding:8px 14px;border-radius:99px;background:var(--soft);border:1px solid var(--border)}
+.evcd.end .cdt{color:var(--ok)}
+.evcd .cdb{display:flex;gap:8px}
+.evcd .cdb>div{min-width:56px;padding:8px 6px;border-radius:12px;text-align:center;color:#fff;background:linear-gradient(135deg,#4f46e5,#9333ea);box-shadow:0 4px 12px rgba(79,70,229,.3)}
+.evcd.live .cdb>div{background:linear-gradient(135deg,#059669,#10b981);box-shadow:0 4px 12px rgba(5,150,105,.3)}
+.evcd .cdb b{display:block;font-size:22px;font-family:var(--mono);line-height:1.15}
+.evcd .cdb span{font-size:10px;opacity:.85;text-transform:uppercase;letter-spacing:.05em}
+.evcd.big{margin:6px 0}.evcd.big .cdl{font-size:15px}.evcd.big .cdt{font-size:20px;padding:12px 22px}
+.evcd.big .cdb{gap:12px}.evcd.big .cdb>div{min-width:92px;padding:18px 8px;border-radius:18px}.evcd.big .cdb b{font-size:48px}.evcd.big .cdb span{font-size:12px}
+@media(max-width:520px){.evcd.big .cdb{gap:7px}.evcd.big .cdb>div{min-width:64px;padding:12px 4px}.evcd.big .cdb b{font-size:32px}.evcd .cdb>div{min-width:48px}}
+.evgo{text-align:center;font-size:22px;font-weight:800;color:#fff!important;background:linear-gradient(135deg,#059669,#10b981)!important;margin-bottom:12px}
+@keyframes evshake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}.shake{animation:evshake .3s}`;document.head.appendChild(s)})();
 
 // ================= COLLEGE PAGES (public) + SEO =================
 const SEO0={title:document.title,desc:(document.querySelector('meta[name=description]')||{}).content||''};
@@ -3475,6 +3713,7 @@ let csQ='',csTab='students';
 function renderCollegePanel(){
   const l=$('#aList');l.innerHTML='';const C=Board.college,cid=C.collegeId;
   $('#aHead').textContent=C.collegeName+' - College panel';
+  const lo=mk('div','card');lo.style.cssText='display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap';lo.innerHTML='<span class="note">Signed in as <b>'+esc(Board.email||C.collegeName)+'</b></span>';const lb=mk('button','btn sec','Logout');lb.onclick=()=>$('#pLogout').onclick();lo.appendChild(lb);l.appendChild(lo);
   const pend=[...Board.reqs].filter(([id,r])=>r.collegeId===cid);
   const stu=[...Board.verified].filter(([id,v])=>v.collegeId===cid);
   const put=async(id,data,msg)=>{try{await Board.db.doc('verified/'+id).set(Object.assign({college:C.collegeName,collegeId:cid,by:'college',ts:Date.now()},data));toast(msg);return true}catch(e){toast('Failed: '+((e&&e.code)||'error'));return false}};
@@ -3691,19 +3930,19 @@ renderAdmin=(function(prev){return function(){
   const l=$('#aList'),ae=document.activeElement;
   if(l.contains(ae)&&/INPUT|TEXTAREA|SELECT/.test(ae.tagName))return;
   l.classList.remove('adm');prev();if(!Board.admin||isCollAdmin())return;
-  const S={dash:[],ver:[],site:[],seo:[],col:[],usr:[],txt:[],mail:[],les:[],sub:[],pay:[]};
+  const S={dash:[],ver:[],site:[],seo:[],col:[],usr:[],txt:[],mail:[],les:[],sub:[],pay:[],evt:[]};
   [...l.children].forEach(c=>{const h=(c.querySelector('h3')||{}).textContent||'';
     if(h.startsWith('📝'))S.txt.push(c);else if(h.startsWith('👤'))S.usr.push(c);else if(h.startsWith('🎨'))S.site.push(c);
     else if(h.startsWith('🏫')||h.includes('College logins'))S.col.push(c);
     else if(h.startsWith('🌐')){const b=c.querySelector('button');if(b&&/Page is/.test(b.textContent))b.remove();c.querySelector('h3').textContent='🗺️ Sitemap for Google';S.seo.push(c)}
     else S.ver.push(c)});
-  S.dash=[adminDash(),adminFeatures()];S.les=[adminLessons()];S.sub=adminSub();S.seo=[adminSEO()].concat(S.seo);S.mail=[adminMail()];S.pay=[adminPay()];
+  S.dash=[adminDash(),adminFeatures()];S.les=[adminLessons()];S.sub=adminSub();S.seo=[adminSEO()].concat(S.seo);S.mail=[adminMail()];S.pay=[adminPay()];S.evt=[adminEvents()];
   if(!S[AT])AT='dash';
-  const tabs=[['dash','📊 Dashboard'],['ver','🪪 Verification',Board.reqs.size],['site','🎨 Site & About'],['seo','🔎 SEO'],['col','🏫 Colleges'],['usr','👤 Users'],['mail','✉️ Email'],['les','📚 Lessons'],['sub','💳 Subscriptions'],['pay','💰 Payments'],['txt','📝 Typing texts']];
+  const tabs=[['dash','📊 Dashboard'],['ver','🪪 Verification',Board.reqs.size],['site','🎨 Site & About'],['seo','🔎 SEO'],['col','🏫 Colleges'],['usr','👤 Users'],['mail','✉️ Email'],['les','📚 Lessons'],['sub','💳 Subscriptions'],['evt','🎁 Events'],['pay','💰 Payments'],['txt','📝 Typing texts']];
   l.innerHTML='';const bar=mk('div','seg abar');
   tabs.forEach(([id,t,n])=>{const b=mk('button',id===AT?'on':'',t);if(n)b.appendChild(mk('span','bd',n));b.onclick=()=>{AT=id;store.set('adminTab',id);renderAdmin()};bar.appendChild(b)});
   l.appendChild(bar);S[AT].forEach(c=>l.appendChild(c));l.classList.add('adm');
-  $('#aHead').textContent=({dash:'Dashboard',ver:'Verification',site:'Site & About',seo:'SEO',col:'Colleges',usr:'Users',mail:'Email',les:'Lessons',sub:'Subscriptions',pay:'Payments',txt:'Typing texts'})[AT]||'Admin panel';const hp=$('#v-admin .head p.muted');if(hp)hp.textContent=({dash:'A quick look at your site, and the switches for what visitors can see.',ver:'Check student ID cards and approve or reject them.',site:'Site name, logo, icon and the About page.',seo:'How your site appears on Google.',col:'Colleges, college logins and public college pages.',usr:'Everyone who registered. Block or unblock users.',mail:'Welcome and congratulations emails: Gmail or company SMTP.',pay:'PhonePe and Razorpay keys, and which one is active.',les:'Choose what each lesson course card says, and show or hide a course.',txt:'Add or remove the texts used in typing tests.'})[AT]||'';
+  $('#aHead').textContent=({dash:'Dashboard',ver:'Verification',site:'Site & About',seo:'SEO',col:'Colleges',usr:'Users',mail:'Email',les:'Lessons',sub:'Subscriptions',pay:'Payments',evt:'Events',txt:'Typing texts'})[AT]||'Admin panel';const hp=$('#v-admin .head p.muted');if(hp)hp.textContent=({evt:'Show or hide events, home popup banner, prizes and joined users.',dash:'A quick look at your site, and the switches for what visitors can see.',ver:'Check student ID cards and approve or reject them.',site:'Site name, logo, icon and the About page.',seo:'How your site appears on Google.',col:'Colleges, college logins and public college pages.',usr:'Everyone who registered. Block or unblock users.',mail:'Welcome and congratulations emails: Gmail or company SMTP.',pay:'PhonePe and Razorpay keys, and which one is active.',les:'Choose what each lesson course card says, and show or hide a course.',txt:'Add or remove the texts used in typing tests.'})[AT]||'';
 }})(renderAdmin);
 applySEO();applyRoleUI();
 
