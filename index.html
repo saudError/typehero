@@ -8,13 +8,13 @@
 <link rel="preload" as="script" href="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js">
 <link rel="preload" as="script" href="https://www.gstatic.com/firebasejs/10.12.2/firebase-functions-compat.js">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>TypeAdda - typing tests, lessons, games and ranks</title>
-<meta name="description" content="TypeAdda is a free place to practise typing: timed typing tests, step-by-step lessons, typing games, and leaderboards for India.">
+<title>Chiku Type - typing tests, lessons, games and ranks</title>
+<meta name="description" content="Chiku Type is a free place to practise typing: timed typing tests, step-by-step lessons, typing games, and leaderboards for India.">
 <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8146751589764271"
      crossorigin="anonymous"></script>
 <meta name="robots" content="index,follow,max-image-preview:large">
 <meta property="og:type" content="website">
-<meta property="og:title" content="TypeAdda - typing tests, lessons, games and ranks">
+<meta property="og:title" content="Chiku Type - typing tests, lessons, games and ranks">
 <meta property="og:description" content="Free typing tests, lessons, games and leaderboards.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -551,11 +551,25 @@ body.nosmooth .caret,body.nosmooth .words{transition:none}
 .anr .al{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .anr .abr{height:8px;background:var(--border);border-radius:6px;overflow:hidden}
 .anr .abr i{display:block;height:100%;background:var(--accent);border-radius:6px}
+
+/* Chiku Type: hand overlay + leaderboard top card */
+#hands,#lFinger{display:none!important}
+#kb .k{--fc:initial}
+.kbwrap{position:relative;max-width:860px;margin:20px auto 0;transition:margin-bottom .2s}
+.kbwrap .kb{margin-top:0}
+#handSvg{position:absolute;left:0;top:0;width:100%;height:100%;overflow:visible;pointer-events:none;z-index:6}
+.meCard{display:flex;align-items:center;gap:18px;flex-wrap:wrap;background:var(--card);border:1px solid var(--border);border-radius:14px;padding:14px 20px;margin-bottom:16px}
+.meCard .mr{font-size:22px;font-weight:700;font-variant-numeric:tabular-nums;min-width:84px;color:var(--ink)}
+.meCard .mw{flex:1 1 170px;min-width:150px}.meCard .mw b{display:block;color:var(--ink)}.meCard .mw small{color:var(--muted)}
+.meCard .ms{display:flex;gap:22px;flex-wrap:wrap;margin-left:auto}
+.meCard .ms div{text-align:right}.meCard .ms span{display:block;font-size:12px;color:var(--muted)}.meCard .ms b{font-size:18px;font-variant-numeric:tabular-nums;color:var(--ink)}
+.meCard.empty-me{color:var(--muted)}
+@media(max-width:640px){.meCard .ms{margin-left:0;gap:14px}.meCard .ms div{text-align:left}}
 </style>
 </head>
 <body>
 <script>
-/* ===== TypeAdda server settings (edit before uploading) =====
+/* ===== Chiku Type server settings (edit before uploading) =====
    1. Create a free Firebase project -> add a Web app -> paste its config below.
    2. Enable Authentication > Email/Password and create Firestore Database.
    3. Paste firestore.rules into Firestore > Rules (put your admin email inside).
@@ -577,7 +591,7 @@ window.TYPEADDA_CONFIG={
 
 <div class="chrome"><div class="wrap">
   <header class="bar">
-    <a class="brand" id="brand" tabindex="0">TypeAdda</a>
+    <a class="brand" id="brand" tabindex="0">Chiku Type</a>
     <nav id="nav" aria-label="Main">
       <button data-v="type" class="on">Type</button>
       <button data-v="lessons">Lessons</button>
@@ -670,8 +684,8 @@ window.TYPEADDA_CONFIG={
       <div class="card"><div class="typer" id="lText"></div></div>
       <div class="lset" id="lset"><button data-t="sound">🔊 Sound</button><button data-t="lkb">⌨ Keyboard</button><button data-t="lfing">🖐 Finger guide</button></div>
       <div class="fingertip" id="lFinger"></div><div class="hands" id="hands"></div>
-      <div class="kb" id="kb"></div>
-      <div class="fl" id="kbLegend"></div>
+      <div class="kbwrap" id="kbwrap"><div class="kb" id="kb"></div><svg id="handSvg" xmlns="http://www.w3.org/2000/svg"></svg></div>
+      <div class="fl" id="kbLegend" hidden></div>
     </div>
     <div class="card" id="lDone" hidden></div>
   </div>
@@ -696,6 +710,7 @@ window.TYPEADDA_CONFIG={
     <div><h2>Leaderboard</h2><p class="muted" id="bSub"></p></div>
     <div class="grp" id="bKeys"></div>
   </div>
+  <div id="bMe"></div>
   <div class="tabs" id="bTabs"></div>
   <div class="card scroll-x" id="bTable"></div>
   <p class="note" style="margin-top:12px" id="bNote"></p>
@@ -758,12 +773,12 @@ window.TYPEADDA_CONFIG={
 <section id="v-events" class="view"><div id="evRoot"></div></section>
 <section id="v-about" class="view"><div id="aboutRoot"></div></section>
 <section id="v-colleges" class="view">
-  <div id="colList"><div class="head"><div><h2>Colleges on TypeAdda</h2><p class="muted">Courses, fees and details shared by the colleges themselves.</p></div><input class="field" id="colQ" placeholder="Search colleges" style="max-width:280px"></div><div class="colgrid" id="colGrid"></div></div>
+  <div id="colList"><div class="head"><div><h2>Colleges on Chiku Type</h2><p class="muted">Courses, fees and details shared by the colleges themselves.</p></div><input class="field" id="colQ" placeholder="Search colleges" style="max-width:280px"></div><div class="colgrid" id="colGrid"></div></div>
   <div id="colDetail" hidden></div>
 </section>
 </main>
 
-<footer id="foot" class="chrome"><a data-go="about">About</a><a data-go="colleges" id="fColleges">Colleges</a><a data-info="terms">Terms &amp; Conditions</a><a data-info="privacy">Privacy</a><a data-info="contact">Contact</a><button class="ghost" id="btnAdminLogin">🔐 Admin login</button><span>© TypeAdda</span></footer>
+<footer id="foot" class="chrome"><a data-go="about">About</a><a data-go="colleges" id="fColleges">Colleges</a><a data-info="terms">Terms &amp; Conditions</a><a data-info="privacy">Privacy</a><a data-info="contact">Contact</a><span>© Chiku Type</span></footer>
 <div class="modal" id="mInfo" hidden><div class="box"><h3 id="iTitle"></h3><div id="iBody"></div><div class="ractions"><button class="btn sec" data-close>Close</button></div></div></div>
 <div class="modal" id="mAuth" hidden><div class="box"><h3 id="aTitle">Login</h3>
 <button class="btn" id="aGoogle" style="width:100%;margin-bottom:10px;background:#fff;color:#333;border:1px solid var(--border)">🇬 Continue with Google</button><p class="note" style="text-align:center;margin:0 0 10px">or use email</p>
@@ -1123,8 +1138,9 @@ let AC=null;
 function beep(freq,dur,vol){
   if(!S.sound)return;
   try{AC=AC||new (window.AudioContext||window.webkitAudioContext)();
+    if(AC.state==='suspended')AC.resume();
     const o=AC.createOscillator(),g=AC.createGain();o.type='triangle';o.frequency.value=freq;
-    g.gain.setValueAtTime(vol,AC.currentTime);g.gain.exponentialRampToValueAtTime(.0001,AC.currentTime+dur);
+    g.gain.setValueAtTime(Math.min(1,vol*5),AC.currentTime);g.gain.exponentialRampToValueAtTime(.0001,AC.currentTime+dur);
     o.connect(g);g.connect(AC.destination);o.start();o.stop(AC.currentTime+dur)}catch(e){}
 }
 const clickSnd=()=>S.keySnd&&beep(520+rnd(90),.05,.05), errSnd=()=>S.errSnd&&beep(150,.11,.07);
@@ -1684,20 +1700,20 @@ const Rain={
   menu(t,m,b){overlay(`<h3>${t}</h3><p class="muted" style="max-width:44ch">${m}</p><button class="btn" id="gStart">${b}</button>`);$('#gStart').onclick=()=>this.start()},
   start(){
     this.stop();$('#ov').hidden=true;$$('#arena .rw').forEach(e=>e.remove());
-    Object.assign(this,{ws:[],buf:'',score:0,lives:5,level:1,done:0,spawn:0,last:performance.now(),run:true,combo:0});
+    Object.assign(this,{ws:[],buf:'',score:0,lives:5,level:1,done:0,spawn:0,last:performance.now(),run:true,combo:0});this.f=Diff.cur();this.lives=this.f<.8?7:this.f>1.6?4:5;
     this.hud();this.raf=requestAnimationFrame(t=>this.loop(t));
   },
   hud(){$('#hScore').textContent=this.score;$('#hLives').textContent=this.lives;$('#hLevel').textContent=this.level},
   spawnWord(){
-    const a=$('#arena');let t,n=0;do{t=pick(GWORDS)}while(this.ws.some(w=>w.t===t)&&++n<20);
+    const a=$('#arena');let t,n=0;const pl=this.f>1.4?GWORDS.filter(x=>x.length>=5):this.f<.8?GWORDS.filter(x=>x.length<=5):GWORDS;do{t=WS.l?WS.w():pick(pl)}while(this.ws.some(w=>w.t===t)&&++n<20);
     const e=mk('div','rw',t);a.appendChild(e);
     const x=8+Math.random()*Math.max(10,a.clientWidth-e.offsetWidth-16);
-    this.ws.push({t,e,x,y:-34,v:34+this.level*9+Math.random()*12});
+    this.ws.push({t,e,x,y:-34,v:(34+this.level*9+Math.random()*12)*this.f});
   },
   loop(ts){
     if(!this.run)return;
     const dt=Math.min(.05,(ts-this.last)/1000);this.last=ts;
-    this.spawn-=dt;if(this.spawn<=0){this.spawnWord();this.spawn=Math.max(.75,2.3-this.level*.14)}
+    this.spawn-=dt;if(this.spawn<=0){this.spawnWord();this.spawn=Math.max(.75/Math.max(1,this.f),(2.3-this.level*.14)/this.f)}
     const H=$('#arena').clientHeight;
     for(const w of this.ws.slice()){
       w.y+=w.v*dt;w.e.style.transform=`translate(${w.x}px,${w.y}px)`;
@@ -1743,13 +1759,12 @@ const Race={
     this.menu();
   },
   menu(msg){
-    overlay(`<h3>${msg||'Typing Race'}</h3><div class="seg" id="rLv">${['Easy','Medium','Hard'].map(l=>`<button class="${l===this.lvl?'on':''}">${l}</button>`).join('')}</div><button class="btn" id="gStart">Start race</button>`);
-    $('#rLv').onclick=e=>{const b=e.target.closest('button');if(!b)return;this.lvl=b.textContent;$$('#rLv button').forEach(x=>x.classList.toggle('on',x===b))};
+    overlay(`<h3>${msg||'Typing Race'}</h3><button class="btn" id="gStart">Start race</button>`);
     $('#gStart').onclick=()=>this.start();
   },
   start(){
     this.stop();
-    const base={Easy:22,Medium:38,Hard:58}[this.lvl];
+    const base=38*Diff.cur();
     this.text=Array.from({length:32},()=>pick(GWORDS)).join(' ');
     this.bots=BOTS.map(b=>({n:b[0],wpm:base*b[1]*(.85+Math.random()*.3)*(this.lvl==='Hard'?1.05:1),p:0,fin:0}));
     $('#lanes').innerHTML=[['You',0]].concat(BOTS.map(b=>[b[0],1])).map((l,i)=>`<div class="lane ${i?'':'me'}"><i id="ln${i}"></i><span>${l[0]}</span><em id="lm${i}"></em></div>`).join('');
@@ -1787,9 +1802,9 @@ const Bomb={
     this.menu('Bomb Defuse','Three lives. The fuse gets shorter each time you defuse a word.','Start game');
   },
   menu(t,m,b){overlay(`<h3>${t}</h3><p class="muted">${m}</p><button class="btn" id="gStart">${b}</button>`);$('#gStart').onclick=()=>this.start()},
-  start(){this.stop();$('#ov').hidden=true;Object.assign(this,{score:0,lives:3,total:5.5,run:true});this.next()},
+  start(){this.stop();$('#ov').hidden=true;this.f=Diff.cur();Object.assign(this,{score:0,lives:3,total:Math.min(9,Math.max(2.2,5.5/this.f)),run:true});this.next()},
   next(){
-    this.word=pick(GWORDS.filter(w=>w.length>=4));this.n=0;this.left=this.total;this.t0=performance.now();
+    this.word=WS.l?WS.w():pick(GWORDS.filter(w=>this.f>1.4?w.length>=6:this.f<.8?w.length>=3&&w.length<=5:w.length>=4));this.n=0;this.left=this.total;this.t0=performance.now();
     this.paint();clearInterval(this.tm);
     this.tm=setInterval(()=>{
       const el=(performance.now()-this.t0)/1000;this.left=this.total-el;$('#fz').style.width=Math.max(0,this.left/this.total*100)+'%';
@@ -1806,14 +1821,155 @@ const Bomb={
     if(!this.run||e.ctrlKey||e.metaKey||e.altKey||e.key.length!==1)return;e.preventDefault();
     if(e.key.toLowerCase()===this.word[this.n]){
       clickSnd();this.n++;
-      if(this.n>=this.word.length){this.score++;this.total=Math.max(1.8,this.total-.16);this.next()}else this.paint();
+      if(this.n>=this.word.length){this.score++;this.total=Math.max(Math.max(1.2,1.8/Math.sqrt(this.f)),this.total-.16*this.f);this.next()}else this.paint();
     }else{errSnd();const a=$('#arena');a.classList.add('shake');setTimeout(()=>a.classList.remove('shake'),200)}
   },
   stop(){this.run=false;clearInterval(this.tm)}
 };
 
+/* --- Star Typer: ZType-style space shooter (canvas) --- */
+const Star={
+  title:'Star Typer',help:'Enemy ships carry words. Type a word to lock on and blast it. Backspace releases the lock.',
+  COL:['#4de1ff','#ff5d9e','#ffb347','#b36bff'],SZ:[16,19,23,42],
+  init(){
+    this.stop();
+    $('#gHud').innerHTML=`<div><b id="hScore">0</b><span>score</span></div><div><b id="hHull">100</b><span>hull %</span></div><div><b id="hWave">1</b><span>wave</span></div><div><b id="hWpm">0</b><span>wpm</span></div><div><b id="hBest">${GH.star||0}</b><span>best</span></div>`;
+    $('#gBody').innerHTML='<div class="arena" id="arena" style="height:540px;background:#05071a"><canvas id="starCv" style="position:absolute;inset:0;width:100%;height:100%"></canvas><div class="overlay" id="ov" style="background:rgba(5,7,26,.84)"></div></div>';
+    Object.assign(this,{ens:[],bul:[],par:[],rg:[],run:false,tm:0,ang:0,fl:0,sk:0,bn:null,tg:null,score:0,hull:100,wave:0});
+    this.fit();this._rs=()=>this.fit();window.addEventListener('resize',this._rs);
+    this.last=performance.now();this.raf=requestAnimationFrame(t=>this.loop(t));
+    this.menu('Star Typer','Ships descend carrying words. Type a word to lock on and shoot it down. Let one reach your line and your hull takes damage. Every 5th wave brings a boss.','Launch');
+  },
+  fit(){
+    const a=$('#arena'),cv=$('#starCv');if(!a||!cv)return;
+    const d=Math.min(2,window.devicePixelRatio||1);this.W=a.clientWidth;this.H=a.clientHeight;
+    cv.width=this.W*d;cv.height=this.H*d;this.cx=cv.getContext('2d');this.cx.setTransform(d,0,0,d,0,0);
+    this.stars=Array.from({length:110},()=>({x:Math.random()*this.W,y:Math.random()*this.H,z:.2+Math.random()*.8}));
+  },
+  menu(t,m,b){overlay(`<h3 style="color:#fff">${t}</h3><p style="color:#b8c0e0;max-width:46ch;margin:0">${m}</p><button class="btn" id="gStart">${b}</button>`);$('#gStart').onclick=()=>this.start()},
+  start(){
+    $('#ov').hidden=true;
+    Object.assign(this,{ens:[],bul:[],par:[],rg:[],run:true,score:0,hull:100,wave:0,combo:0,typed:0,miss:0,play:0,tg:null,left:0,sp:0,wt:0,hc:0,f:Diff.cur()});
+    this.nextWave();this.hud();
+  },
+  nextWave(){
+    this.wave++;if(this.wave>1)this.score+=(this.wave-1)*50;
+    this.bw=this.wave%5===0;this.left=5+this.wave*2+(this.bw?1:0);this.sp=1;this.wt=1.8;
+    this.bn={t:2,s:this.bw?'BOSS WAVE '+this.wave:'WAVE '+this.wave};this.hud();
+  },
+  spawn(boss){
+    const used=new Set(this.ens.map(x=>x.w[0])),w0=this.wave>>1,d=Math.round((this.f-1)*1.5),mn=Math.max(3,Math.min(7,3+w0+d)),mx=Math.max(mn+1,Math.min(10,5+w0+d));
+    const pool=GWORDS.filter(x=>x.length>=mn&&x.length<=mx);let w,i=0;
+    do{w=(WS.l?(boss?WS.w()+' '+WS.w():WS.w()):boss?pick(GWORDS.filter(x=>x.length>=5))+' '+pick(GWORDS.filter(x=>x.length>=4)):pick(pool)).toLowerCase()}while(used.has(w[0])&&++i<40);
+    const k=boss?3:w.length<=4?0:w.length<=6?1:2;
+    this.ens.push({w,n:0,k,s:this.SZ[k],c:this.COL[k],boss,bx:70+rnd(Math.max(10,this.W-140)),x:0,y:-50,t:Math.random()*6,amp:10+rnd(26),fq:.7+Math.random(),vy:(boss?.55:1)*(22+this.wave*4+rnd(10))*this.f});
+  },
+  boom(x,y,c,n,sp){for(let i=0;i<n;i++){const a=Math.random()*6.283,v=sp*(.25+Math.random());this.par.push({x,y,vx:Math.cos(a)*v,vy:Math.sin(a)*v,l:.5+Math.random()*.6,ml:1.1,c:Math.random()<.3?'#fff':c,r:1+Math.random()*2.5})}},
+  kill(e){
+    e.gone=true;this.ens=this.ens.filter(x=>x!==e);
+    this.boom(e.x,e.y,e.c,e.boss?90:30,e.boss?330:210);this.rg.push({x:e.x,y:e.y,r:e.s*.5,sp:e.boss?420:260,l:.45,c:e.c});
+    this.sk=Math.max(this.sk,e.boss?16:6);this.score+=e.w.length*5;S.keySnd&&beep(e.boss?70:120,.2,.08);this.hud();
+  },
+  hud(){
+    const w=this.play>1?Math.round(this.typed/5/(this.play/60)):0,s=(i,v)=>{const e=$('#'+i);if(e)e.textContent=v};
+    s('hScore',Math.round(this.score));s('hHull',Math.max(0,this.hull));s('hWave',Math.max(1,this.wave));s('hWpm',w);
+  },
+  over(){
+    this.run=false;this.tg=null;const nb=saveGH('star',Math.round(this.score));$('#hBest').textContent=GH.star||0;
+    const acc=this.typed+this.miss?Math.round(this.typed/(this.typed+this.miss)*100):100,w=this.play>1?Math.round(this.typed/5/(this.play/60)):0;
+    this.menu('Hull destroyed',`Score ${Math.round(this.score)} · Wave ${this.wave} · ${w} WPM · ${acc}% accuracy${nb?' · New best!':''}`,'Play again');
+  },
+  loop(t){
+    const dt=Math.min(.05,(t-this.last)/1000||0);this.last=t;
+    try{this.upd(dt);this.draw()}catch(e){console.warn('star',e)}
+    this.raf=requestAnimationFrame(x=>this.loop(x));
+  },
+  upd(dt){
+    const W=this.W,H=this.H;this.tm+=dt;
+    this.stars.forEach(s=>{s.y+=s.z*(this.run?70:25)*dt;if(s.y>H){s.y=0;s.x=Math.random()*W}});
+    this.fl=Math.max(0,this.fl-dt*2);this.sk=Math.max(0,this.sk-dt*30);
+    this.par=this.par.filter(p=>{p.l-=dt;p.x+=p.vx*dt;p.y+=p.vy*dt;p.vx*=.98;p.vy*=.98;return p.l>0});
+    this.rg=this.rg.filter(r=>{r.l-=dt;r.r+=r.sp*dt;return r.l>0});
+    if(this.bn&&(this.bn.t-=dt)<=0)this.bn=null;
+    if(!this.run)return;
+    this.play+=dt;this.hc+=dt;if(this.hc>.5){this.hc=0;this.hud()}
+    const sx=W/2,sy=H-46;let ta=0;if(this.tg)ta=Math.atan2(this.tg.x-sx,sy-this.tg.y);this.ang+=(ta-this.ang)*Math.min(1,dt*12);
+    if(this.left>0&&(this.sp-=dt)<=0&&this.ens.length<Math.min(9,3+this.wave+Math.round(this.f-1))){
+      this.spawn(this.bw&&this.left===1);this.left--;this.sp=Math.max(.45,(2.3-this.wave*.13)/this.f)+Math.random()*.7/this.f}
+    for(const e of this.ens.slice()){
+      e.t+=dt;e.y+=e.vy*dt;e.x=Math.max(30,Math.min(W-30,e.bx+Math.sin(e.t*e.fq)*e.amp));
+      if(e.y>H-92&&!e.fin){
+        e.gone=true;this.ens=this.ens.filter(x=>x!==e);if(this.tg===e)this.tg=null;
+        this.hull-=e.boss?40:20;this.combo=0;this.fl=1;this.sk=16;this.boom(e.x,e.y,'#ff4d6a',34,220);errSnd();this.hud();
+        if(this.hull<=0)return this.over()}
+    }
+    this.bul=this.bul.filter(b=>{
+      if(b.e.gone)return false;b.px=b.x;b.py=b.y;
+      const dx=b.e.x-b.x,dy=b.e.y-b.y,d=Math.hypot(dx,dy),st=1200*dt;
+      if(d<=st+8){this.boom(b.e.x,b.e.y,b.e.c,5,90);if(b.last)this.kill(b.e);return false}
+      b.x+=dx/d*st;b.y+=dy/d*st;return true});
+    if(this.left===0&&!this.ens.length&&!this.bul.length){this.wt-=dt;if(this.wt<=0)this.nextWave()}
+  },
+  key(e){
+    if(!this.run)return;
+    if(e.key==='Backspace'||e.key==='Escape'){e.preventDefault();if(this.tg){this.tg.n=0;this.tg=null;this.combo=0}return}
+    if(e.ctrlKey||e.metaKey||e.altKey||e.key.length!==1)return;e.preventDefault();
+    const c=e.key.toLowerCase();
+    if(!this.tg)this.tg=this.ens.filter(x=>!x.fin&&x.n===0&&x.w[0]===c).sort((a,b)=>b.y-a.y)[0]||null;
+    const t=this.tg;
+    if(t&&t.w[t.n]===c){
+      t.n++;this.typed++;this.combo++;this.score+=10*(1+Math.min(this.combo,30)*.1);clickSnd();
+      const last=t.n>=t.w.length,sx=this.W/2+Math.sin(this.ang)*26,sy=this.H-46-Math.cos(this.ang)*26;
+      this.bul.push({x:sx,y:sy,px:sx,py:sy,e:t,last});this.boom(sx,sy,'#4de1ff',3,70);
+      if(last){t.fin=true;this.tg=null}this.hud();
+    }else{this.miss++;this.combo=0;this.sk=Math.max(this.sk,4);errSnd()}
+  },
+  rr(c,x,y,w,h,r){c.beginPath();c.moveTo(x+r,y);c.arcTo(x+w,y,x+w,y+h,r);c.arcTo(x+w,y+h,x,y+h,r);c.arcTo(x,y+h,x,y,r);c.arcTo(x,y,x+w,y,r);c.closePath()},
+  ship(c,e){
+    const s=e.s,col=e.c;c.save();c.translate(e.x,e.y);
+    c.shadowColor=col;c.shadowBlur=16;c.fillStyle='#10163a';c.strokeStyle=col;c.lineWidth=2;c.beginPath();
+    if(e.k===0){c.moveTo(0,s);c.lineTo(s*.8,-s*.7);c.lineTo(0,-s*.3);c.lineTo(-s*.8,-s*.7)}
+    else if(e.k===1){c.moveTo(0,s);c.lineTo(s*.5,s*.1);c.lineTo(s*1.2,-s*.6);c.lineTo(s*.5,-s*.7);c.lineTo(0,-s*.4);c.lineTo(-s*.5,-s*.7);c.lineTo(-s*1.2,-s*.6);c.lineTo(-s*.5,s*.1)}
+    else if(e.k===2){for(let i=0;i<6;i++){const a=i*Math.PI/3+Math.PI/6;c.lineTo(Math.cos(a)*s,Math.sin(a)*s)}}
+    else c.ellipse(0,0,s,s*.45,0,0,7);
+    c.closePath();c.fill();c.stroke();c.shadowBlur=0;
+    c.fillStyle=col;c.globalAlpha=.85;c.beginPath();c.arc(0,0,s*(e.k===3?.26:.2),0,7);c.fill();c.globalAlpha=1;
+    if(e.k===3){c.beginPath();c.arc(0,-s*.12,s*.4,Math.PI,0);c.stroke();for(let i=-2;i<=2;i++){c.fillStyle=(Math.floor(this.tm*6)+i)%2?'#fff':col;c.beginPath();c.arc(i*s*.32,s*.18,2.5,0,7);c.fill()}}
+    const f=(Math.sin(this.tm*30+e.bx)+1)/2;c.fillStyle='rgba(255,170,60,.85)';c.beginPath();c.moveTo(-s*.22,-s*.6);c.lineTo(0,-s*(.9+f*.55));c.lineTo(s*.22,-s*.6);c.fill();
+    c.restore();
+    if(e===this.tg){c.save();c.strokeStyle='#ffd84d';c.lineWidth=2;c.setLineDash([6,6]);c.lineDashOffset=-this.tm*40;c.beginPath();c.arc(e.x,e.y,s+12,0,7);c.stroke();c.restore()}
+    c.font=(e.k===3?'700 20px ':'600 17px ')+'ui-monospace,Menlo,Consolas,monospace';c.textBaseline='middle';c.textAlign='left';
+    const w1=c.measureText(e.w).width,wt=c.measureText(e.w.slice(0,e.n)).width,x0=Math.max(14,Math.min(this.W-w1-14,e.x-w1/2)),y0=e.y+s+8;
+    this.rr(c,x0-8,y0,w1+16,26,8);c.fillStyle='rgba(5,8,28,.85)';c.fill();c.strokeStyle=e===this.tg?'#ffd84d':'rgba(255,255,255,.25)';c.lineWidth=e===this.tg?2:1;c.stroke();
+    c.fillStyle='#4dff9f';c.fillText(e.w.slice(0,e.n),x0,y0+14);c.fillStyle='#fff';c.fillText(e.w.slice(e.n),x0+wt,y0+14);
+  },
+  draw(){
+    const c=this.cx,W=this.W,H=this.H;if(!c)return;
+    const g=c.createLinearGradient(0,0,0,H);g.addColorStop(0,'#04061a');g.addColorStop(1,'#10113a');c.fillStyle=g;c.fillRect(0,0,W,H);
+    let n=c.createRadialGradient(W*.25,H*.3,0,W*.25,H*.3,W*.4);n.addColorStop(0,'rgba(120,70,255,.16)');n.addColorStop(1,'rgba(120,70,255,0)');c.fillStyle=n;c.fillRect(0,0,W,H);
+    n=c.createRadialGradient(W*.8,H*.65,0,W*.8,H*.65,W*.35);n.addColorStop(0,'rgba(40,200,255,.12)');n.addColorStop(1,'rgba(40,200,255,0)');c.fillStyle=n;c.fillRect(0,0,W,H);
+    this.stars.forEach(s=>{c.globalAlpha=.3+s.z*.7;c.fillStyle='#fff';c.fillRect(s.x,s.y,s.z*2,s.z*2+(this.run?s.z*3:0))});c.globalAlpha=1;
+    c.save();if(this.sk>0)c.translate((Math.random()-.5)*this.sk,(Math.random()-.5)*this.sk);
+    c.strokeStyle='rgba(255,77,106,.35)';c.setLineDash([10,8]);c.lineWidth=1;c.beginPath();c.moveTo(0,H-92);c.lineTo(W,H-92);c.stroke();c.setLineDash([]);
+    this.ens.forEach(e=>{if(e.x||e.y>-49)this.ship(c,e)});
+    this.bul.forEach(b=>{c.strokeStyle='rgba(77,225,255,.8)';c.lineWidth=3;c.shadowColor='#4de1ff';c.shadowBlur=12;c.beginPath();c.moveTo(b.px,b.py);c.lineTo(b.x,b.y);c.stroke();c.shadowBlur=0;c.fillStyle='#fff';c.beginPath();c.arc(b.x,b.y,3,0,7);c.fill()});
+    this.rg.forEach(r=>{c.globalAlpha=Math.max(0,r.l/.45);c.strokeStyle=r.c;c.lineWidth=3;c.beginPath();c.arc(r.x,r.y,r.r,0,7);c.stroke()});c.globalAlpha=1;
+    this.par.forEach(p=>{c.globalAlpha=Math.max(0,p.l/p.ml);c.fillStyle=p.c;c.beginPath();c.arc(p.x,p.y,p.r,0,7);c.fill()});c.globalAlpha=1;
+    c.save();c.translate(W/2,H-46);c.rotate(this.ang);c.shadowColor='#4de1ff';c.shadowBlur=18;c.fillStyle='#0f1e44';c.strokeStyle='#4de1ff';c.lineWidth=2;
+    c.beginPath();c.moveTo(0,-26);c.lineTo(10,-4);c.lineTo(26,16);c.lineTo(10,10);c.lineTo(0,18);c.lineTo(-10,10);c.lineTo(-26,16);c.lineTo(-10,-4);c.closePath();c.fill();c.stroke();c.shadowBlur=0;
+    c.fillStyle='#4de1ff';c.beginPath();c.ellipse(0,-6,3.5,7,0,0,7);c.fill();
+    const f=(Math.sin(this.tm*40)+1)/2;c.fillStyle='rgba(255,160,50,.9)';c.beginPath();c.moveTo(-6,16);c.lineTo(0,24+f*12);c.lineTo(6,16);c.fill();c.restore();
+    c.restore();
+    if(this.fl>0){c.fillStyle='rgba(255,60,80,'+(this.fl*.3)+')';c.fillRect(0,0,W,H)}
+    if(this.run&&this.combo>=5){c.font='700 15px ui-monospace,Menlo,Consolas,monospace';c.textAlign='right';c.textBaseline='top';c.fillStyle='#ffd84d';c.fillText('x'+(1+Math.min(this.combo,30)*.1).toFixed(1)+' combo',W-14,12)}
+    if(this.bn){c.globalAlpha=Math.min(1,this.bn.t);c.font='800 38px system-ui,sans-serif';c.textAlign='center';c.textBaseline='middle';c.fillStyle='#fff';c.shadowColor='#4de1ff';c.shadowBlur=20;c.fillText(this.bn.s,W/2,H*.34);c.shadowBlur=0;c.globalAlpha=1}
+  },
+  stop(){this.run=false;if(this.raf)cancelAnimationFrame(this.raf);this.raf=0;if(this._rs)window.removeEventListener('resize',this._rs);this._rs=null}
+};
+
 /* --- games menu --- */
 const GAMEDEFS=[
+  {id:'star',g:Star,d:'Blast enemy ships by typing the words they carry. Waves, bosses and combos.',k:'star'},
   {id:'rain',g:Rain,d:'Words fall from the sky. Type them before they hit the floor.',k:'rain'},
   {id:'race',g:Race,d:'Race three bots on the same passage. You move only when you type correctly.',k:'race'},
   {id:'bomb',g:Bomb,d:'A word, a burning fuse, and three lives. How many can you defuse?',k:'bomb'}
@@ -1838,6 +1994,38 @@ const Games={cur:null,
   stop(){if(this.cur)this.cur.stop()}
 };
 $('#gBack').onclick=()=>Games.menu();
+/* shared word list for friend rooms: every player gets the same words in the same order */
+const WS={l:null,i:0,w(){return this.l[this.i++%this.l.length]}};
+/* --- Game difficulty: manual level or Auto from your profile (all local, no database) --- */
+const Diff={
+  LV:{easy:.6,medium:1,hard:1.7},
+  mode(id){const m=store.get('gdiff',{})[id];return ['auto','easy','medium','hard'].includes(m)?m:'auto'},
+  set(id,m){const o=store.get('gdiff',{});o[id]=m;store.set('gdiff',o)},
+  skill(){ // effective WPM from every test in your profile (15s, 30s, 60s, words...), accuracy-adjusted, best half of the last 30
+    const v=(H||[]).filter(x=>!x.sus&&x.wpm>0&&x.acc>=70).slice(-30).map(x=>x.wpm*Math.min(1,Math.max(.7,x.acc/100))).sort((a,b)=>b-a);
+    if(!v.length)return null;const t=v.slice(0,Math.ceil(v.length/2));return Math.round(t.reduce((a,b)=>a+b,0)/t.length)},
+  f(id){const m=this.mode(id);if(m!=='auto')return this.LV[m];const s=this.skill();return s==null?1:Math.min(3,Math.max(.45,s/45))},
+  label(f){return f<.75?'Easy':f<1.35?'Medium':'Hard'},
+  cur(){if(Games.cur===Room&&Room.f)return Room.f;const d=GAMEDEFS.find(x=>x.g===Games.cur);return d?this.f(d.id):1},
+  info(id){
+    const m=this.mode(id);
+    if(m!=='auto')return {easy:'Easy: slower pace, shorter words.',medium:'Medium: balanced pace.',hard:'Hard: fast pace, long words.'}[m];
+    const s=this.skill();
+    return s==null?'Auto: no typing tests in your profile yet, so Medium is used. Take a test on the Type page.':`Auto: ${this.label(this.f(id))} for you, based on your ~${s} WPM across all your tests.`},
+  html(id){
+    const m=this.mode(id),b=['auto','easy','medium','hard'].map(k=>`<button data-m="${k}" class="${k===m?'on':''}">${k[0].toUpperCase()+k.slice(1)}</button>`).join('');
+    return `<div class="seg" id="dLv">${b}</div><small id="dInfo" style="max-width:46ch;color:${Games.cur===Star?'#b8c0e0':'var(--muted)'}">${this.info(id)}</small>`},
+  bind(ov){
+    ov.querySelector('#dLv').onclick=e=>{
+      const b=e.target.closest('button');if(!b)return;const d=GAMEDEFS.find(x=>x.g===Games.cur);if(!d)return;
+      this.set(d.id,b.dataset.m);$$('#dLv button').forEach(x=>x.classList.toggle('on',x===b));$('#dInfo').textContent=this.info(d.id)}}
+};
+// every game's start screen gets the level picker (multiplayer rooms excluded)
+(()=>{const o=overlay;overlay=function(html){
+  if(html.indexOf('id="gStart"')>-1&&Games.cur!==Room){const d=GAMEDEFS.find(x=>x.g===Games.cur);
+    if(d)html=html.replace('<button class="btn" id="gStart"',Diff.html(d.id)+'<button class="btn" id="gStart"')}
+  const ov=o(html);if(ov.querySelector('#dLv'))Diff.bind(ov);return ov}})();
+
 /* ---------- modals ---------- */
 const openModal=id=>{$('#'+id).hidden=false};
 const closeModals=()=>$$('.modal').forEach(m=>m.hidden=true);
@@ -1845,10 +2033,11 @@ const modalOpen=()=>$$('.modal').some(m=>!m.hidden);
 $$('.modal').forEach(m=>m.addEventListener('click',e=>{if(e.target===m||e.target.hasAttribute('data-close')){m.hidden=true;if(view==='type')newTest(true)}}));
 
 /* ---------- leaderboard + shared database ---------- */
+var LB_TOP=150;
 const LBKEYS=['t15','t60','t600'];
 const KEYLBL={t600:'10 min',t15:'15s',t30:'30s',t60:'60s',t120:'120s',w10:'10 words',w25:'25 words',w50:'50 words',w100:'100 words'};
 const SCOPES=[['global','Global'],['country','Country'],['state','State'],['district','District'],['college','College']];
-let BS=Object.assign({key:'t60',scope:'global'},store.get('board',{}));
+let BS=Object.assign({key:'t15',scope:'global'},store.get('board',{}));BS.key='t15';BS.scope='global';
 const Board={
   db:null,uid:null,admin:false,canWrite:false,scores:new Map(),verified:new Map(),reqs:new Map(),q:Promise.resolve(),err:'',
   async init(){
@@ -1859,7 +2048,6 @@ const Board={
       this.db=db;
       if(user){this.uid=await user.id();this.admin=await user.canEdit();const w=await user.can('data.write');this.canWrite=this.uid!=null&&w!==false}
       const bad=e=>{this.err=(e&&e.code)||'error';this.changed()};
-      db.collection('scores').limit(1000).onSnapshot(s=>{this.scores=new Map(s.docs.map(d=>[d.id,d.data()]));this.changed()},bad);
       db.collection('verified').limit(1000).onSnapshot(s=>{this.verified=new Map(s.docs.map(d=>[d.id,d.data()]));this.changed()},bad);
       if(this.admin){
         $('#nav [data-v=admin]').hidden=false;
@@ -1924,8 +2112,8 @@ function renderBoard(){
   else if(BS.scope==='college'&&!myVerified())why=P.verifySent?'Your college ID is waiting for admin review. The college leaderboard opens once it is approved.':'Upload your college ID in Profile. Only verified students appear on college ranks.';
   if(why||!rows.length){t.innerHTML=`<div class="empty">${esc(why||'No scores here yet. Finish a '+KEYLBL[key]+' test to be the first.')}</div>`}
   else{
-    const top=rows.slice(0,100),mi=rows.findIndex(r=>r.id===meId);
-    const show=top.map((r,i)=>[r,i]);if(mi>=100)show.push([rows[mi],mi]);
+    const top=rows.slice(0,LB_TOP);
+    const show=top.map((r,i)=>[r,i]);
     t.innerHTML=`<table><thead><tr><th class="n">#</th><th>Name</th><th>Location</th><th>College</th><th class="n">WPM</th><th class="n">Accuracy</th></tr></thead><tbody></tbody></table>`;
     const tb=$('tbody',t);
     show.forEach(([r,i])=>{
@@ -2102,8 +2290,8 @@ function flashKey(ch,ok){
 buildKB($('#tkb'));
 function applyLesson(){
   const lk=S.lkb,lf=S.lfing;
-  $('#kb').hidden=!lk;$('#hands').hidden=!lf;$('#lFinger').hidden=!lf;$('#kbLegend').hidden=!(lk&&lf);
-  $('#kb').classList.toggle('fing',lf);
+  $('#kb').hidden=!lk;$('#hands').hidden=!lf;$('#lFinger').hidden=!lf;
+  $('#kb').classList.remove('fing');$('#kbLegend').hidden=true;try{Hand.refresh()}catch(e){}
   $$('#lset button').forEach(b=>b.classList.toggle('on',b.dataset.t==='sound'?!!S.sound:!!S[b.dataset.t]));
 }
 $('#lset').onclick=e=>{const b=e.target.closest('button');if(!b)return;const t=b.dataset.t==='sound'?'sound':b.dataset.t;S[t]=!S[t];saveS();applyLesson()};
@@ -2130,9 +2318,9 @@ try{const _sg=saveGH;saveGH=function(k,v){const r=_sg(k,v);if(S.sound)jingle();r
 (()=>{const top=$('#gameRun .lesson-top');if(!top)return;const b=mk('button','ghost','🔊 Sound');b.id='gSnd';
   const up=()=>{b.style.opacity=S.sound?1:.5};b.onclick=()=>{S.sound=!S.sound;saveS();up();if(S.sound)jingle()};up();top.appendChild(b)})();
 
-/* ---------- Race with Friends (room code) ---------- */
+/* ---------- Play with Friends (room code; first letter of the code = game) ---------- */
 const Room={
-  title:'Race with Friends',help:'Create a room, share the code, everyone starts together.',
+  title:'Play with Friends',help:'Create a room, pick a game, share the code. Everyone plays the same game together.',
   st:{},code:'',me:'',host:false,run:false,bc:null,un:null,last:0,lastStart:0,
   merge(t,p){for(const k in p){const v=p[k];if(v&&typeof v==='object'&&!Array.isArray(v)){if(!t[k]||typeof t[k]!=='object')t[k]={};this.merge(t[k],v)}else t[k]=v}},
   init(){
@@ -2143,10 +2331,10 @@ const Room={
   },
   lobbyUI(){
     overlay(`<div class="big">👥</div><input class="field" id="rmName" maxlength="16" placeholder="👤 Your name" value="${esc(P.name||'')}"><button class="btn" id="rmNew">➕ Create room</button><div class="or">or</div><div class="jrow"><input class="field" id="rmCode" maxlength="4" placeholder="CODE" style="text-transform:uppercase"><button class="btn sec" id="rmJoin">🔑 Join</button></div>`);
-    $('#rmNew').onclick=()=>this.create();
+    $('#rmNew').onclick=()=>{if(typeof Board!=='undefined'&&Board.cloud&&!Board.uid){Auth.open();toast('Login to play with friends');return}this.nameV=this.nm();this.chooseUI()};
     $('#rmJoin').onclick=()=>{const c=$('#rmCode').value.trim().toUpperCase();if(c.length===4)this.join(c);else toast('Enter the 4 letter code')};
   },
-  nm(){const e=$('#rmName');return ((e&&e.value.trim())||P.name||'Player').slice(0,16)},
+  nm(){const e=$('#rmName');return ((e&&e.value.trim())||this.nameV||P.name||'Player').slice(0,16)},
   connect(code){
     this.code=code;this.me='p'+Math.random().toString(36).slice(2,7);
     if(typeof Board!=='undefined'&&Board.db){
@@ -2159,33 +2347,90 @@ const Room={
       this.send=p=>{this.merge(this.st,p);bc.postMessage({p});this.render()};
     }
   },
-  create(){
-    const n=this.nm();this.host=true;
-    this.connect(Array.from({length:4},()=>'ABCDEFGHJKLMNPQRSTUVWXYZ'[rnd(24)]).join(''));
-    this.st={status:'lobby',host:this.me,text:'',startAt:0,players:{}};
-    if(this.ref)this.ref.set({status:'lobby',host:this.me,text:'',startAt:0,players:{}});
+  GL:{race:'R',rain:'W',bomb:'B',star:'S'},
+  GN:{race:'🏁 Typing Race',rain:'🌧️ Word Rain',bomb:'💣 Bomb Defuse',star:'🚀 Star Typer'},
+  LVN:['easy','medium','hard'],
+  chooseUI(){
+    this.lvSel=this.lvSel||'medium';
+    overlay(`<h3>Which game?</h3><div class="seg" id="rmLv">${this.LVN.map(l=>`<button data-l="${l}" class="${l===this.lvSel?'on':''}">${l[0].toUpperCase()+l.slice(1)}</button>`).join('')}</div><small class="muted">Level applies to Rain, Bomb and Star. Everyone in the room gets the same level.</small><div id="rmG" style="display:grid;grid-template-columns:1fr 1fr;gap:10px;width:100%;max-width:420px">${Object.keys(this.GN).map(k=>`<button class="btn sec" data-g="${k}">${this.GN[k]}</button>`).join('')}</div><button class="ghost" id="rmBk">Back</button>`);
+    $('#rmLv').onclick=e=>{const b=e.target.closest('button');if(!b)return;this.lvSel=b.dataset.l;$$('#rmLv button').forEach(x=>x.classList.toggle('on',x===b))};
+    $('#rmG').onclick=e=>{const b=e.target.closest('button');if(!b)return;this.create(b.dataset.g,this.lvSel)};
+    $('#rmBk').onclick=()=>this.lobbyUI();
+  },
+  unmount(){
+    clearInterval(this.pt);this.playing=false;this.f=0;
+    if(this.sub){try{this.sub.stop()}catch(e){}if(this._om)this.sub.menu=this._om;this.sub=null;this._om=null}
+    WS.l=null;this.arc=false;
+  },
+  mount(){ // builds the play area for the room's game
+    this.unmount();
+    const G={rain:Rain,bomb:Bomb,star:Star};this.arc=!!G[this.gm];
+    if(!this.arc){
+      $('#gHud').innerHTML='';
+      $('#gBody').innerHTML='<div class="lanes" id="lanes"></div><div class="arena" id="arena" style="height:auto;min-height:480px"><div class="overlay" id="ov"></div><div class="card" style="border:0"><div class="typer" id="rText"></div></div></div>';
+      return}
+    const g=this.sub=G[this.gm];this._om=g.menu;g.menu=(t,m)=>this.arcOver(t,m);
+    g.init();$('#gBody').insertAdjacentHTML('afterbegin','<div class="lanes" id="lanes"></div>');
+  },
+  mkWords(g,f){ // same list for everyone, built by the host from the room's game + level
+    const out=[],P=(pl,n)=>{for(let i=0;i<n;i++)out.push(pick(pl))};
+    if(g==='rain')P(f>1.4?GWORDS.filter(x=>x.length>=5):f<.8?GWORDS.filter(x=>x.length<=5):GWORDS,300);
+    else if(g==='bomb')P(GWORDS.filter(w=>f>1.4?w.length>=6:f<.8?w.length>=3&&w.length<=5:w.length>=4),200);
+    else for(let w=1;w<=15;w++){
+      const w0=w>>1,d=Math.round((f-1)*1.5),mn=Math.max(3,Math.min(7,3+w0+d)),mx=Math.max(mn+1,Math.min(10,5+w0+d));
+      P(GWORDS.filter(x=>x.length>=mn&&x.length<=mx),5+w*2);
+      if(w%5===0){P(GWORDS.filter(x=>x.length>=5),1);P(GWORDS.filter(x=>x.length>=4),1)}}
+    return out.map(x=>String(x).toLowerCase())},
+  poll(){ // send your score / health to the room (same player fields as the race: p, w, fin)
+    const g=this.sub;if(!g||!this.playing)return;
+    const over=!g.run,sc=Math.round(g.score||0),hp=Math.max(0,Math.min(1,g===Star?g.hull/100:g===Bomb?g.lives/3:g.lives/(g.f<.8?7:g.f>1.6?4:5)));
+    if(over&&!this.fin)this.fin=Math.max(.1,Math.round((performance.now()-this.t0)/100)/10);
+    const sig=sc+'|'+hp.toFixed(2)+'|'+(this.fin||0);
+    if(sig!==this.sig){this.sig=sig;this.send({players:{[this.me]:{p:+hp.toFixed(2),w:sc,fin:this.fin||0}}})}
+    if(over)clearInterval(this.pt)},
+  arcOver(t,m){
+    if(!this.playing)return;const dk=this.sub===Star,c=dk?'color:#b8c0e0;':'';
+    overlay(`<h3 style="${dk?'color:#fff':''}">${t}</h3><p class="${dk?'':'muted'}" style="${c}max-width:44ch;margin:0">${m}</p><p class="${dk?'':'muted'}" style="${c}margin:0">Others may still be playing. Watch the live board above.</p>${this.host?'<button class="btn" id="rmAgain">Back to lobby (play again)</button>':'<p class="muted">Host can start another round.</p>'}`);
+    if(this.host)$('#rmAgain').onclick=()=>this.send({status:'lobby',startAt:0});
+    this.poll()},
+  async create(gm,lv){
+    gm=this.GL[gm]?gm:'race';lv=this.LVN.includes(lv)?lv:'medium';
+    const n=this.nm();this.host=true;this.gm=gm;this.lv=lv;let code='';
+    for(let k=0;k<8;k++){
+      code=this.GL[gm]+Array.from({length:3},()=>'ABCDEFGHJKLMNPQRSTUVWXYZ'[rnd(24)]).join('');
+      if(typeof Board==='undefined'||!Board.db)break;
+      try{const x=await Board.db.doc('rooms/'+code).get();if(!x.exists)break}catch(e){break}}
+    this.mount();this.connect(code);
+    this.st={status:'lobby',host:this.me,text:lv,startAt:0,players:{}};
+    if(this.ref)this.ref.set({status:'lobby',host:this.me,text:lv,startAt:0,players:{}});
     this.send({players:{[this.me]:{n,p:0,w:0}}});
   },
   join(code){
-    const n=this.nm();this.host=false;this.connect(code);
+    const n=this.nm();this.host=false;
+    this.gm=Object.keys(this.GL).find(k=>this.GL[k]===code[0])||'race';this.mount();
+    this.connect(code);
     if(this.bc)this.bc.postMessage({hello:1});
     this.send({players:{[this.me]:{n,p:0,w:0}}});
   },
   render(){
     const st=this.st;if(!st||!st.players)return;
-    if(st.status==='lobby'&&this.run){this.run=false;this.typer=null;$('#rText').innerHTML='';$('#lanes').innerHTML=''}
+    if(st.status==='lobby'&&this.run){this.run=false;this.typer=null;if(this.arc){this.mount()}else{$('#rText').innerHTML='';$('#lanes').innerHTML=''}}
     if(st.status==='go'&&st.startAt&&st.startAt!==this.lastStart&&!this.run)return this.begin();
     if(this.run)return this.lanes();
     const link=location.href.split('#')[0]+'#room='+this.code;
-    overlay(`<div class="big">🏠</div><div class="rmcode">${this.code}</div><button class="btn sec" id="rmCopy">📋 Copy invite link</button><ul id="rmList">${Object.entries(st.players).map(([id,p])=>`<li>${id===st.host?'👑':'🙂'} ${esc(p.n)}${id===this.me?' (you)':''}</li>`).join('')}</ul>${this.host?'<button class="btn" id="rmGo">▶ Start</button>':'<p class="muted">⏳</p>'}`);
+    overlay(`<div class="big">🏠</div><div class="rmcode">${this.code}</div><div class="muted">${this.GN[this.gm]||''}${this.arc?' · '+((st.text||'').split(' ')[0]||'medium'):''}</div><button class="btn sec" id="rmCopy">📋 Copy invite link</button><ul id="rmList">${Object.entries(st.players).map(([id,p])=>`<li>${id===st.host?'👑':'🙂'} ${esc(p.n)}${id===this.me?' (you)':''}</li>`).join('')}</ul>${this.host?'<button class="btn" id="rmGo">▶ Start</button>':'<p class="muted">⏳</p>'}`);
     $('#rmCopy').onclick=()=>{try{navigator.clipboard.writeText(link);toast('Link copied')}catch(e){toast(link)}};
     if(this.host)$('#rmGo').onclick=()=>this.start();
+    if(this.sub===Star){const o=$('#ov');if(o){o.style.color='#e6e9ff';$$('#ov .rmcode').forEach(e=>e.style.color='#fff')}}
   },
   start(){
-    const pl={};for(const id in this.st.players)pl[id]={p:0,w:0,fin:0};
-    this.send({status:'go',text:Array.from({length:30},()=>pick(GWORDS)).join(' '),startAt:Date.now()+4000,players:pl});
+    const pl={};for(const id in this.st.players)pl[id]={p:this.arc?1:0,w:0,fin:0};
+    const lv=this.lv||(this.st.text||'').split(' ')[0]||'medium';
+    const text=this.arc?lv+' '+this.mkWords(this.gm,Diff.LV[lv]||1).join(' '):Array.from({length:30},()=>pick(GWORDS)).join(' ');
+    this.send({status:'go',text,startAt:Date.now()+4000,players:pl});
   },
   begin(){
+    if(this.arc){const t=(this.st.text||'').split(' ');this.f=Diff.LV[t[0]]||1;this.words=t.slice(1)}
     this.run=true;this.lastStart=this.st.startAt;this.lanes();
     const iv=this.cd=setInterval(()=>{
       const left=this.st.startAt-Date.now();
@@ -2195,6 +2440,7 @@ const Room={
   },
   go(){
     this.t0=performance.now();
+    if(this.arc){WS.l=this.words&&this.words.length?this.words:null;WS.i=0;this.playing=true;this.fin=0;this.sig='';this.sub.start();clearInterval(this.pt);this.pt=setInterval(()=>this.poll(),400);this.poll();return}
     this.typer=new StrictTyper($('#rText'),this.st.text,{
       onMove:t=>{const n=performance.now();if(n-this.last>350){this.last=n;this.send({players:{[this.me]:{p:t.i/t.text.length,w:t.stats().wpm}}})}},
       onDone:t=>{const s=t.stats();this.send({players:{[this.me]:{p:1,w:s.wpm,fin:Math.round((performance.now()-this.t0)/100)/10}}});this.typer=null;
@@ -2203,13 +2449,16 @@ const Room={
     });
   },
   lanes(){
+    if(this.arc){
+      const a=Object.entries(this.st.players||{}).sort((x,y)=>(y[1].w||0)-(x[1].w||0));
+      $('#lanes').innerHTML=a.map(([id,p])=>`<div class="lane ${id===this.me?'me':''}"><i style="width:${Math.round((p.p||0)*100)}%"></i><span>${esc(p.n)}</span><em>${p.fin?'out · ':''}${p.w||0} pts</em></div>`).join('');return}
     const pl=Object.entries(this.st.players||{}).sort((a,b)=>(b[1].p||0)-(a[1].p||0));
     $('#lanes').innerHTML=pl.map(([id,p])=>`<div class="lane ${id===this.me?'me':''}"><i style="width:${Math.round((p.p||0)*100)}%"></i><span>${esc(p.n)}</span><em>${p.fin?'done '+p.fin+'s · ':''}${p.w||0} wpm</em></div>`).join('');
   },
-  key(e){if(this.typer)this.typer.key(e)},
-  stop(){clearInterval(this.cd);if(this.un){try{this.un()}catch(e){}this.un=null}if(this.bc){this.bc.close();this.bc=null}this.typer=null;this.run=false;this.lastStart=0}
+  key(e){if(this.typer)this.typer.key(e);else if(this.arc&&this.sub&&this.sub.run&&this.sub.key)this.sub.key(e)},
+  stop(){clearInterval(this.cd);if(this.un){try{this.un()}catch(e){}this.un=null}if(this.bc){this.bc.close();this.bc=null}this.typer=null;this.run=false;this.lastStart=0;this.unmount()}
 };
-GAMEDEFS.push({id:'room',g:Room,d:'Invite friends with a room code. Everyone starts together and you see live progress.',k:'room'});
+GAMEDEFS.push({id:'room',g:Room,d:'Create a room, pick a game, and invite friends with a code. Everyone starts together and you see live scores.',k:'room'});
 
 
 /* ---------- v3 JS ---------- */
@@ -2252,7 +2501,7 @@ hitKey=(function(prev){return function(ch){
 }})(hitKey);
 
 // games menu: icons only
-const GI={rain:'🌧️',race:'🏁',bomb:'💣',room:'👥'};
+const GI={star:'🚀',rain:'🌧️',race:'🏁',bomb:'💣',room:'👥'};
 Games.menu=function(){
   if(this.cur)this.cur.stop();this.cur=null;
   $('#gameMenu').hidden=false;$('#gameRun').hidden=true;
@@ -2691,7 +2940,6 @@ Board.init=async function(){
     firebase.initializeApp(cfg.firebase);this.auth=firebase.auth();this.db=firebase.firestore();this.cloud=true;
     const bad=e=>{this.err=(e&&e.code)||'error';this.changed()};
     const W=(n,lim,fn)=>this.db.collection(n).limit(lim).onSnapshot(x=>{fn(x);this.changed()},bad);
-    W('scores',1000,x=>this.scores=new Map(x.docs.map(d=>[d.id,d.data()])));
     W('verified',1000,x=>this.verified=new Map(x.docs.map(d=>[d.id,d.data()])));
     W('colleges',2000,x=>{this.colleges=new Map(x.docs.map(d=>[d.id,d.data()]));this.collLoaded=true});
     W('texts',500,x=>this.texts=new Map(x.docs.map(d=>[d.id,d.data()])));
@@ -2727,7 +2975,7 @@ $('#chip').onclick=()=>{if(!Board.uid)Auth.open();else show('profile')};
 const Auth={mode:'login',pendingName:'',adminIntent:false,
   msg(t){$('#aMsg').textContent=t},
   setMode(m){this.mode=m;$$('#aTabs button').forEach(b=>b.classList.toggle('on',b.dataset.m===m));$('#aName').hidden=m!=='reg';$('#aGo').textContent=m==='reg'?'Create account':'Login';this.msg('')},
-  open(admin){this.adminIntent=!!admin;$('#aTitle').textContent=admin?'Admin login':'Welcome to TypeAdda';$('#aTabs').hidden=!!admin;this.setMode('login');
+  open(admin){this.adminIntent=!!admin;$('#aTitle').textContent=admin?'Admin login':'Welcome to Chiku Type';$('#aTabs').hidden=!!admin;this.setMode('login');
     this.msg(Board.cloud?'':'Server is not connected. Add the Firebase settings at the top of this file.');openModal('mAuth')},
   err(e){const c=(e&&e.code)||'';return /invalid-credential|wrong-password|user-not-found/.test(c)?'Wrong email or password':c==='auth/email-already-in-use'?'This email is already registered':c==='auth/weak-password'?'Password must be at least 6 characters':c==='auth/invalid-email'?'Enter a valid email':c==='auth/too-many-requests'?'Too many attempts, try later':(c||'Something went wrong')},
   async go(){
@@ -2746,7 +2994,6 @@ $('#mAuth').addEventListener('keydown',e=>{if(e.key==='Enter')Auth.go()});
 $('#aForgot').onclick=async()=>{const em=$('#aMail').value.trim();if(!em||!Board.auth){Auth.msg('Enter your email first');return}
   if(!em.includes('@')){Auth.msg('Username accounts are made by your college. Ask your college to reset your password.');return}
   try{await Board.auth.sendPasswordResetEmail(em);Auth.msg('Password reset email sent')}catch(e){Auth.msg(Auth.err(e))}};
-$('#btnAdminLogin').onclick=()=>{if(Board.admin)show('admin');else if(Board.uid)toast('This account is not an admin');else Auth.open(true)};
 $('#pLogout').onclick=async()=>{try{await Sync.push();await Board.auth.signOut()}catch(e){}
   ['profile','history','pb','lessons','timeTyped'].forEach(k=>{try{localStorage.removeItem('typeadda:'+k)}catch(e){}});location.reload()};
 
@@ -2772,7 +3019,7 @@ function fmtTotal(t){t=Math.round(t);if(t<60)return t+' sec';const h=Math.floor(
 function openInfo(k){const i=INFO[k];if(!i)return;$('#iTitle').innerHTML=i[0];$('#iBody').innerHTML=i[1];openModal('mInfo')}
 function renderAbout(){
   const root=$('#aboutRoot');if(!root)return;
-  const n=SITE.name||'TypeAdda',st=aboutStats(),L=SITE.links||{},clean={};
+  const n=SITE.name||'Chiku Type',st=aboutStats(),L=SITE.links||{},clean={};
   try{SOCU.forEach(([k])=>{const u=cleanURL(L[k]);if(u)clean[k]=u})}catch(e){}
   let soc='';try{soc=socRow(clean)}catch(e){}
   const mail=(window.TYPEADDA_CONFIG||{}).contact||'';
@@ -2805,8 +3052,8 @@ $('#aboutRoot').onclick=e=>{const g=e.target.closest('[data-goto]');if(g){show(g
 
 // footer info
 const INFO={
- about:['About TypeAdda','<p>TypeAdda is a free place to practise typing: timed tests, step-by-step lessons with finger guides, games, and leaderboards.</p><p>Create an account to keep your progress, speed records and typing time on every device.</p>'],
- terms:['Terms &amp; Conditions','<p>By using TypeAdda you agree to use it fairly. Do not use bots, scripts or any tool to fake typing speed. Scores that look unnatural may be removed.</p><p>Uploaded college ID images are used only for verification and are deleted after the admin approves or rejects them.</p><p>The admin may block accounts that cheat, abuse the service or post offensive names. The service is provided as is, without any guarantee.</p>'],
+ about:['About Chiku Type','<p>Chiku Type is a free place to practise typing: timed tests, step-by-step lessons with finger guides, games, and leaderboards.</p><p>Create an account to keep your progress, speed records and typing time on every device.</p>'],
+ terms:['Terms &amp; Conditions','<p>By using Chiku Type you agree to use it fairly. Do not use bots, scripts or any tool to fake typing speed. Scores that look unnatural may be removed.</p><p>Uploaded college ID images are used only for verification and are deleted after the admin approves or rejects them.</p><p>The admin may block accounts that cheat, abuse the service or post offensive names. The service is provided as is, without any guarantee.</p>'],
  privacy:['Privacy','<p>We store your email, display name, location fields you enter, and your typing results so your account works on all devices. We do not sell your data. Your name, location and scores are visible on the public leaderboard.</p><p>To understand how the site is used we record visit details such as IP address, approximate location, device, browser, traffic source and pages visited. This is used only by the site admin for statistics.</p><p>To delete your account data, contact us using the email on the Contact page.</p>'],
  contact:['Contact','<p>Questions, feedback or problems? Write to <b>'+esc((window.TYPEADDA_CONFIG||{}).contact||'')+'</b></p>']
 };
@@ -2821,7 +3068,7 @@ initialWords=(function(prev){return function(){
     let w=[];while(w.length<90)w=w.concat(...shuffle(t).map(x=>x.text.trim().split(/\s+/)));return w}
   return prev();
 }})(initialWords);
-['create','join'].forEach(m=>{const o=Room[m];Room[m]=function(...a){if(Board.cloud&&!Board.uid){Auth.open();toast('Login to race with friends');return}return o.apply(this,a)}});
+['create','join'].forEach(m=>{const o=Room[m];Room[m]=function(...a){if(Board.cloud&&!Board.uid){Auth.open();toast('Login to play with friends');return}return o.apply(this,a)}});
 
 // admin panel
 const TXFOR=[['all','Every timed test'],['15','15 sec test'],['30','30 sec test'],['60','60 sec test'],['120','120 sec test'],['quote','Quote mode']];
@@ -3006,30 +3253,31 @@ const Pub={async open(id){
 }};
 renderBoard=(function(prev){return function(){prev();if(!Board.db)return;
   const rows=boardRows(BS.key).filter(r=>inScope(r,BS.scope)),mi=rows.findIndex(r=>r.id===Board.uid);
-  $$('#bTable tbody tr').forEach((tr,i)=>{const r=i<100?rows[i]:rows[mi];if(!r)return;const d=Board.scores.get(r.id)||{};
+  $$('#bTable tbody tr').forEach((tr,i)=>{const r=rows[i];if(!r)return;const d=Board.scores.get(r.id)||{};
     tr.children[1].innerHTML=avaHTML(d.thumb,r.name,'sm')+esc(r.name);tr.style.cursor='pointer';tr.title='View profile';tr.onclick=()=>Pub.open(r.id)})}})(renderBoard);
 
 // site name, logo, icon, About page (edited in Admin)
-let SITE=store.get('site',{});
+const _siteFix=o=>{try{return JSON.parse(JSON.stringify(o||{}).replace(/TypeAdda/g,'Chiku Type'))}catch(e){return o||{}}};
+let SITE=_siteFix(store.get('site',{}));
 const SOC=[['instagram','Instagram'],['youtube','YouTube'],['facebook','Facebook'],['x','X / Twitter'],['linkedin','LinkedIn'],['telegram','Telegram'],['whatsapp','WhatsApp'],['website','Website']];
-function applySite(){const n=SITE.name||'TypeAdda';
+function applySite(){const n=SITE.name||'Chiku Type';
   $('#brand').innerHTML=(SITE.logo?`<img src="${SITE.logo}" alt="" style="height:28px;vertical-align:middle;margin-right:8px;border-radius:6px">`:'')+esc(n);
   document.title=n+' - typing tests, lessons, games and ranks';
   if(SITE.icon){let l=$('link[rel=icon]');if(!l){l=mk('link');l.rel='icon';document.head.appendChild(l)}l.href=SITE.icon}
   const ft=$('#foot span:last-child');if(ft)ft.textContent='© '+n}
-Object.defineProperty(INFO,'about',{configurable:true,enumerable:true,get(){const n=SITE.name||'TypeAdda',L=SITE.links||{};
+Object.defineProperty(INFO,'about',{configurable:true,enumerable:true,get(){const n=SITE.name||'Chiku Type',L=SITE.links||{};
   const soc=SOC.filter(([k])=>/^https?:\/\//i.test(L[k]||'')).map(([k,t])=>`<a class="btn sec" style="text-decoration:none;display:inline-block;margin:0 6px 6px 0" href="${esc(L[k])}" target="_blank" rel="noopener">${t}</a>`).join('');
   const txt=SITE.about?SITE.about.split(/\n+/).map(x=>'<p>'+esc(x)+'</p>').join(''):'<p>'+esc(n)+' is a free place to practise typing: timed tests, step-by-step lessons with finger guides, games, and leaderboards.</p>';
   return ['About '+esc(n),txt+(soc?'<p><b>Follow us</b></p><p>'+soc+'</p>':'')]}});
 Board.init=(function(prev){return async function(){await prev.call(this);if(!this.db)return;
-  this.db.doc('site/config').onSnapshot(sn=>{SITE=sn.exists?sn.data():{};store.set('site',SITE);applySite();if(view==='admin')renderAdmin()},()=>{})}})(Board.init);
+  this.db.doc('site/config').onSnapshot(sn=>{SITE=_siteFix(sn.exists?sn.data():{});store.set('site',SITE);applySite();if(view==='admin')renderAdmin()},()=>{})}})(Board.init);
 let sd={};
 renderAdmin=(function(prev){return function(){
   const l=$('#aList'),ae=document.activeElement;if(l.contains(ae)&&/INPUT|TEXTAREA|SELECT/.test(ae.tagName))return;
   prev();if(!Board.admin)return;
   const s=mk('div','card'),f=mk('div','form');s.appendChild(mk('h3','','🎨 Site settings (name, logo, icon, About page)'));s.firstChild.style.marginBottom='14px';
   const inp=(lab,val,ph)=>{const w=mk('label','',lab),i=mk('input');i.value=val||'';i.placeholder=ph||'';w.appendChild(i);f.appendChild(w);return i};
-  const nm=inp('Site name (replaces "TypeAdda")',SITE.name,'TypeAdda');
+  const nm=inp('Site name (replaces "Chiku Type")',SITE.name,'Chiku Type');
   const img=(lab,key,max)=>{const w=mk('label','',lab),i=mk('input'),pv=mk('img','idprev');i.type='file';i.accept='image/*';pv.style.maxHeight='64px';
     const cur=sd[key]!==undefined?sd[key]:SITE[key];if(cur)pv.src=cur;else pv.hidden=true;
     i.onchange=async()=>{if(i.files[0]){try{sd[key]=await toData(i.files[0],max,'image/png',.9,key==='icon');pv.src=sd[key];pv.hidden=false}catch(e){toast('Could not read image')}}};w.append(i,pv);f.appendChild(w)};
@@ -3038,7 +3286,7 @@ renderAdmin=(function(prev){return function(){
   const lk={};SOC.forEach(([k,t])=>{lk[k]=inp(t+' link',(SITE.links||{})[k],'https://...')});
   const a=mk('div','ractions'),sv=mk('button','btn','Save site settings'),rl=mk('button','ghost','Remove logo and icon');
   sv.onclick=async()=>{const links={};SOC.forEach(([k])=>{const v=lk[k].value.trim();if(v)links[k]=v});
-    if(await dset('site/config',{name:nm.value.trim()||'TypeAdda',logo:sd.logo!==undefined?sd.logo:(SITE.logo||''),icon:sd.icon!==undefined?sd.icon:(SITE.icon||''),about:ta.value.trim(),links,showColleges:SITE.showColleges!==false,showEvents:SITE.showEvents!==false,showCollegeRank:SITE.showCollegeRank!==false,seo:SITE.seo||{},lessonAbout:SITE.lessonAbout||{},lessonOff:SITE.lessonOff||{},ts:Date.now()})){sd={};toast('Site settings saved')}};
+    if(await dset('site/config',{name:nm.value.trim()||'Chiku Type',logo:sd.logo!==undefined?sd.logo:(SITE.logo||''),icon:sd.icon!==undefined?sd.icon:(SITE.icon||''),about:ta.value.trim(),links,showColleges:SITE.showColleges!==false,showEvents:SITE.showEvents!==false,showCollegeRank:SITE.showCollegeRank!==false,seo:SITE.seo||{},lessonAbout:SITE.lessonAbout||{},lessonOff:SITE.lessonOff||{},ts:Date.now()})){sd={};toast('Site settings saved')}};
   rl.onclick=()=>{sd={logo:'',icon:''};renderAdmin();toast('Press Save to apply')};
   a.append(sv,rl);s.append(f,a);l.appendChild(s)}})(renderAdmin);
 applySite();
@@ -3056,7 +3304,7 @@ const socIcon=(k)=>{const d=SOCU.find(x=>x[0]===k)||['','','#666'];return `<span
 const cleanURL=v=>{v=(v||'').trim();if(!v)return '';if(!/^https?:\/\//i.test(v))v='https://'+v;try{const u=new URL(v);return /^https?:$/.test(u.protocol)&&u.hostname.includes('.')?u.href:''}catch(e){return ''}};
 const socRow=(L)=>SOCU.filter(([k])=>L&&L[k]).map(([k,t])=>`<a href="${esc(L[k])}" target="_blank" rel="noopener noreferrer nofollow" title="${t}">${socIcon(k)}</a>`).join('');
 // site (admin) social links get icons too
-Object.defineProperty(INFO,'about',{configurable:true,enumerable:true,get(){const n=SITE.name||'TypeAdda',L=SITE.links||{};
+Object.defineProperty(INFO,'about',{configurable:true,enumerable:true,get(){const n=SITE.name||'Chiku Type',L=SITE.links||{};
   const clean={};SOCU.forEach(([k])=>{const u=cleanURL(L[k]);if(u)clean[k]=u});
   const txt=SITE.about?SITE.about.split(/\n+/).map(x=>'<p>'+esc(x)+'</p>').join(''):'<p>'+esc(n)+' is a free place to practise typing: timed tests, step-by-step lessons with finger guides, games, and leaderboards.</p>';
   const r=socRow(clean);return ['About '+esc(n),txt+(r?'<p><b>Follow us</b></p><div class="socs">'+r+'</div>':'')]}});
@@ -3161,7 +3409,7 @@ const PubX={
 .pbc span{font-size:12px;color:var(--muted)}
 @media(max-width:620px){.pbgrid{grid-template-columns:1fr}.rkgrid{grid-template-columns:repeat(3,1fr)}}
 `;document.head.appendChild(st)})();
-Pub.open=async function(id){let d=Board.scores.get(id);if(!d)return;const v=Board.verified.get(id);
+Pub.open=async function(id){let d=Board.scores.get(id);if(!d&&Board.db){try{const sn=await Board.db.doc('scores/'+id).get();if(sn.exists){d=sn.data();Board.scores.set(id,d)}}catch(e){}}if(!d)return;const v=Board.verified.get(id);
   d=Object.assign({},d,{_id:id});this.show(d,v,d.thumb);
   try{const sn=await Board.db.doc('avatars/'+id).get();if(sn.exists&&sn.data().pic)this.show(d,v,sn.data().pic)}catch(e){}};
 $('#pView').onclick=()=>{
@@ -3706,7 +3954,7 @@ const Colleges={cur:null,pending:new URLSearchParams(location.search).get('colle
     const web=cleanURL(d.website),n=this.count(id);
     const back=mk('button','ghost','← All colleges');back.onclick=()=>{this.cur=null;resetSEO();this.render()};box.appendChild(back);
     const c=mk('div','card');c.style.margin='14px 0';
-    c.innerHTML=`<div style="display:flex;gap:16px;align-items:center;flex-wrap:wrap">${d.logo?`<img class="clogo" style="width:96px;height:96px" src="${d.logo}" alt="${esc(d.name)} logo">`:''}<div><h1 style="font-size:28px;margin:0 0 4px">${esc(d.name)}</h1>${d.tagline?`<p>${esc(d.tagline)}</p>`:''}<p class="muted">${esc([d.address,d.state].filter(Boolean).join(', '))}</p>${n?`<span class="pill ok">${n} verified TypeAdda students</span>`:''}${d.year?`<span class="pill">Est. ${esc(d.year)}</span>`:''}${d.accr?`<span class="pill">${esc(d.accr)}</span>`:''}</div></div>
+    c.innerHTML=`<div style="display:flex;gap:16px;align-items:center;flex-wrap:wrap">${d.logo?`<img class="clogo" style="width:96px;height:96px" src="${d.logo}" alt="${esc(d.name)} logo">`:''}<div><h1 style="font-size:28px;margin:0 0 4px">${esc(d.name)}</h1>${d.tagline?`<p>${esc(d.tagline)}</p>`:''}<p class="muted">${esc([d.address,d.state].filter(Boolean).join(', '))}</p>${n?`<span class="pill ok">${n} verified Chiku Type students</span>`:''}${d.year?`<span class="pill">Est. ${esc(d.year)}</span>`:''}${d.accr?`<span class="pill">${esc(d.accr)}</span>`:''}</div></div>
       <div class="socs" style="margin-top:14px">${web?`<a class="btn sec" style="text-decoration:none" href="${esc(web)}" target="_blank" rel="noopener nofollow">🌐 Website</a>`:''}${d.phone?`<a class="btn sec" style="text-decoration:none" href="tel:${esc(d.phone.replace(/[^\d+]/g,''))}">📞 ${esc(d.phone)}</a>`:''}${d.email?`<a class="btn sec" style="text-decoration:none" href="mailto:${esc(d.email)}">✉ ${esc(d.email)}</a>`:''}${d.address?`<a class="btn sec" style="text-decoration:none" href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(d.name+' '+d.address)}" target="_blank" rel="noopener">📍 Map</a>`:''}</div>`;
     box.appendChild(c);
     const sec=(t,html)=>{if(!html)return;const x=mk('div','card');x.style.marginBottom='14px';x.innerHTML='<h2 style="font-size:20px;margin-bottom:8px">'+t+'</h2>'+html;box.appendChild(x)};
@@ -3719,7 +3967,7 @@ const Colleges={cur:null,pending:new URLSearchParams(location.search).get('colle
     if(d.logo)ld.logo=d.logo;if(d.phone)ld.telephone=d.phone;if(d.email)ld.email=d.email;if(d.year)ld.foundingDate=d.year;
     if(d.address)ld.address={'@type':'PostalAddress',streetAddress:d.address,addressRegion:d.state||''};
     const co=lines(d.courses);if(co.length)ld.hasOfferCatalog={'@type':'OfferCatalog',name:'Courses',itemListElement:co.slice(0,30).map(x=>({'@type':'Offer',itemOffered:{'@type':'Course',name:x}}))};
-    setSEO(d.name+' - Courses, Fees and Details | '+(SITE.name||'TypeAdda'),desc,ld,url);
+    setSEO(d.name+' - Courses, Fees and Details | '+(SITE.name||'Chiku Type'),desc,ld,url);
     window.scrollTo(0,0);
   }
 };
@@ -3904,7 +4152,7 @@ function seoTags(s,n){const q=x=>esc(x).replace(/"/g,'&quot;'),t=[];
   return t.join('\n')}
 function applySEO(){
   if(view==='colleges'&&Colleges.cur)return;
-  const s=SITE.seo||{},n=SITE.name||'TypeAdda',title=s.title||document.title,desc=s.desc||SEO0.desc;
+  const s=SITE.seo||{},n=SITE.name||'Chiku Type',title=s.title||document.title,desc=s.desc||SEO0.desc;
   if(s.title)document.title=s.title;
   metaSet('meta[name=description]','name','description',desc);
   metaSet('meta[name=keywords]','name','keywords',s.keywords||'');
@@ -3926,7 +4174,7 @@ let AT=store.get('adminTab','dash'),seoD=null;
 function adminDash(){
   const c=mk('div','card');c.appendChild(mk('h3','','📊 Overview'));c.firstChild.style.marginBottom='12px';
   const g=mk('div','atiles');
-  [[Board.users.size,'users','👥','c1'],[[...Board.verified.values()].filter(v=>v.ok).length,'verified students','✅','c2'],[Board.reqs.size,'ID cards waiting','🪪','c3'],[Board.scores.size,'on leaderboard','🏆','c4'],[Board.colleges.size,'colleges listed','🏫','c5'],[Board.events.size,'events','📅','c6'],[Board.blocked.size,'blocked users','🚫','c7']]
+  [[Board.users.size,'users','👥','c1'],[[...Board.verified.values()].filter(v=>v.ok).length,'verified students','✅','c2'],[Board.reqs.size,'ID cards waiting','🪪','c3'],[(LB.loadTotals(),LB.tot0?LB.tot0.n:Board.scores.size),'on leaderboard','🏆','c4'],[Board.colleges.size,'colleges listed','🏫','c5'],[Board.events.size,'events','📅','c6'],[Board.blocked.size,'blocked users','🚫','c7']]
    .forEach(([n,t,ic,cl])=>{const d=mk('div','atile');d.innerHTML='<i class="ai '+cl+'">'+ic+'</i><div><b>'+n+'</b><span>'+t+'</span></div>';g.appendChild(d)});
   c.appendChild(g);return c}
 function adminFeatures(){
@@ -3940,7 +4188,7 @@ function adminFeatures(){
     b.onclick=()=>{b.disabled=true;setSite({[k]:!on}).then(()=>{b.disabled=false})};r.append(w,b);c.appendChild(r)});
   return c}
 function adminSEO(extra){
-  const s0=SITE.seo||{};if(!seoD)seoD=Object.assign({},s0);const D=seoD,n=SITE.name||'TypeAdda';
+  const s0=SITE.seo||{};if(!seoD)seoD=Object.assign({},s0);const D=seoD,n=SITE.name||'Chiku Type';
   const c=mk('div','card');c.appendChild(mk('h3','','🔎 SEO (Google search)'));c.firstChild.style.marginBottom='4px';
   c.appendChild(mk('p','muted','Control how the site appears on Google. Fill it once and press Save.'));c.lastChild.style.marginBottom='12px';
   const pv=mk('div','gprev');const drawPv=()=>{pv.innerHTML='<div class="gt">'+esc((D.title||n+' - typing tests, lessons, games and ranks').slice(0,60))+'</div><div class="gu">'+esc(D.url||baseURL())+'</div><div class="gd">'+esc((D.desc||SEO0.desc).slice(0,155))+'</div>'};drawPv();
@@ -3992,7 +4240,7 @@ renderAdmin=(function(prev){return function(){
 applySEO();applyRoleUI();
 
 /* ---------- boot ---------- */
-/* ===== TypeAdda v3 additions ===== */
+/* ===== Chiku Type v3 additions ===== */
 ['keySnd','errSnd','errHl','bsp','qr','lwpm','lacc'].forEach(k=>{if(S[k]===undefined)S[k]=(k==='lwpm'||k==='lacc')?S.live!==false:true});
 if(S.stopErr===undefined)S.stopErr=false;
 if(S.lang!=='hi')S.lang='en';
@@ -4090,7 +4338,7 @@ renderProfile=(function(prev){return function(){
 
 /* ===== Leaderboard: guests can view ===== */
 renderBoard=(function(prev){return function(){
-  if(!LBKEYS.includes(BS.key)){BS.key='t60';store.set('board',BS)}
+  if(!LBKEYS.includes(BS.key)){BS.key='t15';store.set('board',BS)}
   prev();
   if(!Board.uid&&!Board.err)$('#bNote').textContent='You are viewing as a guest. Everyone can see the ranks, but only logged-in users get their scores counted.';
 }})(renderBoard);
@@ -4153,7 +4401,7 @@ const Cert={
     const c=$('#certC'),x=c.getContext('2d'),W=1200,Hh=850;
     x.fillStyle='#FFFDF6';x.fillRect(0,0,W,Hh);
     x.strokeStyle='#1B3A9E';x.lineWidth=14;x.strokeRect(30,30,W-60,Hh-60);x.lineWidth=3;x.strokeRect(54,54,W-108,Hh-108);
-    x.textAlign='center';x.fillStyle='#1B3A9E';x.font='700 54px Georgia,serif';x.fillText('TypeAdda',W/2,150);
+    x.textAlign='center';x.fillStyle='#1B3A9E';x.font='700 54px Georgia,serif';x.fillText('Chiku Type',W/2,150);
     x.fillStyle='#333';x.font='700 44px Georgia,serif';x.fillText('Certificate of Completion',W/2,230);
     x.font='24px Georgia,serif';x.fillStyle='#666';x.fillText('This is to certify that',W/2,320);
     x.fillStyle='#1B3A9E';x.font='italic 700 66px Georgia,serif';x.fillText(name,W/2,410);
@@ -4167,7 +4415,7 @@ const Cert={
       x.fillStyle='#fff';x.fillRect(ox-8,oy-8,sz+16,sz+16);x.fillStyle='#000';
       for(let r=0;r<n;r++)for(let k=0;k<n;k++)if(q.isDark(r,k))x.fillRect(ox+k*cell,oy+r*cell,Math.ceil(cell),Math.ceil(cell));
       x.textAlign='center';x.fillStyle='#666';x.font='16px Georgia,serif';x.fillText('Scan to verify',ox+sz/2,oy+sz+30)}catch(e){}
-    $('#certDl').onclick=()=>{const a=document.createElement('a');a.download='TypeAdda-certificate-'+rec.id+'.png';a.href=c.toDataURL('image/png');a.click()};
+    $('#certDl').onclick=()=>{const a=document.createElement('a');a.download='ChikuType-certificate-'+rec.id+'.png';a.href=c.toDataURL('image/png');a.click()};
   },
   async verify(id){
     if(!Board.db)return;
@@ -4235,12 +4483,12 @@ function adminMail(){
   const f=mk('div','form');
   const F=(lab,obj,key,type,ph,full)=>{const w=mk('label',full?'full':'',lab),i=mk(type==='textarea'?'textarea':'input');if(type==='textarea')i.rows=7;else i.type=type||'text';i.placeholder=ph||'';i.value=obj[key]||'';i.oninput=()=>{obj[key]=i.value};w.appendChild(i);f.appendChild(w)};
   if(D.active==='gmail'){
-    F('Gmail address',D.gmail,'user','email','you@gmail.com');F('App password (16 letters)',D.gmail,'pass','password','xxxx xxxx xxxx xxxx');F('Sender name',D.gmail,'fromName','text','TypeAdda');
+    F('Gmail address',D.gmail,'user','email','you@gmail.com');F('App password (16 letters)',D.gmail,'pass','password','xxxx xxxx xxxx xxxx');F('Sender name',D.gmail,'fromName','text','Chiku Type');
   }else{
     F('SMTP host',D.company,'host','text','smtp.yourcompany.com');F('Port',D.company,'port','text','465 or 587');
     const w=mk('label','full'),ck=mk('input');ck.type='checkbox';ck.checked=!!D.company.secure;ck.style.width='auto';ck.onchange=()=>D.company.secure=ck.checked;
     w.append(ck,document.createTextNode(' Use SSL/TLS (tick for port 465, untick for port 587)'));w.style.flexDirection='row';w.style.gap='8px';f.appendChild(w);
-    F('SMTP username',D.company,'user','text','info@yourcompany.com');F('SMTP password',D.company,'pass','password','');F('From email',D.company,'fromEmail','email','info@yourcompany.com');F('Sender name',D.company,'fromName','text','TypeAdda');
+    F('SMTP username',D.company,'user','text','info@yourcompany.com');F('SMTP password',D.company,'pass','password','');F('From email',D.company,'fromEmail','email','info@yourcompany.com');F('Sender name',D.company,'fromName','text','Chiku Type');
   }
   c.appendChild(f);
   c.appendChild(mk('p','note','Placeholders you can use: {name} {site} {url} {test} {wpm} {acc} {rank}'));c.lastChild.style.margin='14px 0 6px';
@@ -4701,7 +4949,7 @@ const Sub={mine:null,all:new Map(),plans:new Map(),credits:new Map(),cs:new Map(
     const b=$('#mPlanB',m),pl=[...this.plans].map(([id,p])=>p).filter(p=>p.on!==false);
     b.innerHTML=`<p class="muted">This lesson or game needs an active plan. The first lessons marked as free demo stay open for everyone.</p>`
       +(pl.length?'<div style="margin:12px 0">'+pl.map(p=>`<div class="crow"><span><b>${esc(p.name)}</b> · ${durTxt(p.days)}</span><span>${p.price?'₹'+esc(p.price):'Free'}</span></div>`).join('')+'</div>':'')
-      +`<p class="note">${Board.uid?'To activate a plan, contact TypeAdda or your college. Once it is activated on your account, this page opens automatically.':'Login first. Then your college or TypeAdda can activate a plan on your account.'}</p>`
+      +`<p class="note">${Board.uid?'To activate a plan, contact Chiku Type or your college. Once it is activated on your account, this page opens automatically.':'Login first. Then your college or Chiku Type can activate a plan on your account.'}</p>`
       +(Board.uid?'':'<div class="ractions" style="margin-top:8px"><button class="btn" id="mPlanL">Login / Register</button></div>');
     const lb=$('#mPlanL',m);if(lb)lb.onclick=()=>{m.hidden=true;Auth.open()};
     m.hidden=false},
@@ -4758,7 +5006,7 @@ function renderSubCard(){
   if(!Sub.on()||isStaff()||!Board.uid){if(c)c.remove();return}
   if(!c){c=mk('div','card subcard');c.id='subCard';const h=v.querySelector('.head');h?h.after(c):v.prepend(c)}
   const s=Sub.mine,a=Sub.act(s);
-  c.innerHTML=`<h3>💳 My plan</h3><p class="st">${a?`<span class="pill">Active</span> ${esc(s.name)} · valid till <b>${fmtD(s.end)}</b>`:`<span class="pill off">${s?'Expired':'No plan'}</span> ${s?'Your '+esc(s.name)+' plan ended on '+fmtD(s.end)+'.':'Free demo lessons are open. Ask your college or TypeAdda to activate a plan.'}`}</p>`}
+  c.innerHTML=`<h3>💳 My plan</h3><p class="st">${a?`<span class="pill">Active</span> ${esc(s.name)} · valid till <b>${fmtD(s.end)}</b>`:`<span class="pill off">${s?'Expired':'No plan'}</span> ${s?'Your '+esc(s.name)+' plan ended on '+fmtD(s.end)+'.':'Free demo lessons are open. Ask your college or Chiku Type to activate a plan.'}`}</p>`}
 {const o=renderProfile;renderProfile=function(){o.apply(this,arguments);renderSubCard()}}
 
 /* ---------- admin: Subscriptions tab ---------- */
@@ -4836,7 +5084,7 @@ function collegeSub(){
   Sub.cs.forEach((d,i)=>stu.set(i,d.name||d.loginId));
   const cr=[...Sub.credits].filter(([i,c])=>c.seats-c.used>0);
   let k=mk('div','card subcard');k.dataset.tab='plans';k.appendChild(mk('h3','','💳 Plan credits'));
-  if(!Sub.credits.size)k.appendChild(mk('p','muted','No bulk plan yet. Contact TypeAdda to buy plans for your students.'));
+  if(!Sub.credits.size)k.appendChild(mk('p','muted','No bulk plan yet. Contact Chiku Type to buy plans for your students.'));
   Sub.credits.forEach(c=>k.appendChild(mk('div','crow',c.planName+' · '+durTxt(c.days)+' · '+(c.seats-c.used)+' of '+c.seats+' seats left')));
   out.push(k);
   k=mk('div','card subcard');k.dataset.tab='plans';k.appendChild(mk('h3','','⬆️ Upgrade a student'));
@@ -4857,7 +5105,7 @@ function collegeSub(){
   g2.append(field('Student name',inp('name','text','Full name',csSt)),field('Username or email',inp('login','text','e.g. rahul.sharma or rahul@gmail.com',csSt)),field('Password',pwBox));
   const hint=mk('p','note','Username: 3 to 20 characters, small letters, numbers, _ or .   |   If you type an email, the student logs in with that email.');
   const mb=mk('button','btn','Create student account');
-  const res=mk('div');if(csSt.cred2){res.className='csresult';res.innerHTML='<b>✅ Account created</b><div>Login ID: <code>'+esc(csSt.cred2.id)+'</code></div><div>Password: <code>'+esc(csSt.cred2.pw)+'</code></div>';const cb=mk('button','btn sec','Copy login details');cb.onclick=async()=>{const t='TypeAdda login\nLogin ID: '+csSt.cred2.id+'\nPassword: '+csSt.cred2.pw;try{await navigator.clipboard.writeText(t);toast('Copied')}catch(e){toast('Could not copy')}};res.appendChild(cb)}
+  const res=mk('div');if(csSt.cred2){res.className='csresult';res.innerHTML='<b>✅ Account created</b><div>Login ID: <code>'+esc(csSt.cred2.id)+'</code></div><div>Password: <code>'+esc(csSt.cred2.pw)+'</code></div>';const cb=mk('button','btn sec','Copy login details');cb.onclick=async()=>{const t='Chiku Type login\nLogin ID: '+csSt.cred2.id+'\nPassword: '+csSt.cred2.pw;try{await navigator.clipboard.writeText(t);toast('Copied')}catch(e){toast('Could not copy')}};res.appendChild(cb)}
   mb.onclick=async()=>{const nm=csSt.name.trim(),lg=csSt.login.trim().toLowerCase().replace(/\s+/g,''),pw=csSt.pw;
     if(!nm||!lg||pw.length<6){toast('Enter name, username or email, and a password of 6+ characters');return}
     const isMail=lg.includes('@');
@@ -5116,11 +5364,6 @@ Sub.listen(Board.user||null);
     if(hint){if(hint.role==='admin'||hint.role==='college')show('admin');else show('profile');return}
     Auth.open()};                       // nobody remembered: they are a guest, open login at once
   $('#chip').onclick=chipGo;
-  $('#btnAdminLogin').onclick=()=>{
-    if(Board.authReady){if(Board.admin||Board.college)show('admin');else if(Board.uid)toast('This account is not an admin');else Auth.open(true);return}
-    if(hint&&(hint.role==='admin'||hint.role==='college')){show('admin');return}
-    if(hint){toast('This account is not an admin');return}
-    Auth.open(true)};
   // login box: open at once for guests; if the session turns out to be valid, close it again
   Auth.open=(function(o){return function(admin){
     if(!Board.authReady&&hint){Board.gate(()=>{if(!Board.uid)o.call(Auth,admin)});return}
@@ -5430,6 +5673,265 @@ try{const _show=show;show=function(v){const r=_show.apply(this,arguments);try{Tr
 try{const _ft=finishTest;finishTest=function(){const r=_ft.apply(this,arguments);try{Track.ev('tests')}catch(e){}return r}}catch(e){console.warn('analytics: finishTest hook failed',e)}
 const boot=()=>{try{Track.go()}catch(e){console.warn(e)}};
 if(Board.whenReady)Board.whenReady(boot);else{let n=0;const iv=setInterval(()=>{if(Board.db||++n>60){clearInterval(iv);if(Board.db)boot()}},500)}
+})();
+
+
+/* ===== Chiku Type: after login with an admin / college email, open its panel automatically ===== */
+(()=>{
+  try{
+    Auth.open=(function(o){return function(){Auth._wantPanel=Date.now();return o.apply(this,arguments)}})(Auth.open);
+    Board.onUser=(function(prev){return async function(u){
+      const r=await prev.call(this,u);
+      try{if(u&&Auth._wantPanel&&Date.now()-Auth._wantPanel<300000){Auth._wantPanel=0;
+        setTimeout(()=>{try{if(Board.admin){show('admin');toast('Admin panel opened')}else if(Board.college){show('admin');toast('College panel opened')}}catch(e){}},400)}}catch(e){}
+      return r}})(Board.onUser);
+  }catch(e){console.warn('panel auto-open',e)}
+})();
+
+/* ===== Chiku Type: server-side leaderboard =====
+   Browser keeps only the top 150 of the selected board. Your own rank comes from cheap count queries. */
+const LB={rows:{},me:{},pr:{},busy:{},tot0:null,totT:0,
+  field:k=>'best.'+k+'.wpm',
+  ck:(k,sc)=>k+'|'+sc,
+  filt(sc,o){ // equality filters that define a scope (null = not available)
+    const c=(o.country||'').trim(),st=(o.state||'').trim(),di=(o.district||'').trim();
+    if(sc==='global')return [];
+    if(sc==='country')return c?[['country',c]]:null;
+    if(sc==='state')return c&&st?[['country',c],['state',st]]:null;
+    if(sc==='district')return c&&st&&di?[['country',c],['state',st],['district',di]]:null;
+    return null},
+  rowOf(id,d,key){const b=d.best[key];return{id,name:d.username||d.name||('user_'+id.slice(0,5)),country:d.country||'',state:d.state||'',district:d.district||'',college:d.college||'',wpm:b.wpm,acc:b.acc,ts:b.ts||0}},
+  cmp:(a,b)=>b.wpm-a.wpm||b.acc-a.acc||a.ts-b.ts,
+  async rest(body){
+    const cfg=(window.TYPEADDA_CONFIG||{}).firebase||{},u=Board.auth&&Board.auth.currentUser,h={'Content-Type':'application/json'};
+    if(u)h.Authorization='Bearer '+await u.getIdToken();
+    const r=await fetch('https://firestore.googleapis.com/v1/projects/'+cfg.projectId+'/databases/(default)/documents:runAggregationQuery?key='+encodeURIComponent(cfg.apiKey),{method:'POST',headers:h,body:JSON.stringify(body)});
+    if(!r.ok){let m='';try{m=((await r.json()).error||{}).message||''}catch(_){}throw new Error('aggregate '+r.status+' '+m)}
+    const j=await r.json();return (j[0]&&j[0].result&&j[0].result.aggregateFields)||{}},
+  num:x=>x?+(x.integerValue!==undefined?x.integerValue:(x.doubleValue||0)):0,
+  async count(f,key,op,val){
+    const fl=f.map(([a,b])=>({fieldFilter:{field:{fieldPath:a},op:'EQUAL',value:{stringValue:b}}}));
+    fl.push({fieldFilter:{field:{fieldPath:this.field(key)},op,value:{doubleValue:val}}});
+    const r=await this.rest({structuredAggregationQuery:{structuredQuery:{from:[{collectionId:'scores'}],where:{compositeFilter:{op:'AND',filters:fl}}},aggregations:[{alias:'c',count:{}}]}});
+    return this.num(r.c)},
+  async loadTotals(){
+    if(!Board.db||this.totBusy||Date.now()-this.totT<300000)return;this.totBusy=1;
+    try{const r=await this.rest({structuredAggregationQuery:{structuredQuery:{from:[{collectionId:'scores'}]},aggregations:[{alias:'n',count:{}},{alias:'t',sum:{field:{fieldPath:'time'}}},{alias:'k',sum:{field:{fieldPath:'tests'}}}]}});
+      this.tot0={n:this.num(r.n),t:this.num(r.t),k:this.num(r.k)}}catch(e){console.warn('totals',e)}
+    this.totT=Date.now();this.totBusy=0;try{Board.changed()}catch(e){}},
+  async mineLoad(){
+    if(!Board.uid||Board.scores.has(Board.uid))return;
+    try{const sn=await Board.db.doc('scores/'+Board.uid).get();if(sn.exists)Board.scores.set(Board.uid,sn.data())}catch(e){}},
+  blockedOK(id){return !(Board.blocked&&Board.blocked.has(id))&&!(Board.collAdmins&&Board.collAdmins.has(id))},
+  async collRows(college,key){
+    const ids=[...Board.verified].filter(([i,v])=>v&&v.ok&&norm(v.college)===norm(college)).map(([i])=>i),out=[];
+    for(let i=0;i<ids.length;i+=30){
+      const sn=await Board.db.collection('scores').where(firebase.firestore.FieldPath.documentId(),'in',ids.slice(i,i+30)).get();
+      sn.docs.forEach(d=>{const x=d.data();Board.scores.set(d.id,x);if(x.best&&x.best[key]&&this.blockedOK(d.id))out.push(this.rowOf(d.id,x,key))})}
+    return out.sort(this.cmp)},
+  async fetch(key,sc){
+    const k=this.ck(key,sc);let rows=[],f=null,cr=null;
+    if(sc==='college'){const mv=myVerified();if(mv)cr=await this.collRows(mv.college,key);rows=cr||[]}
+    else{
+      f=this.filt(sc,P);
+      if(f){
+        let q=Board.db.collection('scores');f.forEach(([a,b])=>{q=q.where(a,'==',b)});
+        const sn=await q.orderBy(this.field(key),'desc').limit(LB_TOP+Math.min(Board.blocked?Board.blocked.size:0,100)).get();
+        rows=sn.docs.filter(d=>d.data().best&&d.data().best[key]).map(d=>{Board.scores.set(d.id,d.data());return this.rowOf(d.id,d.data(),key)}).filter(r=>this.blockedOK(r.id)).sort(this.cmp)}}
+    this.rows[k]={rows:rows.slice(0,LB_TOP),ts:Date.now()};
+    if(Board.uid&&!(isStaff&&isStaff())){
+      await this.mineLoad();
+      const md=Board.scores.get(Board.uid),b=md&&md.best&&md.best[key];let me={none:true};
+      if(b){
+        try{
+          if(sc==='college'){const i=(cr||[]).filter(r=>r.wpm>b.wpm).length;me={rank:i+1,total:Math.max((cr||[]).length,i+1),wpm:b.wpm,acc:b.acc,ts:b.ts||0}}
+          else if(f){const [g,t]=await Promise.all([this.count(f,key,'GREATER_THAN',b.wpm),this.count(f,key,'GREATER_THAN',0)]);me={rank:g+1,total:Math.max(t,g+1),wpm:b.wpm,acc:b.acc,ts:b.ts||0}}
+        }catch(e){console.warn('rank',e);const lim=LB_TOP+Math.min(Board.blocked?Board.blocked.size:0,100),i=rows.filter(r=>r.wpm>b.wpm).length;
+          // fallback: count query failed, but if you are inside the rows we already fetched, rank from them
+          if(f&&(rows.length<lim||i<rows.length))me={rank:i+1,total:Math.max(rows.length,i+1),wpm:b.wpm,acc:b.acc,ts:b.ts||0};else me={fail:true}}
+      }
+      this.me[k]=Object.assign({ts:Date.now()},me)}},
+  ensure(){
+    if(!Board.db)return;
+    const key=BS.key,sc=BS.scope,k=this.ck(key,sc),c=this.rows[k],now=Date.now();
+    if(c&&now-c.ts<60000)return;
+    if(this.busy[k])return;this.busy[k]=1;
+    this.fetch(key,sc).catch(e=>{console.warn('leaderboard',e);this.rows[k]={rows:[],ts:Date.now(),err:(e&&e.code)||(e&&e.message)||'error'}})
+      .finally(()=>{delete this.busy[k];if(view==='board')renderBoard()})},
+  reset(){this.rows={};this.me={};this.pr={}},
+  async pubRank(d,v,key,scope){
+    const b=d.best&&d.best[key];if(!b)return '-';
+    if(scope==='college'){
+      if(!(v&&v.ok))return '-';
+      const rows=await this.collRows(v.college,key);return '#'+(rows.filter(r=>r.wpm>b.wpm).length+1)}
+    const f=this.filt(scope,d);if(!f)return '-';
+    return '#'+(await this.count(f,key,'GREATER_THAN',b.wpm)+1)}
+};
+// the table reads only what was fetched for the open board
+boardRows=(function(prev){return function(k){
+  if(!Board.db)return prev.apply(this,arguments);
+  const c=LB.rows[LB.ck(k,BS.scope)];return c?c.rows.slice():[]}})(boardRows);
+// public profile rank cards (any user): one count query per card, filled in when ready
+PubX.rank=(function(prev){return function(d,v,key,scope){
+  if(!Board.db)return prev.apply(this,arguments);
+  const qk=[d._id,key,scope].join('|');
+  if(LB.pr[qk]!==undefined)return LB.pr[qk];
+  if(!LB.prBusy)LB.prBusy={};
+  if(!LB.prBusy[qk]){LB.prBusy[qk]=1;
+    LB.pubRank(d,v,key,scope).catch(()=>'-').then(t=>{LB.pr[qk]=t;delete LB.prBusy[qk];document.querySelectorAll('[data-q="'+qk+'"]').forEach(e=>e.textContent=t)})}
+  return '<span data-q="'+esc(qk)+'">...</span>'}})(PubX.rank);
+// totals on About page
+aboutStats=(function(prev){return function(){
+  const r=prev.apply(this,arguments);
+  if(Board.db){LB.loadTotals();if(LB.tot0){r.users=Math.max(LB.tot0.n,Board.users&&Board.users.size||0);r.time=LB.tot0.t||r.time;r.tests=LB.tot0.k||r.tests}}
+  return r}})(aboutStats);
+// after you post a score, refresh your rank
+Board._push=(function(prev){return async function(){
+  const r=await prev.apply(this,arguments);
+  try{if(this.uid){this.scores.delete(this.uid);LB.reset();if(view==='board')renderBoard()}}catch(e){}
+  return r}})(Board._push);
+
+renderBoard=(function(prev){return function(){
+  prev.apply(this,arguments);
+  try{
+    const box=$('#bMe');if(!box)return;box.innerHTML='';
+    if(Board.db)LB.ensure();
+    const k=LB.ck(BS.key,BS.scope),cache=LB.rows[k],scopeName=(SCOPES.find(x=>x[0]===BS.scope)||['','Global'])[1];
+    // loading text instead of a wrong empty table
+    if(Board.db&&!cache){const e=$('#bTable .empty');if(e&&/^No scores here yet/.test(e.textContent))e.textContent='Loading leaderboard...'}
+    if(cache&&cache.err){const e=$('#bTable .empty');if(e)e.textContent='Leaderboard could not load ('+cache.err+'). If this says failed-precondition, the Firestore index is missing: open the browser console and click the link Firebase gives.'}
+    // small rank under each tab: only for boards you have already opened
+    $$('#bTabs .tab').forEach(t=>{const lab=t.querySelector('small').textContent,sc=(SCOPES.find(x=>x[1]===lab)||[])[0],m=sc&&LB.me[LB.ck(BS.key,sc)],b=t.querySelector('b');
+      if(b)b.textContent=m&&m.rank?'#'+m.rank:'-'});
+    if(!Board.uid){
+      const c=mk('div','meCard empty-me');c.appendChild(mk('div','mw','Login to see your own rank here.'));
+      const b=mk('button','btn sec','Login');b.onclick=()=>Auth.open();c.appendChild(b);box.appendChild(c);return}
+    if(isStaff&&isStaff())return;
+    const m=LB.me[k];
+    if(!m){box.appendChild(mk('div','meCard empty-me',Board.db?'Loading your rank...':'Your rank needs the shared leaderboard.'));return}
+    if(m.fail){box.appendChild(mk('div','meCard empty-me','Your rank could not be loaded right now. Try again in a moment.'));return}
+    if(m.none||!m.rank){
+      box.appendChild(mk('div','meCard empty-me','You are not ranked in '+scopeName+' '+KEYLBL[BS.key]+' yet. Finish a plain English '+KEYLBL[BS.key]+' test with 80%+ accuracy.'));return}
+    let raw='-',cons='-';
+    try{const hs=(H||[]).filter(h=>h.key===BS.key&&!h.sus).sort((a,b)=>b.wpm-a.wpm||b.ts-a.ts);
+      const h=hs.find(x=>Math.abs(x.wpm-m.wpm)<=1)||null;if(h){raw=(+h.raw).toFixed(2);cons=(+h.cons).toFixed(2)+'%'}}catch(e){}
+    const d=m.ts?new Date(m.ts).toLocaleString('en-GB',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit',hour12:false}).replace(',',''):'-';
+    const c=mk('div','meCard');
+    c.innerHTML=`<div class="mr">#${m.rank}</div><div class="mw"><b>You (Rank ${m.rank} out of ${m.total})</b><small>${esc(scopeName)} rank &middot; ${esc(KEYLBL[BS.key])}</small></div>`
+      +`<div class="ms"><div><span>wpm</span><b>${(Math.round(m.wpm*100)/100).toFixed(2)}</b></div><div><span>accuracy</span><b>${(Math.round(m.acc*100)/100).toFixed(2)}%</b></div><div><span>raw</span><b>${raw}</b></div><div><span>consistency</span><b>${cons}</b></div><div><span>date</span><b style="font-size:14px">${esc(d)}</b></div></div>`;
+    box.appendChild(c);
+  }catch(e){console.warn('rank card',e)}
+}})(renderBoard);
+if(typeof view!=='undefined'&&view==='board')renderBoard();
+
+/* ===== Chiku Type: human hand overlay on the lesson keyboard ===== */
+const Hand=(()=>{
+  const NS='http://www.w3.org/2000/svg';
+  const HOME={lp:'KeyA',lr:'KeyS',lm:'KeyD',li:'KeyF',ri:'KeyJ',rm:'KeyK',rr:'KeyL',rp:'Semicolon'};
+  const COL={lp:'#f43f5e',lr:'#f97316',lm:'#eab308',li:'#22c55e',lth:'#38bdf8',rth:'#38bdf8',ri:'#06b6d4',rm:'#3b82f6',rr:'#8b5cf6',rp:'#ec4899'};
+  const LEN={lp:2.0,lr:2.3,lm:2.5,li:2.35,ri:2.35,rm:2.5,rr:2.3,rp:2.0};
+  const SKIN='#e9bb9c',EDGE='#b57e68',HI='#f7d9c5',CREASE='rgba(120,62,44,.38)',NAIL='#fbe4db';
+  const F={},H={l:{},r:{}};let ready=false,sig='',raf=0,K=0,svg=null,pal={},ids=[];
+  const el=(t,a,p)=>{const e=document.createElementNS(NS,t);for(const k in a)e.setAttribute(k,a[k]);(p||svg).appendChild(e);return e};
+  const ctr=(k,o)=>{const r=k.getBoundingClientRect();return{x:r.left+r.width/2-o.left,y:r.top+r.height/2-o.top,l:r.left-o.left,w:r.width,h:r.height}};
+  const key=code=>{let k=$('#kb .k[data-code="'+code+'"]');if(!k){const c=code==='Semicolon'?';':code.replace('Key','').toLowerCase();k=$('#kb .k[data-c="'+c+'"]')}return k};
+  function fingerOf2(k){
+    if(k.classList.contains('sp'))return 'rth';
+    if(k.dataset.c==='shiftL')return 'lp';if(k.dataset.c==='shiftR')return 'rp';
+    const f=fingerOf((k.dataset.c||'').toLowerCase());return f==='th'?'rth':f}
+  function build(){
+    svg.innerHTML='';ids=Object.keys(HOME).concat(['lth','rth']);
+    pal.l=el('path',{fill:SKIN,stroke:EDGE,'stroke-linejoin':'round'});pal.r=el('path',{fill:SKIN,stroke:EDGE,'stroke-linejoin':'round'});
+    pal.l2=el('path',{fill:SKIN,stroke:SKIN,'stroke-linejoin':'round'});pal.r2=el('path',{fill:SKIN,stroke:SKIN,'stroke-linejoin':'round'});
+    // fingers behind the thumbs
+    ids.forEach(id=>{F[id]=F[id]||{};const f=F[id];
+      f.o=el('line',{stroke:EDGE,'stroke-linecap':'round'});f.b=el('line',{stroke:SKIN,'stroke-linecap':'round'});
+      f.h=el('line',{stroke:HI,'stroke-linecap':'round',opacity:.7});
+      f.c1=el('line',{stroke:CREASE,'stroke-linecap':'round'});f.c2=el('line',{stroke:CREASE,'stroke-linecap':'round'});
+      f.n=el('rect',{fill:NAIL,stroke:'rgba(150,95,85,.55)','stroke-width':1})});
+    // whole hand low opacity: put everything built so far in one group
+    const g=el('g',{opacity:.5,id:'handG'});[...svg.children].forEach(c=>{if(c!==g)g.appendChild(c)});
+    ids.forEach(id=>{const f=F[id];f.g=el('circle',{r:10,fill:COL[id],opacity:0,stroke:'#fff','stroke-width':2})});
+    ready=true}
+  function geometry(){
+    const wrap=$('#kbwrap'),o=wrap.getBoundingClientRect(),fk=key('KeyF'),sp=$('#kb .k.sp');
+    if(!fk||!o.width)return false;
+    const c0=ctr(fk,o);K={w:c0.w,h:c0.h,H:o.height};
+    const nsig=Math.round(K.w)+'|'+Math.round(o.width)+'|'+Math.round(K.H);
+    const home={};
+    for(const id in HOME){const k=key(HOME[id]);if(!k)return false;home[id]=ctr(k,o)}
+    const spc=sp?ctr(sp,o):{x:o.width/2,y:K.H+K.h*.5,l:o.width*.3,w:o.width*.4,h:K.h};
+    const side={l:['lp','lr','lm','li'],r:['ri','rm','rr','rp']};
+    for(const s of ['l','r']){
+      const xs=side[s].map(i=>home[i].x),cx=(Math.min(...xs)+Math.max(...xs))/2,hy=home[side[s][0]].y;
+      const baseY=hy+K.h*2.5;H[s]={cx,hy,baseY,x0:Math.min(...xs),x1:Math.max(...xs),sx:0,sy:0,tx:0,ty:0};
+      side[s].forEach(id=>{const f=F[id];f.home=home[id];f.len=K.h*LEN[id];
+        f.base={x:cx+(home[id].x-cx)*.8,y:hy+K.h*LEN[id]};f.w=K.w*(id==='lp'||id==='rp'?.66:.76)});
+    }
+    // thumbs
+    const ty=spc.y-K.h*.05;
+    F.lth.home={x:spc.x-spc.w*.12,y:ty+K.h*.1};F.rth.home={x:spc.x+spc.w*.12,y:ty+K.h*.1};
+    F.lth.base={x:H.l.x1+K.w*.15,y:H.l.baseY+K.h*1.35};F.rth.base={x:H.r.x0-K.w*.15,y:H.r.baseY+K.h*1.35};
+    F.lth.w=F.rth.w=K.w*.8;F.lth.len=F.rth.len=K.h*1.5;
+    ids.forEach(id=>{const f=F[id];if(!f.cur||nsig!==sig)f.cur={x:f.home.x,y:f.home.y};f.tgt={x:f.home.x,y:f.home.y};f.act=false});
+    sig=nsig;
+    // room under the keyboard for the palms
+    const need=Math.max(0,H.l.baseY+K.h*2.1-K.H);wrap.style.marginBottom=Math.round(need)+'px';
+    return true}
+  function targets(){
+    const a=[];const hit=$('#kb .k.hit'),hit2=$('#kb .k.hit2');
+    if(hit)a.push(hit);if(hit2)a.push(hit2);
+    const wrap=$('#kbwrap'),o=wrap.getBoundingClientRect();
+    a.forEach(k=>{const id=fingerOf2(k);const f=F[id];if(!f)return;const c=ctr(k,o);
+      f.tgt={x:id==='rth'?c.x+c.w*.04:c.x,y:c.y};f.act=true});
+    ['l','r'].forEach(s=>{ // palm follows the working finger a little
+      const w=ids.filter(i=>i[0]===s&&F[i].act&&HOME[i])[0];
+      H[s].tx=w?(F[w].tgt.x-F[w].home.x)*.28:0;H[s].ty=w?(F[w].tgt.y-F[w].home.y)*.28:0})}
+  function draw(){
+    const mk2=(f,s)=>{const B={x:f.base.x+H[s].sx,y:f.base.y+H[s].sy},T=f.cur;
+      const dx=T.x-B.x,dy=T.y-B.y,L=Math.hypot(dx,dy)||1,ux=dx/L,uy=dy/L,px=-uy,py=ux,w=f.w;
+      const set=(e,x1,y1,x2,y2,sw)=>{e.setAttribute('x1',x1);e.setAttribute('y1',y1);e.setAttribute('x2',x2);e.setAttribute('y2',y2);e.setAttribute('stroke-width',sw)};
+      set(f.o,B.x,B.y,T.x,T.y,w+2.5);set(f.b,B.x,B.y,T.x,T.y,w);
+      set(f.h,B.x+px*w*.18,B.y+py*w*.18,T.x+px*w*.18-ux*w*.25,T.y+py*w*.18-uy*w*.25,w*.28);
+      [[f.c1,.4],[f.c2,.7]].forEach(([e,t])=>{const x=B.x+dx*t,y=B.y+dy*t;set(e,x-px*w*.3,y-py*w*.3,x+px*w*.3,y+py*w*.3,1.4)});
+      const nx=T.x-ux*w*.42,ny=T.y-uy*w*.42,ang=Math.atan2(uy,ux)*180/Math.PI+90;
+      f.n.setAttribute('x',nx-w*.27);f.n.setAttribute('y',ny-w*.32);f.n.setAttribute('width',w*.54);f.n.setAttribute('height',w*.62);f.n.setAttribute('rx',w*.2);
+      f.n.setAttribute('transform','rotate('+ang+' '+nx+' '+ny+')');
+      f.g.setAttribute('cx',T.x);f.g.setAttribute('cy',T.y);f.g.setAttribute('r',w*.62);f.g.setAttribute('opacity',f.act?.62:0)};
+    ['l','r'].forEach(s=>{const h=H[s],list=(s==='l'?['lp','lr','lm','li']:['ri','rm','rr','rp']);
+      const bs=list.map(i=>({x:F[i].base.x+h.sx,y:F[i].base.y+h.sy})),by=h.baseY+h.sy,bw=K.w;
+      const pts=bs.concat([{x:h.x1+bw*.5,y:by+K.h*.5},{x:h.x1+bw*.1,y:by+K.h*1.5},{x:h.x0+bw*.1,y:by+K.h*1.6},{x:h.x0-bw*.5,y:by+K.h*.5}].map(p=>({x:p.x+h.sx*0,y:p.y})));
+      pts.forEach(p=>{});
+      const d='M'+pts.map(p=>p.x.toFixed(1)+' '+p.y.toFixed(1)).join(' L')+' Z';
+      pal[s].setAttribute('d',d);pal[s].setAttribute('stroke-width',bw*1.2+2.5);pal[s2(s)].setAttribute('d',d);pal[s2(s)].setAttribute('stroke-width',bw*1.2)});
+    ['lp','lr','lm','li'].forEach(i=>mk2(F[i],'l'));['ri','rm','rr','rp'].forEach(i=>mk2(F[i],'r'));
+    mk2(F.lth,'l');mk2(F.rth,'r')}
+  const s2=s=>s+'2';
+  function step(){
+    let moving=false;
+    ids.forEach(id=>{const f=F[id],dx=f.tgt.x-f.cur.x,dy=f.tgt.y-f.cur.y;
+      if(Math.abs(dx)>.3||Math.abs(dy)>.3){f.cur.x+=dx*.3;f.cur.y+=dy*.3;moving=true}else{f.cur.x=f.tgt.x;f.cur.y=f.tgt.y}});
+    ['l','r'].forEach(s=>{const h=H[s],dx=h.tx-h.sx,dy=h.ty-h.sy;
+      if(Math.abs(dx)>.3||Math.abs(dy)>.3){h.sx+=dx*.25;h.sy+=dy*.25;moving=true}else{h.sx=h.tx;h.sy=h.ty}});
+    draw();raf=moving?requestAnimationFrame(step):0}
+  function refresh(){
+    svg=svg||$('#handSvg');if(!svg)return;
+    const play=$('#lPlay');
+    const on=S.lkb&&S.lfing&&play&&!play.hidden&&!$('#kb').hidden;
+    svg.style.display=on?'':'none';
+    if(!on){const w=$('#kbwrap');if(w)w.style.marginBottom='';return}
+    if(!ready)build();
+    if(!geometry())return;
+    targets();cancelAnimationFrame(raf);raf=requestAnimationFrame(step)}
+  window.addEventListener('resize',()=>{try{refresh()}catch(e){}});
+  return{refresh}
+})();
+try{hitKey=(function(p){return function(){const r=p.apply(this,arguments);try{Hand.refresh()}catch(e){}return r}})(hitKey)}catch(e){console.warn('hitKey hook',e)}
+(()=>{
+  try{
+    Lesson.hint=(function(h){return function(){const r=h.apply(this,arguments);try{Hand.refresh()}catch(e){}return r}})(Lesson.hint);
+    Lesson.play=(function(p){return function(){const r=p.apply(this,arguments);try{requestAnimationFrame(()=>Hand.refresh())}catch(e){}return r}})(Lesson.play);
+  }catch(e){console.warn('hand hooks',e)}
 })();
 
 </script>
