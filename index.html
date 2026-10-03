@@ -5297,13 +5297,14 @@ const Track={on:false,sid:'',base:null,q:{},tm:0,
   ev(n){if(this.on)this.bump('ev',kk(n))},
   flush(){
     const o=this.q;if(!Object.keys(o).length||!Board.db)return;this.q={};
-    const inc=firebase.firestore.FieldValue.increment;
+    try{
+    const inc=n=>firebase.firestore.FieldValue.increment(n);
     const conv=x=>typeof x==='number'?inc(x):Object.fromEntries(Object.entries(x).map(([k,v])=>[k,conv(v)]));
-    Board.db.doc('stats/'+DAY()).set(conv(o),{merge:true}).catch(()=>{})},
+    Board.db.doc('stats/'+DAY()).set(conv(o),{merge:true}).catch(e=>console.warn('analytics: stats write failed',e&&e.code,e&&e.message))}catch(e){console.warn('analytics: flush error',e)}},
   beat(){
     if(Board.admin){this.stop();return}
     if(document.visibilityState!=='visible')return;
-    Board.db.doc('live/'+this.sid).set(Object.assign({},this.base,{uid:Board.uid||'',page:String(view||''),ts:Date.now()}),{merge:true}).catch(()=>{});
+    Board.db.doc('live/'+this.sid).set(Object.assign({},this.base,{uid:Board.uid||'',page:String(view||''),ts:Date.now()}),{merge:true}).catch(e=>console.warn('analytics: live write failed',e&&e.code));
     this.flush()},
   stop(){this.on=false;clearInterval(this.tm)},
   async go(){
@@ -5318,7 +5319,7 @@ const Track={on:false,sid:'',base:null,q:{},tm:0,
     this.base={sid,vid,ip:g.ip||'',cc:g.cc||'',country:g.country||'Unknown',region:g.region||'Unknown',city:g.city||'Unknown',isp:String(g.isp||'').slice(0,60),src:s.src,ref:s.ref,device:dev(),os:osn(),browser:brn(),lang:(navigator.language||'').slice(0,12),sw:screen.width||0,sh:screen.height||0,start:Date.now()};
     const b=this.base;
     if(fresh){
-      Board.db.doc('visits/'+sid).set(Object.assign({},b,{uid:Board.uid||'',page:String(view||''),ts:Date.now(),isNew}),{merge:true}).catch(()=>{});
+      Board.db.doc('visits/'+sid).set(Object.assign({},b,{uid:Board.uid||'',page:String(view||''),ts:Date.now(),isNew}),{merge:true}).catch(e=>console.warn('analytics: visit write failed',e&&e.code));
       this.bump('sessions');this.bump(isNew?'newv':'ret');
       if(localStorage.getItem('ana:day')!==DAY()){this.bump('uniques');localStorage.setItem('ana:day',DAY())}
       this.bump('country',kk(b.country));this.bump('state',kk(b.region+', '+(b.cc||'?')));this.bump('city',kk(b.city+', '+b.region));
@@ -5391,7 +5392,9 @@ const Ana={un:[],tm:0,live:[],stats:[],vis:[],err:'',R:'7',q:'',root:null,cl:0,
     const r=this.root;if(!r||!r.isConnected)return;
     const er=r.querySelector('#anErr');
     er.innerHTML=this.err?'<div class="anwarn">'+(this.err==='permission-denied'?'⛔ Firestore rules me analytics ke rules add nahi hue. Neeche diya hua rules snippet Firestore &gt; Rules me paste karke Publish karo.':'Data load nahi hua: '+esc(this.err))+'</div>':'';
-    const on=this.online(),today=this.stats.find(d=>d.id===DAY())||{},A=agg(this.range());
+    const on=this.online(),d0=DAY(),tv=this.vis.filter(v=>v.ts&&new Date(v.ts+19800000).toISOString().slice(0,10)===d0),today=Object.assign({},this.stats.find(d=>d.id===d0)||{}),A=agg(this.range());
+    today.sessions=Math.max(today.sessions||0,tv.length);today.uniques=Math.max(today.uniques||0,new Set(tv.map(v=>v.vid)).size);
+    A.sessions=Math.max(A.sessions,this.vis.filter(v=>v.ts>Date.now()-Number(this.R)*864e5).length);
     const members=on.filter(l=>l.uid).length,rs={'1':'today','7':'7d','30':'30d'}[this.R];
     const tiles=[['🟢',on.length,'Online now ('+members+' logged-in, '+(on.length-members)+' guest)','c2'],['👁️',today.uniques||0,'Visitors today','c1'],['🔁',today.sessions||0,'Sessions today','c3'],['📄',today.pv||0,'Page views today','c4'],
       ['📅',A.sessions,'Sessions ('+rs+')','c5'],['⌨️',(A.ev&&A.ev.tests)||0,'Tests completed ('+rs+')','c6'],['✍️',(A.ev&&A.ev.signups)||0,'New signups ('+rs+')','c7'],['🆕',(A.newv+A.ret)?Math.round(A.newv/(A.newv+A.ret)*100)+'%':'-','New visitors ('+rs+')','c1']];
