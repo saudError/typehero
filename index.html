@@ -532,6 +532,25 @@ body.nosmooth .caret,body.nosmooth .words{transition:none}
 .lbask{max-width:560px;margin:8px auto;padding:10px 4px}
 .lbask h3{margin:0 0 4px}.lbask .form{margin-top:12px}
 @media(max-width:700px){.two{grid-template-columns:1fr}.form{grid-template-columns:1fr}.phero .ava{width:64px;height:64px;font-size:26px}}
+
+/* analytics */
+.anbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:8px 0 14px}
+.andot{display:inline-block;width:9px;height:9px;border-radius:50%;background:#1fb55a;margin-right:4px;animation:anp 1.6s infinite}
+@keyframes anp{50%{opacity:.35}}
+.anwarn{background:var(--soft);border:1px solid var(--err);color:var(--err);border-radius:10px;padding:10px 14px;margin-bottom:12px;font-weight:600}
+.anwrap h4{margin:22px 0 8px}
+.antrend{display:flex;align-items:stretch;gap:3px;height:170px}
+.anc{flex:1;min-width:0;display:flex;flex-direction:column;align-items:center}
+.anc .ab{flex:1;display:flex;align-items:flex-end;width:100%}
+.anc .ab i{display:block;width:100%;background:var(--accent);border-radius:4px 4px 0 0;opacity:.85}
+.anc small{font-size:10px;color:var(--muted);margin-top:4px}
+.angrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px;margin-top:22px}
+.anbox{border:1px solid var(--border);border-radius:14px;padding:14px 16px;background:var(--soft)}
+.anbox h5{margin:0 0 10px;font-size:15px}
+.anr{display:grid;grid-template-columns:minmax(70px,38%) 1fr auto;gap:10px;align-items:center;margin:7px 0;font-size:13px}
+.anr .al{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.anr .abr{height:8px;background:var(--border);border-radius:6px;overflow:hidden}
+.anr .abr i{display:block;height:100%;background:var(--accent);border-radius:6px}
 </style>
 </head>
 <body>
@@ -2788,7 +2807,7 @@ $('#aboutRoot').onclick=e=>{const g=e.target.closest('[data-goto]');if(g){show(g
 const INFO={
  about:['About TypeAdda','<p>TypeAdda is a free place to practise typing: timed tests, step-by-step lessons with finger guides, games, and leaderboards.</p><p>Create an account to keep your progress, speed records and typing time on every device.</p>'],
  terms:['Terms &amp; Conditions','<p>By using TypeAdda you agree to use it fairly. Do not use bots, scripts or any tool to fake typing speed. Scores that look unnatural may be removed.</p><p>Uploaded college ID images are used only for verification and are deleted after the admin approves or rejects them.</p><p>The admin may block accounts that cheat, abuse the service or post offensive names. The service is provided as is, without any guarantee.</p>'],
- privacy:['Privacy','<p>We store your email, display name, location fields you enter, and your typing results so your account works on all devices. We do not sell your data. Your name, location and scores are visible on the public leaderboard.</p><p>To delete your account data, contact us using the email on the Contact page.</p>'],
+ privacy:['Privacy','<p>We store your email, display name, location fields you enter, and your typing results so your account works on all devices. We do not sell your data. Your name, location and scores are visible on the public leaderboard.</p><p>To understand how the site is used we record visit details such as IP address, approximate location, device, browser, traffic source and pages visited. This is used only by the site admin for statistics.</p><p>To delete your account data, contact us using the email on the Contact page.</p>'],
  contact:['Contact','<p>Questions, feedback or problems? Write to <b>'+esc((window.TYPEADDA_CONFIG||{}).contact||'')+'</b></p>']
 };
 $('#foot').onclick=e=>{const a=e.target.closest('[data-info]');if(!a)return;const i=INFO[a.dataset.info];$('#iTitle').innerHTML=i[0];$('#iBody').innerHTML=i[1];openModal('mInfo')};
@@ -3412,7 +3431,7 @@ Object.assign(Ev,{
   joined(ev){return Board.joins.get(ev.id+'_'+Board.uid)||(Board.uid&&store.get('evjoin:'+ev.id,0)?{}:null)},
   visible(){return [...Board.events.values()].filter(e=>this.canSee(e)).sort((a,b)=>(b.ts||0)-(a.ts||0))}
 });
-Ev.rules=(p=>function(ev){return p.call(this,ev)+(ev.prizeTitle?'<span class="pill ok">🎁 '+esc(ev.prizeTitle)+'</span>':'')})(Ev.rules);
+Ev.rules=(p=>function(ev){return p.call(this,ev)+Ev.prizePill(ev)})(Ev.rules);
 
 Ev.form=function(){
   const D=this.draft,c=mk('div','card');c.style.margin='0 0 16px';c.appendChild(mk('h3','','New event'));c.firstChild.style.marginBottom='12px';
@@ -3426,7 +3445,15 @@ Ev.form=function(){
   F('Numbers','numbers',sel([['off','OFF'],['on','ON']]),'off');
   F('2 minute demo before the event','demo',sel([['on','ON'],['off','OFF']]),'on');
   F('Prize type','prizeType',sel([['none','No prize'],['cash','Cash'],['product','Physical product'],['other','Other']]),'none');
-  const pt=F('Winning prize (shown to users)','prizeTitle',mk('input'),'');pt.maxLength=80;pt.placeholder='e.g. ₹500 cash / Bluetooth keyboard';
+  const pt=F('Prize headline (optional, if you use the list below)','prizeTitle',mk('input'),'');pt.maxLength=80;pt.placeholder='e.g. ₹500 cash / Bluetooth keyboard';
+  const pw=mk('div','full');pw.appendChild(mk('b','','Prize list (who gets what)'));pw.appendChild(mk('p','note','Example: Rank 1 to 1 = iPhone, Rank 2 to 5 = Keyboard. Shown in the home popup and inside the event.'));
+  D.prizes=D.prizes||[{from:1,to:1,text:''}];
+  D.prizes.forEach((r,i)=>{const row=mk('div','');row.style.cssText='display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-top:8px';
+    const nf=k=>{const x=mk('input');x.type='number';x.min=1;x.max=1000;x.style.width='72px';x.value=r[k];x.oninput=()=>r[k]=+x.value||0;return x};
+    const tx=mk('input');tx.placeholder='Prize, e.g. iPhone 15';tx.maxLength=80;tx.style.cssText='flex:1;min-width:150px';tx.value=r.text||'';tx.oninput=()=>r.text=tx.value;
+    const rm=mk('button','ghost','✕');rm.type='button';rm.onclick=()=>{D.prizes.splice(i,1);Ev.render()};
+    row.append(document.createTextNode('Rank'),nf('from'),document.createTextNode('to'),nf('to'),tx,rm);pw.appendChild(row)});
+  const ad=mk('button','btn sec','➕ Add prize');ad.type='button';ad.style.marginTop='8px';ad.onclick=()=>{if(D.prizes.length>=10){toast('Maximum 10 prizes');return}const l=D.prizes[D.prizes.length-1],n=l?(+l.to||0)+1:1;D.prizes.push({from:n,to:n,text:''});Ev.render()};pw.appendChild(ad);f.appendChild(pw);
   F('Details to collect when user joins','collect',sel([['auto','Automatic (Cash → UPI, Product → Address)'],['none','Nothing'],['upi','PhonePe / Google Pay number or UPI ID'],['addr','Address + phone number'],['both','Both']]),'auto');
   F('Home page popup banner','popup',sel([['off','OFF'],['on','ON']]),'off');
   if(Board.admin){
@@ -3442,12 +3469,14 @@ Ev.form=function(){
   sv.onclick=async()=>{
     const title=(D.title||'').trim(),min=Math.round(+D.minutes||10),pty=D.prizeType||'none',pz=(D.prizeTitle||'').trim();
     if(title.length<3){toast('Enter an event title');return}if(min<1||min>60){toast('Time must be 1 to 60 minutes');return}
-    if(pty!=='none'&&!pz){toast('Write the prize (example: ₹500 cash)');return}
+    const prizes=(D.prizes||[]).map(r=>({from:Math.round(+r.from)||0,to:Math.round(+r.to)||0,text:String(r.text||'').trim().slice(0,80)})).filter(r=>r.text).sort((a,b)=>a.from-b.from);
+    for(const r of prizes)if(r.from<1||r.to<r.from){toast('Check prize ranks: "to" must be equal to or bigger than "from"');return}
+    if(pty!=='none'&&!pz&&!prizes.length){toast('Add at least one prize (example: Rank 1 = ₹500)');return}
     let col=D.collect||'auto';if(col==='auto')col=pty==='cash'?'upi':pty==='product'?'addr':'none';
     const cid=Board.admin?(D.scope||''):Board.college.collegeId,cname=cid?(Board.admin?((Board.colleges.get(cid)||{}).name||''):Board.college.collegeName):'';
     const vis=Board.admin?{guests:D.vg!==false,users:D.vu!==false,college:D.vc!==false}:{college:true};
     const id='e'+Date.now(),st=D.start?new Date(D.start).getTime():0;
-    const doc={title,minutes:min,caps:D.caps==='on',symbols:D.symbols==='on',numbers:D.numbers==='on',demo:D.demo!=='off',collegeId:cid,collegeName:cname,seed:Math.floor(Math.random()*2147483647),passage:(D.passage||'').trim(),startsAt:st,endsAt:st?st+min*60000:0,vis,hidden:false,popup:D.popup==='on',prizeType:pty,prizeTitle:pz,collect:col,joinReq:true,by:Board.uid,ts:Date.now()};
+    const doc={title,minutes:min,caps:D.caps==='on',symbols:D.symbols==='on',numbers:D.numbers==='on',demo:D.demo!=='off',collegeId:cid,collegeName:cname,seed:Math.floor(Math.random()*2147483647),passage:(D.passage||'').trim(),startsAt:st,endsAt:st?st+min*60000:0,vis,hidden:false,popup:D.popup==='on',prizeType:pty,prizeTitle:pz||(prizes[0]?prizes[0].text:''),prizes,collect:col,joinReq:true,by:Board.uid,ts:Date.now()};
     if(await dset('events/'+id,doc)){this.draft={};this.formOpen=false;toast('Event published');this.render()}};
   a.appendChild(sv);c.append(f,a);return c};
 
@@ -3455,7 +3484,7 @@ Ev.joinModal=function(ev){
   const old=$('#mEvJoin');if(old)old.remove();
   const col=ev.collect||'none',old0=Board.joins.get(ev.id+'_'+Board.uid)||{};
   const m=mk('div','modal');m.id='mEvJoin';const b=mk('div','box');m.appendChild(b);
-  b.innerHTML='<h3>Join: '+esc(ev.title)+'</h3>'+(ev.prizeTitle?'<p style="margin-bottom:10px"><b>🎁 Prize:</b> '+esc(ev.prizeTitle)+'</p>':'')+
+  b.innerHTML='<h3>Join: '+esc(ev.title)+'</h3>'+this.prizeHTML(ev)+
    (col==='upi'||col==='both'?'<label class="full">Prize payment app<select id="jApp"><option>PhonePe</option><option>Google Pay</option><option>Paytm</option><option>Other UPI</option></select></label><label class="full">PhonePe / Google Pay number or UPI ID<input id="jPay" placeholder="9876543210 or name@upi" maxlength="60"></label>':'')+
    (col==='addr'||col==='both'?'<label class="full">Full address<textarea id="jAdr" rows="3" maxlength="300"></textarea></label><label class="full">Pincode<input id="jPin" inputmode="numeric" maxlength="6"></label><label class="full">Phone number<input id="jPh" inputmode="numeric" maxlength="10"></label>':'')+
    '<p class="note" style="margin:8px 0">Your details are seen only by the admin and used only to send your prize.</p><div class="ractions"><button class="btn" id="jGo">'+(old0.ts?'Save details':'Join now')+'</button><button class="btn sec" data-close>Cancel</button></div>';
@@ -3476,7 +3505,7 @@ Ev.detail=function(){
   root.innerHTML='';
   const back=mk('button','ghost','← All events');back.onclick=()=>{this.mode='list';this.cur=null;this.render()};root.appendChild(back);
   const c=mk('div','card');c.style.margin='14px 0';
-  const ph=ev.prizeTitle?'<p style="margin:10px 0"><b>🎁 Prize:</b> '+esc(ev.prizeTitle)+'</p>':'';
+  const ph=this.prizeHTML(ev);
   c.innerHTML=`<h2>${esc(ev.title)}</h2><p style="margin:8px 0"><span class="pill">${ev.collegeId?esc(ev.collegeName):'All colleges'}</span>${ev.startsAt?`<span class="pill">Start: ${fmtDT(ev.startsAt)}</span>`:''}${ev.endsAt?`<span class="pill">End: ${fmtDT(ev.endsAt)}</span>`:''}</p>${ph}<div>${this.rules(ev)}</div><p class="note" style="margin-top:10px">${ev.startsAt&&ev.endsAt?'Scheduled event: it ends at '+fmtDT(ev.endsAt)+' for everyone, whether you join or not. ':''}One attempt only. Everyone types the same text. Mistakes stay on screen, use Backspace to fix them.</p>`;
   c.querySelector('h2').insertAdjacentHTML('afterend','<div style="margin:14px 0">'+cdHTML(ev,true)+'</div>');
   const a=mk('div','ractions');
@@ -3543,7 +3572,7 @@ const EvPop={t:null,t0:Date.now(),
   close(ev){clearInterval(this.t);ss('evpop:'+ev.id,'1');const p=$('#evPop');if(p)p.remove()},
   open(ev){
     const p=mk('div','');p.id='evPop';
-    p.innerHTML=`<div class="epc" role="dialog" aria-label="Event"><button class="epx" aria-label="Close">✕</button><div class="epb">🎉 NEW EVENT</div><h2>${esc(ev.title)}</h2>${ev.prizeTitle?`<div class="epz">🏆 Prize: <b>${esc(ev.prizeTitle)}</b></div>`:''}<div class="epl" id="epL"></div><div class="epd" id="epD"></div><div class="epa"><button class="btn" id="epJ">Join now</button><button class="btn sec" id="epLt">Join later</button></div></div>`;
+    p.innerHTML=`<div class="epc" role="dialog" aria-label="Event"><button class="epx" aria-label="Close">✕</button><div class="epb">🎉 NEW EVENT</div><h2>${esc(ev.title)}</h2>${(ev.prizes&&ev.prizes.length)||ev.prizeTitle?`<div class="epz">${Ev.prizeHTML(ev)}</div>`:''}<div class="epl" id="epL"></div><div class="epd" id="epD"></div><div class="epa"><button class="btn" id="epJ">Join now</button><button class="btn sec" id="epLt">Join later</button></div></div>`;
     document.body.appendChild(p);
     const tick=()=>{const n=Date.now();let tg=0,lb='';if(ev.startsAt&&n<ev.startsAt){tg=ev.startsAt;lb='Starts in'}else if(ev.endsAt&&n<ev.endsAt){tg=ev.endsAt;lb='Ends in'}else if(ev.endsAt){this.close(ev);return}
       $('#epL').textContent=tg?lb:'Live now';
@@ -3630,6 +3659,21 @@ Ev.play=function(ev,demo){
 @media(max-width:520px){.evcd.big .cdb{gap:7px}.evcd.big .cdb>div{min-width:64px;padding:12px 4px}.evcd.big .cdb b{font-size:32px}.evcd .cdb>div{min-width:48px}}
 .evgo{text-align:center;font-size:22px;font-weight:800;color:#fff!important;background:linear-gradient(135deg,#059669,#10b981)!important;margin-bottom:12px}
 @keyframes evshake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}.shake{animation:evshake .3s}`;document.head.appendChild(s)})();
+
+/* ===== Events v4: prize list by rank (1st / 2nd / Top 5 ...) ===== */
+const ordN=n=>{const v=n%100;return n+((v>=11&&v<=13)?'th':({1:'st',2:'nd',3:'rd'})[n%10]||'th')};
+const przLbl=p=>p.from===p.to?(p.from===1?'🥇 1st':p.from===2?'🥈 2nd':p.from===3?'🥉 3rd':ordN(p.from)):(p.from===1?'Top '+p.to:'Rank '+p.from+'–'+p.to);
+Ev.prizeHTML=function(ev){
+  const L=(ev.prizes||[]).slice().sort((a,b)=>a.from-b.from);
+  if(!L.length)return ev.prizeTitle?`<div class="evprz"><div class="prow"><span>🏆 Prize</span><b>${esc(ev.prizeTitle)}</b></div></div>`:'';
+  return '<div class="evprz"><div class="przh">🏆 Prizes</div>'+L.map(p=>`<div class="prow"><span>${przLbl(p)}</span><b>${esc(p.text)}</b></div>`).join('')+'</div>'};
+Ev.prizePill=function(ev){const L=ev.prizes||[];if(L.length)return '<span class="pill ok">🎁 '+esc(L[0].text)+(L.length>1?' +'+(L.length-1)+' more':'')+'</span>';return ev.prizeTitle?'<span class="pill ok">🎁 '+esc(ev.prizeTitle)+'</span>':''};
+(()=>{const s=document.createElement('style');s.textContent=`.evprz{margin:10px 0;border-radius:12px;padding:8px 12px;background:var(--soft);border:1px solid var(--border);text-align:left}
+.evprz .przh{font-size:12px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);margin-bottom:4px}
+.evprz .prow{display:flex;justify-content:space-between;gap:12px;padding:5px 0;border-top:1px dashed var(--border)}.evprz .przh+.prow{border-top:0}.evprz .prow:first-child{border-top:0}
+.evprz .prow span{font-weight:700;white-space:nowrap}.evprz .prow b{text-align:right}
+.epz .evprz{background:transparent;border:0;margin:0;padding:0;color:#fff}.epz .evprz .przh{color:#fff;opacity:.9}.epz .evprz .prow{border-color:rgba(255,255,255,.35);font-size:16px}
+.epc{max-height:92vh;overflow:auto}`;document.head.appendChild(s)})();
 
 // ================= COLLEGE PAGES (public) + SEO =================
 const SEO0={title:document.title,desc:(document.querySelector('meta[name=description]')||{}).content||''};
@@ -3930,19 +3974,20 @@ renderAdmin=(function(prev){return function(){
   const l=$('#aList'),ae=document.activeElement;
   if(l.contains(ae)&&/INPUT|TEXTAREA|SELECT/.test(ae.tagName))return;
   l.classList.remove('adm');prev();if(!Board.admin||isCollAdmin())return;
-  const S={dash:[],ver:[],site:[],seo:[],col:[],usr:[],txt:[],mail:[],les:[],sub:[],pay:[],evt:[]};
+  const S={dash:[],ana:[],ver:[],site:[],seo:[],col:[],usr:[],txt:[],mail:[],les:[],sub:[],pay:[],evt:[]};
   [...l.children].forEach(c=>{const h=(c.querySelector('h3')||{}).textContent||'';
     if(h.startsWith('📝'))S.txt.push(c);else if(h.startsWith('👤'))S.usr.push(c);else if(h.startsWith('🎨'))S.site.push(c);
     else if(h.startsWith('🏫')||h.includes('College logins'))S.col.push(c);
     else if(h.startsWith('🌐')){const b=c.querySelector('button');if(b&&/Page is/.test(b.textContent))b.remove();c.querySelector('h3').textContent='🗺️ Sitemap for Google';S.seo.push(c)}
     else S.ver.push(c)});
   S.dash=[adminDash(),adminFeatures()];S.les=[adminLessons()];S.sub=adminSub();S.seo=[adminSEO()].concat(S.seo);S.mail=[adminMail()];S.pay=[adminPay()];S.evt=[adminEvents()];
+  S.ana=(window.Ana&&AT==='ana')?[Ana.card()]:[];if(window.Ana&&AT!=='ana')Ana.stop();
   if(!S[AT])AT='dash';
-  const tabs=[['dash','📊 Dashboard'],['ver','🪪 Verification',Board.reqs.size],['site','🎨 Site & About'],['seo','🔎 SEO'],['col','🏫 Colleges'],['usr','👤 Users'],['mail','✉️ Email'],['les','📚 Lessons'],['sub','💳 Subscriptions'],['evt','🎁 Events'],['pay','💰 Payments'],['txt','📝 Typing texts']];
+  const tabs=[['dash','📊 Dashboard'],['ana','📈 Analytics'],['ver','🪪 Verification',Board.reqs.size],['site','🎨 Site & About'],['seo','🔎 SEO'],['col','🏫 Colleges'],['usr','👤 Users'],['mail','✉️ Email'],['les','📚 Lessons'],['sub','💳 Subscriptions'],['evt','🎁 Events'],['pay','💰 Payments'],['txt','📝 Typing texts']];
   l.innerHTML='';const bar=mk('div','seg abar');
   tabs.forEach(([id,t,n])=>{const b=mk('button',id===AT?'on':'',t);if(n)b.appendChild(mk('span','bd',n));b.onclick=()=>{AT=id;store.set('adminTab',id);renderAdmin()};bar.appendChild(b)});
   l.appendChild(bar);S[AT].forEach(c=>l.appendChild(c));l.classList.add('adm');
-  $('#aHead').textContent=({dash:'Dashboard',ver:'Verification',site:'Site & About',seo:'SEO',col:'Colleges',usr:'Users',mail:'Email',les:'Lessons',sub:'Subscriptions',pay:'Payments',evt:'Events',txt:'Typing texts'})[AT]||'Admin panel';const hp=$('#v-admin .head p.muted');if(hp)hp.textContent=({evt:'Show or hide events, home popup banner, prizes and joined users.',dash:'A quick look at your site, and the switches for what visitors can see.',ver:'Check student ID cards and approve or reject them.',site:'Site name, logo, icon and the About page.',seo:'How your site appears on Google.',col:'Colleges, college logins and public college pages.',usr:'Everyone who registered. Block or unblock users.',mail:'Welcome and congratulations emails: Gmail or company SMTP.',pay:'PhonePe and Razorpay keys, and which one is active.',les:'Choose what each lesson course card says, and show or hide a course.',txt:'Add or remove the texts used in typing tests.'})[AT]||'';
+  $('#aHead').textContent=({dash:'Dashboard',ana:'Analytics',ver:'Verification',site:'Site & About',seo:'SEO',col:'Colleges',usr:'Users',mail:'Email',les:'Lessons',sub:'Subscriptions',pay:'Payments',evt:'Events',txt:'Typing texts'})[AT]||'Admin panel';const hp=$('#v-admin .head p.muted');if(hp)hp.textContent=({ana:'Kitne log online hain, kahan se aaye (IP/location), kahan se link mila, kaun si device aur kaun se pages.',evt:'Show or hide events, home popup banner, prizes and joined users.',dash:'A quick look at your site, and the switches for what visitors can see.',ver:'Check student ID cards and approve or reject them.',site:'Site name, logo, icon and the About page.',seo:'How your site appears on Google.',col:'Colleges, college logins and public college pages.',usr:'Everyone who registered. Block or unblock users.',mail:'Welcome and congratulations emails: Gmail or company SMTP.',pay:'PhonePe and Razorpay keys, and which one is active.',les:'Choose what each lesson course card says, and show or hide a course.',txt:'Add or remove the texts used in typing tests.'})[AT]||'';
 }})(renderAdmin);
 applySEO();applyRoleUI();
 
@@ -5208,6 +5253,182 @@ Sub.listen(Board.user||null);
   Board.whenReady(()=>{try{if(Board.uid&&!isStaff()&&miss().length&&!sessionStorage.getItem('typeadda:nudge')){sessionStorage.setItem('typeadda:nudge','1');setTimeout(()=>toast('Complete your profile: add '+miss().map(x=>x[1]).join(', ')),1500)}}catch(e){}});
   try{if(view==='profile')renderHero()}catch(e){}
 }
+
+/* ================= Analytics: visitor tracking + Admin "Analytics" tab ================= */
+/* Visitors write to Firestore: live/{sid} (online now), visits/{sid} (one per session), stats/{YYYY-MM-DD} (daily counters). */
+(function(){
+const IST=()=>Date.now()+19800000;
+const DAY=()=>new Date(IST()).toISOString().slice(0,10);
+const HOUR=()=>new Date(IST()).getUTCHours();
+const kk=s=>String(s==null||s===''?'Unknown':s).replace(/[.~*\/\[\]`]+/g,' ').replace(/\s+/g,' ').trim().slice(0,40)||'Unknown';
+const UA=navigator.userAgent||'';
+const BOT=/bot|crawl|spider|slurp|headless|lighthouse|pagespeed|facebookexternalhit|preview|monitor/i;
+const dev=()=>/iPad|Tablet|Android(?!.*Mobile)/i.test(UA)?'Tablet':/Mobi|Android|iPhone/i.test(UA)?'Mobile':'Desktop';
+const osn=()=>/Android/i.test(UA)?'Android':/iPhone|iPad|iPod/i.test(UA)?'iOS':/Windows/i.test(UA)?'Windows':/Mac OS X/i.test(UA)?'macOS':/CrOS/i.test(UA)?'ChromeOS':/Linux/i.test(UA)?'Linux':'Other';
+const brn=()=>(/Android/.test(UA)&&/; wv\)/.test(UA))?'App / WebView':/FBAN|FBAV/.test(UA)?'Facebook app':/Instagram/.test(UA)?'Instagram app':/EdgA?\//.test(UA)?'Edge':/OPR\/|Opera/.test(UA)?'Opera':/SamsungBrowser/.test(UA)?'Samsung':/Firefox|FxiOS/.test(UA)?'Firefox':/Chrome|CriOS/.test(UA)?'Chrome':/Safari/.test(UA)?'Safari':'Other';
+const SRC=[[/google/,'Google'],[/bing/,'Bing'],[/yahoo/,'Yahoo'],[/duckduckgo/,'DuckDuckGo'],[/whatsapp|(^|\.)wa\.me$/,'WhatsApp'],[/facebook|(^|\.)fb\.(com|me)$/,'Facebook'],[/instagram/,'Instagram'],[/telegram|(^|\.)t\.me$/,'Telegram'],[/youtube|youtu\.be/,'YouTube'],[/twitter|(^|\.)x\.com$|^t\.co$/,'X / Twitter'],[/linkedin|lnkd/,'LinkedIn'],[/reddit/,'Reddit'],[/pinterest/,'Pinterest'],[/snapchat/,'Snapchat'],[/bit\.ly|tinyurl/,'Short link']];
+const APPS={'com.whatsapp':'WhatsApp','com.whatsapp.w4b':'WhatsApp','com.instagram.android':'Instagram','com.facebook.katana':'Facebook','com.facebook.orca':'Messenger','org.telegram.messenger':'Telegram','com.google.android.googlequicksearchbox':'Google','com.google.android.gm':'Gmail','com.twitter.android':'X / Twitter','com.snapchat.android':'Snapchat','com.google.android.youtube':'YouTube','com.linkedin.android':'LinkedIn'};
+const nameOf=s=>{s=String(s||'').toLowerCase();for(const [r,n] of SRC)if(r.test(s))return n;return ''};
+function srcInfo(){
+  let q;try{q=new URLSearchParams(location.search)}catch(e){q=new URLSearchParams('')}
+  const utm=(q.get('utm_source')||q.get('source')||q.get('ref')||'').trim();
+  const ref=document.referrer||'';let host='',app='';
+  try{if(ref.indexOf('android-app://')===0)app=ref.replace('android-app://','').split('/')[0];else if(ref)host=new URL(ref).hostname.replace(/^www\./,'')}catch(e){}
+  if(host&&host===location.hostname.replace(/^www\./,''))host='';
+  let src='Direct';
+  if(utm)src=nameOf(utm)||(utm.charAt(0).toUpperCase()+utm.slice(1)).slice(0,24);
+  else if(app)src=APPS[app]||app;
+  else if(host)src=nameOf(host)||host;
+  return {src,ref:(host||app||'').slice(0,60)}}
+async function geo(){
+  try{const c=JSON.parse(sessionStorage.getItem('ana:geo')||'null');if(c&&c.ip)return c}catch(e){}
+  const tryJ=async(u,map)=>{const ctl=new AbortController(),t=setTimeout(()=>ctl.abort(),6000);try{const r=await fetch(u,{signal:ctl.signal});if(!r.ok)throw 0;return map(await r.json())}finally{clearTimeout(t)}};
+  let g=null;
+  try{g=await tryJ('https://ipwho.is/',j=>{if(j.success===false)throw 0;return{ip:j.ip||'',cc:j.country_code||'',country:j.country||'',region:j.region||'',city:j.city||'',isp:(j.connection&&(j.connection.isp||j.connection.org))||''}})}catch(e){}
+  if(!g)try{g=await tryJ('https://ipapi.co/json/',j=>{if(j.error)throw 0;return{ip:j.ip||'',cc:j.country_code||'',country:j.country_name||'',region:j.region||'',city:j.city||'',isp:j.org||''}})}catch(e){}
+  if(!g)return{ip:'',cc:'',country:'Unknown',region:'Unknown',city:'Unknown',isp:''};
+  try{sessionStorage.setItem('ana:geo',JSON.stringify(g))}catch(e){}
+  return g}
+
+/* ---------------- tracking (visitor side) ---------------- */
+const Track={on:false,sid:'',base:null,q:{},tm:0,
+  bump(a,b){if(b!==undefined){const o=this.q[a]=this.q[a]||{};o[b]=(o[b]||0)+1}else this.q[a]=(this.q[a]||0)+1},
+  page(v){if(!this.on||v==='admin')return;this.bump('pv');this.bump('pages',kk(v))},
+  ev(n){if(this.on)this.bump('ev',kk(n))},
+  flush(){
+    const o=this.q;if(!Object.keys(o).length||!Board.db)return;this.q={};
+    const inc=firebase.firestore.FieldValue.increment;
+    const conv=x=>typeof x==='number'?inc(x):Object.fromEntries(Object.entries(x).map(([k,v])=>[k,conv(v)]));
+    Board.db.doc('stats/'+DAY()).set(conv(o),{merge:true}).catch(()=>{})},
+  beat(){
+    if(Board.admin){this.stop();return}
+    if(document.visibilityState!=='visible')return;
+    Board.db.doc('live/'+this.sid).set(Object.assign({},this.base,{uid:Board.uid||'',page:String(view||''),ts:Date.now()}),{merge:true}).catch(()=>{});
+    this.flush()},
+  stop(){this.on=false;clearInterval(this.tm)},
+  async go(){
+    if(this.on||!Board.db||Board.admin||BOT.test(UA)||window.__noTrack)return;
+    this.on=true;
+    let sid=sessionStorage.getItem('ana:sid');const fresh=!sid;
+    if(!sid){sid=Math.random().toString(36).slice(2,10)+Date.now().toString(36);sessionStorage.setItem('ana:sid',sid)}
+    let vid=localStorage.getItem('ana:vid'),isNew=false;
+    if(!vid){vid='v'+Math.random().toString(36).slice(2,12)+Date.now().toString(36);localStorage.setItem('ana:vid',vid);isNew=true}
+    const g=await geo();if(Board.admin||!this.on){this.on=false;return}
+    const s=srcInfo();this.sid=sid;
+    this.base={sid,vid,ip:g.ip||'',cc:g.cc||'',country:g.country||'Unknown',region:g.region||'Unknown',city:g.city||'Unknown',isp:String(g.isp||'').slice(0,60),src:s.src,ref:s.ref,device:dev(),os:osn(),browser:brn(),lang:(navigator.language||'').slice(0,12),sw:screen.width||0,sh:screen.height||0,start:Date.now()};
+    const b=this.base;
+    if(fresh){
+      Board.db.doc('visits/'+sid).set(Object.assign({},b,{uid:Board.uid||'',page:String(view||''),ts:Date.now(),isNew}),{merge:true}).catch(()=>{});
+      this.bump('sessions');this.bump(isNew?'newv':'ret');
+      if(localStorage.getItem('ana:day')!==DAY()){this.bump('uniques');localStorage.setItem('ana:day',DAY())}
+      this.bump('country',kk(b.country));this.bump('state',kk(b.region+', '+(b.cc||'?')));this.bump('city',kk(b.city+', '+b.region));
+      this.bump('source',kk(b.src));this.bump('device',b.device);this.bump('os',b.os);this.bump('browser',kk(b.browser));this.bump('hours',String(HOUR()))}
+    this.page(view);
+    this.beat();this.tm=setInterval(()=>this.beat(),60000);
+    document.addEventListener('visibilitychange',()=>{if(!this.on)return;if(document.visibilityState==='visible')this.beat();else this.flush()});
+    try{Board.auth.onAuthStateChanged(u=>{try{if(u&&u.metadata&&u.metadata.creationTime===u.metadata.lastSignInTime&&!localStorage.getItem('ana:su:'+u.uid)){localStorage.setItem('ana:su:'+u.uid,'1');this.ev('signups')}}catch(e){}})}catch(e){}
+  }};
+window.Track=Track;
+
+/* ---------------- admin side ---------------- */
+const flag=cc=>cc&&cc.length===2?String.fromCodePoint(...[...cc.toUpperCase()].map(c=>127397+c.charCodeAt(0))):'🌐';
+const ago=t=>{const s=Math.max(0,Math.round((Date.now()-t)/1000));return s<60?s+'s':s<3600?Math.floor(s/60)+'m':s<86400?Math.floor(s/3600)+'h':Math.floor(s/86400)+'d'};
+const NUMS=['sessions','uniques','newv','ret','pv'],MAPS=['pages','hours','country','state','city','source','device','os','browser','ev'];
+function agg(list){
+  const t={};NUMS.forEach(k=>t[k]=0);MAPS.forEach(k=>t[k]={});
+  list.forEach(d=>{NUMS.forEach(k=>t[k]+=Number(d[k])||0);MAPS.forEach(m=>{const s=d[m]||{};Object.keys(s).forEach(k=>t[m][k]=(t[m][k]||0)+(Number(s[k])||0))})});
+  return t}
+const csv=v=>'"'+String(v==null?'':v).replace(/"/g,'""')+'"';
+const Ana={un:[],tm:0,live:[],stats:[],vis:[],err:'',R:'7',q:'',root:null,cl:0,
+  online(){const lim=Date.now()-100000;return this.live.filter(l=>l.ts>lim).sort((a,b)=>b.ts-a.ts)},
+  start(){
+    if(this.un.length||!Board.db)return;
+    const bad=e=>{this.err=(e&&e.code)||'error';this.paint()};
+    this.un.push(Board.db.collection('live').limit(500).onSnapshot(x=>{this.err='';this.live=x.docs.map(d=>d.data());this.paint();this.clean()},bad));
+    this.un.push(Board.db.collection('stats').orderBy(firebase.firestore.FieldPath.documentId(),'desc').limit(60).onSnapshot(x=>{this.stats=x.docs.map(d=>Object.assign({id:d.id},d.data()));this.paint()},bad));
+    this.un.push(Board.db.collection('visits').orderBy('ts','desc').limit(150).onSnapshot(x=>{this.vis=x.docs.map(d=>d.data());this.paint()},bad));
+    this.tm=setInterval(()=>this.paint(),15000)},
+  stop(){this.un.splice(0).forEach(f=>{try{f()}catch(e){}});clearInterval(this.tm);this.tm=0},
+  clean(){ // remove stale "online" records (older than 3 hours)
+    if(Date.now()-this.cl<120000)return;this.cl=Date.now();
+    const old=this.live.filter(l=>l.ts<Date.now()-10800000&&l.sid).slice(0,20);if(!old.length)return;
+    const b=Board.db.batch();old.forEach(l=>b.delete(Board.db.doc('live/'+l.sid)));b.commit().catch(()=>{})},
+  card(){
+    this.start();if(this.root)return this.root;
+    const c=this.root=mk('div','card anwrap');
+    c.innerHTML=`<h3>📈 Visitors &amp; traffic</h3>
+<div id="anErr"></div>
+<div class="anbar"><div class="seg" id="anRange"></div><span class="note"><i class="andot"></i> Live: updates automatically</span></div>
+<div class="atiles" id="anTiles"></div>
+<h4>🟢 Abhi website pe online</h4><div id="anLive"></div>
+<h4>📊 <span id="anTrT">Trend</span></h4><div id="anTrend"></div>
+<div class="angrid" id="anBreak"></div>
+<h4>🧾 Recent visitors (IP ke saath)</h4>
+<div class="anbar"><input class="field" id="anQ" placeholder="Search IP, city, state, source..." style="max-width:300px"><button class="ghost" id="anCsv">⬇ Export CSV</button></div>
+<div id="anVis"></div>
+<h4>🔗 Trackable link banao</h4>
+<p class="note">WhatsApp/Instagram jaise apps kai baar referrer nahi bhejte (Direct dikhta hai). Link me source jod do, phir yahan sahi naam dikhega.</p>
+<div class="anbar"><input class="field" id="lkBase" style="max-width:340px"><select class="field" id="lkSrc" style="max-width:170px"></select><input class="field" id="lkCustom" placeholder="custom name" style="max-width:150px" hidden></div>
+<div class="anbar"><input class="field" id="lkOut" readonly style="max-width:520px"><button class="ghost" id="lkCp">Copy link</button></div>
+<p class="note" style="margin-top:12px">⚠️ Location IP address se andaze se nikalti hai (city/state kabhi galat ho sakte hain, khaaskar mobile data me). Logged-in users ka district/state unki profile se bhi dikhta hai.</p>`;
+    const rg=c.querySelector('#anRange');
+    [['1','Today'],['7','7 days'],['30','30 days']].forEach(([v,t])=>{const b=mk('button',this.R===v?'on':'',t);b.onclick=()=>{this.R=v;[...rg.children].forEach(x=>x.classList.toggle('on',x===b));this.paint()};rg.appendChild(b)});
+    const q=c.querySelector('#anQ');q.oninput=()=>{this.q=q.value.trim().toLowerCase();this.paintVis()};
+    c.querySelector('#anCsv').onclick=()=>this.exportCsv();
+    const base=c.querySelector('#lkBase'),sel=c.querySelector('#lkSrc'),cu=c.querySelector('#lkCustom'),out=c.querySelector('#lkOut');
+    base.value=location.origin+location.pathname;
+    ['whatsapp','facebook','instagram','telegram','youtube','twitter','linkedin','google-ads','custom'].forEach(s=>{const o=mk('option','',s);o.value=s;sel.appendChild(o)});
+    const upd=()=>{cu.hidden=sel.value!=='custom';const s=sel.value==='custom'?(cu.value.trim()||'other'):sel.value;let u=base.value.trim();if(!u)return;out.value=u+(u.includes('?')?'&':'?')+'utm_source='+encodeURIComponent(s)};
+    base.oninput=sel.onchange=cu.oninput=upd;upd();
+    c.querySelector('#lkCp').onclick=()=>{out.select();try{navigator.clipboard.writeText(out.value)}catch(e){document.execCommand('copy')}toast('Link copied')};
+    setTimeout(()=>this.paint(),0);
+    return c},
+  range(){const n=Number(this.R),cut=new Date(IST()-(n-1)*864e5).toISOString().slice(0,10);return this.stats.filter(d=>d.id>=cut)},
+  bars(title,map,n){
+    const e=Object.entries(map||{}).sort((a,b)=>b[1]-a[1]).slice(0,n||8),tot=Object.values(map||{}).reduce((a,b)=>a+b,0),mx=e.length?e[0][1]:0;
+    return `<div class="anbox"><h5>${esc(title)}</h5>`+(e.length?e.map(([k,v])=>`<div class="anr" title="${esc(k)}: ${v} (${tot?Math.round(v/tot*100):0}%)"><span class="al">${esc(k)}</span><span class="abr"><i style="width:${mx?Math.max(3,Math.round(v/mx*100)):0}%"></i></span><b>${v}</b></div>`).join(''):'<p class="note">No data yet</p>')+'</div>'},
+  paint(){
+    const r=this.root;if(!r||!r.isConnected)return;
+    const er=r.querySelector('#anErr');
+    er.innerHTML=this.err?'<div class="anwarn">'+(this.err==='permission-denied'?'⛔ Firestore rules me analytics ke rules add nahi hue. Neeche diya hua rules snippet Firestore &gt; Rules me paste karke Publish karo.':'Data load nahi hua: '+esc(this.err))+'</div>':'';
+    const on=this.online(),today=this.stats.find(d=>d.id===DAY())||{},A=agg(this.range());
+    const members=on.filter(l=>l.uid).length,rs={'1':'today','7':'7d','30':'30d'}[this.R];
+    const tiles=[['🟢',on.length,'Online now ('+members+' logged-in, '+(on.length-members)+' guest)','c2'],['👁️',today.uniques||0,'Visitors today','c1'],['🔁',today.sessions||0,'Sessions today','c3'],['📄',today.pv||0,'Page views today','c4'],
+      ['📅',A.sessions,'Sessions ('+rs+')','c5'],['⌨️',(A.ev&&A.ev.tests)||0,'Tests completed ('+rs+')','c6'],['✍️',(A.ev&&A.ev.signups)||0,'New signups ('+rs+')','c7'],['🆕',(A.newv+A.ret)?Math.round(A.newv/(A.newv+A.ret)*100)+'%':'-','New visitors ('+rs+')','c1']];
+    r.querySelector('#anTiles').innerHTML=tiles.map(([ic,n,t,cl])=>`<div class="atile"><i class="ai ${cl}">${ic}</i><div><b>${n}</b><span>${esc(t)}</span></div></div>`).join('');
+    // live table
+    const lv=r.querySelector('#anLive');
+    lv.innerHTML=on.length?`<div class="scroll-x"><table><thead><tr><th>Location</th><th>IP</th><th>User</th><th>Page</th><th>Device</th><th>Source</th><th>On site</th></tr></thead><tbody>`+on.slice(0,100).map(l=>{
+      const u=l.uid&&Board.users&&Board.users.get?Board.users.get(l.uid):null,pr=(u&&u.profile)||{},who=u?esc(u.name||u.email||'User')+((pr.district||pr.state)?'<br><small class="muted">'+esc([pr.district,pr.state].filter(Boolean).join(', '))+'</small>':''):(l.uid?'User':'<span class="muted">Guest</span>');
+      return `<tr><td>${flag(l.cc)} ${esc(l.city||'-')}, ${esc(l.region||'-')}<br><small class="muted">${esc(l.country||'')}</small></td><td>${esc(l.ip||'-')}</td><td>${who}</td><td>${esc(l.page||'')}</td><td>${esc(l.device||'')}<br><small class="muted">${esc((l.os||'')+' · '+(l.browser||''))}</small></td><td>${esc(l.src||'')}</td><td>${ago(l.start||l.ts)}</td></tr>`}).join('')+'</tbody></table></div>':'<p class="note">Abhi koi online nahi (ya tracking abhi shuru hui hai). Visitor har 1 minute me apni presence bhejta hai.</p>';
+    // trend
+    let cols=[],tt='Visitors trend';
+    if(this.R==='1'){tt='Aaj ke visits ghante ke hisaab se (IST)';const h=today.hours||{},mx=Math.max(1,...Object.values(h));for(let i=0;i<24;i++){const v=h[i]||0;cols.push([v,mx,String(i),i+':00 - '+v+' visits'])}}
+    else{const n=Number(this.R);tt='Pichhle '+n+' din: sessions';const m=new Map(this.stats.map(d=>[d.id,d])),days=[];for(let i=n-1;i>=0;i--)days.push(new Date(IST()-i*864e5).toISOString().slice(0,10));const mx=Math.max(1,...days.map(d=>(m.get(d)||{}).sessions||0));days.forEach(d=>{const x=m.get(d)||{};cols.push([x.sessions||0,mx,d.slice(8),d+': '+(x.sessions||0)+' sessions, '+(x.uniques||0)+' visitors, '+(x.pv||0)+' page views'])})}
+    r.querySelector('#anTrT').textContent=tt;
+    r.querySelector('#anTrend').innerHTML='<div class="antrend">'+cols.map(([v,mx,lab,tip])=>`<div class="anc" title="${esc(tip)}"><div class="ab"><i style="height:${v?Math.max(4,Math.round(v/mx*100)):1}%"></i></div><small>${esc(lab)}</small></div>`).join('')+'</div>';
+    // breakdown
+    r.querySelector('#anBreak').innerHTML=this.bars('🌍 Country',A.country)+this.bars('🗺️ State',A.state)+this.bars('📍 City / District',A.city,10)+this.bars('🔗 Traffic source',A.source,10)+this.bars('📱 Device',A.device)+this.bars('💻 Operating system',A.os)+this.bars('🧭 Browser',A.browser)+this.bars('📄 Pages viewed',A.pages,10);
+    this.paintVis()},
+  rows(){const q=this.q;return this.vis.filter(v=>!q||[v.ip,v.city,v.region,v.country,v.src,v.ref,v.device,v.os,v.browser,v.isp,v.page].join(' ').toLowerCase().includes(q))},
+  paintVis(){
+    const r=this.root;if(!r)return;const el=r.querySelector('#anVis');if(!el)return;const rows=this.rows();
+    el.innerHTML=rows.length?`<div class="scroll-x"><table><thead><tr><th>When</th><th>IP</th><th>Location</th><th>Source</th><th>Device</th><th>First page</th><th>Type</th></tr></thead><tbody>`+rows.slice(0,150).map(v=>`<tr><td title="${esc(new Date(v.ts||0).toLocaleString())}">${ago(v.ts||0)} ago</td><td>${esc(v.ip||'-')}<br><small class="muted">${esc(v.isp||'')}</small></td><td>${flag(v.cc)} ${esc(v.city||'-')}, ${esc(v.region||'-')}<br><small class="muted">${esc(v.country||'')}</small></td><td>${esc(v.src||'')}${v.ref?'<br><small class="muted">'+esc(v.ref)+'</small>':''}</td><td>${esc(v.device||'')}<br><small class="muted">${esc((v.os||'')+' · '+(v.browser||''))}</small></td><td>${esc(v.page||'')}</td><td>${v.isNew?'🆕 New':'🔁 Returning'}</td></tr>`).join('')+'</tbody></table></div>':'<p class="note">Koi visit nahi mili.</p>'},
+  exportCsv(){
+    const rows=this.rows();if(!rows.length){toast('Nothing to export');return}
+    const h=['time','ip','country','region','city','isp','source','referrer','device','os','browser','first_page','new_visitor'];
+    const t=[h.join(',')].concat(rows.map(v=>[new Date(v.ts||0).toISOString(),v.ip,v.country,v.region,v.city,v.isp,v.src,v.ref,v.device,v.os,v.browser,v.page,v.isNew?'yes':'no'].map(csv).join(','))).join('\n');
+    const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([t],{type:'text/csv'}));a.download='visitors-'+DAY()+'.csv';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),2000)}
+};
+window.Ana=Ana;
+
+/* ---------------- wiring ---------------- */
+try{const _show=show;show=function(v){const r=_show.apply(this,arguments);try{Track.page(v)}catch(e){}return r}}catch(e){console.warn('analytics: show hook failed',e)}
+try{const _ft=finishTest;finishTest=function(){const r=_ft.apply(this,arguments);try{Track.ev('tests')}catch(e){}return r}}catch(e){console.warn('analytics: finishTest hook failed',e)}
+const boot=()=>{try{Track.go()}catch(e){console.warn(e)}};
+if(Board.whenReady)Board.whenReady(boot);else{let n=0;const iv=setInterval(()=>{if(Board.db||++n>60){clearInterval(iv);if(Board.db)boot()}},500)}
+})();
+
 </script>
 </body>
 </html>
