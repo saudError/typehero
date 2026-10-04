@@ -182,6 +182,12 @@ kbd{font-family:var(--mono);font-size:12px;background:var(--card);border:1px sol
 .note{font-size:14px;color:var(--muted)}
 .pbtag{display:inline-block;background:var(--hl);color:var(--text);padding:2px 10px;border-radius:6px;font-weight:700;font-size:13px;margin-left:8px}
 /* about page */
+
+/* about: collection + expense boxes */
+.abFin{grid-template-columns:repeat(auto-fit,minmax(220px,1fr));margin-top:-12px}
+.abStat.abOff{opacity:.65;border-style:dashed}
+.abEye{margin-top:10px;font-size:12px;font-weight:700;padding:5px 10px;border-radius:999px;border:1px solid var(--border);background:var(--card);color:var(--ink);cursor:pointer}
+.abEye:hover{border-color:var(--accent)}
 .abHero{background:linear-gradient(135deg,var(--accent),color-mix(in srgb,var(--accent) 60%,#000));color:var(--accent-t);border-radius:16px;padding:34px 30px;margin-bottom:20px}
 .abHero h2{font-size:34px;margin-bottom:10px}.abHero p{max-width:720px;opacity:.93;margin-top:8px;font-size:17px}
 .abStats{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:26px}
@@ -193,7 +199,7 @@ kbd{font-family:var(--mono);font-size:12px;background:var(--card);border:1px sol
 .abFeat button{text-align:left;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px;display:flex;flex-direction:column;gap:6px}
 .abFeat button:hover{border-color:var(--accent)}.abFeat b{font-size:16px}.abFeat span{font-size:14px;color:var(--muted)}.abFeat i{font-style:normal;font-size:26px}
 .abLinks{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:12px}
-@media(max-width:620px){.abStats{grid-template-columns:1fr}.abHero{padding:24px 20px}.abHero h2{font-size:28px}}
+@media(max-width:620px){.abStats{grid-template-columns:1fr}.abFin{margin-top:0}.abHero{padding:24px 20px}.abHero h2{font-size:28px}}
 /* new record celebration */
 .recbanner{display:flex;align-items:center;gap:14px;margin:4px 0 18px;padding:14px 18px;border-radius:12px;background:linear-gradient(100deg,#FFE98A,#FFC93C);color:#4A3500;border:1px solid #E5B21F;box-shadow:0 6px 18px rgba(240,180,20,.35);animation:recIn .5s cubic-bezier(.2,1.3,.4,1)}
 .recbanner .rbIc{font-size:38px;line-height:1;animation:crownWiggle 1.6s ease-in-out infinite}
@@ -3051,7 +3057,7 @@ function fmtTotal(t){t=Math.round(t);if(t<60)return t+' sec';const h=Math.floor(
   return h?h.toLocaleString('en-IN')+' hrs '+m+' min':m+' min'}
 function openInfo(k){const i=INFO[k];if(!i)return;$('#iTitle').innerHTML=i[0];$('#iBody').innerHTML=i[1];openModal('mInfo')}
 function renderAbout(){
-  const root=$('#aboutRoot');if(!root)return;
+  const root=$('#aboutRoot');if(!root)return;try{pubTotals()}catch(e){}
   const n=SITE.name||'Chiku Type',st=aboutStats(),L=SITE.links||{},clean={};
   try{SOCU.forEach(([k])=>{const u=cleanURL(L[k]);if(u)clean[k]=u})}catch(e){}
   let soc='';try{soc=socRow(clean)}catch(e){}
@@ -3068,7 +3074,7 @@ function renderAbout(){
     <div class="abStat"><i>👥</i><b>${st.users.toLocaleString('en-IN')}</b><span>Total users</span></div>
     <div class="abStat"><i>⏱️</i><b>${esc(fmtTotal(st.time))}</b><span>Total time spent by all users</span></div>
     <div class="abStat"><i>✅</i><b>${st.tests.toLocaleString('en-IN')}</b><span>Total tests completed</span></div>
-  </div>
+  </div>${finBoxes()}
   <p class="abNote">${Board.db?'Counted from typists who have joined the leaderboard. Updates live.':'Leaderboard is offline, showing your device only.'}</p>
   <h3 class="abSec">What you can do here</h3>
   <div class="abFeat">${F.map(f=>`<button data-goto="${f[3]}"><i>${f[0]}</i><b>${f[1]}</b><span>${f[2]}</span></button>`).join('')}</div>
@@ -3080,7 +3086,8 @@ function renderAbout(){
   <div class="card">${mail?'<p>Questions, feedback or problems? Write to <b>'+esc(mail)+'</b></p>':''}${soc?'<p style="margin-top:10px"><b>Follow us</b></p><div class="socs">'+soc+'</div>':''}
   <div class="abLinks"><button class="btn sec" data-info="terms">Terms &amp; Conditions</button><button class="btn sec" data-info="privacy">Privacy</button><button class="btn" data-goto="type">Start typing</button></div></div>`;
 }
-$('#aboutRoot').onclick=e=>{const g=e.target.closest('[data-goto]');if(g){show(g.dataset.goto);return}
+$('#aboutRoot').onclick=e=>{const fb=e.target.closest('[data-fin]');if(fb){finToggle(fb.dataset.fin);return}
+  const g=e.target.closest('[data-goto]');if(g){show(g.dataset.goto);return}
   const i=e.target.closest('[data-info]');if(i)openInfo(i.dataset.info)};
 
 // footer info
@@ -3106,6 +3113,7 @@ initialWords=(function(prev){return function(){
 // admin panel
 const TXFOR=[['all','Every timed test'],['15','15 sec test'],['30','30 sec test'],['60','60 sec test'],['120','120 sec test'],['quote','Quote mode']];
 const dset=async(path,data)=>{try{await Board.db.doc(path).set(data);return true}catch(e){toast('Failed: '+((e&&e.code)||'error'));return false}};
+const dsetM=async(path,data)=>{try{await Board.db.doc(path).set(data,{mergeFields:Object.keys(data)});return true}catch(e){toast('Failed: '+((e&&e.code)||'error'));return false}};
 const ddel=async path=>{try{await Board.db.doc(path).delete();return true}catch(e){toast('Failed: '+((e&&e.code)||'error'));return false}};
 let txEdit=null,userQ='',collQ='';
 async function bulkColleges(arr){const names=[...new Set(arr.map(x=>x.trim()).filter(x=>x.length>=3))];if(!names.length||!Board.db)return;
@@ -3319,7 +3327,7 @@ renderAdmin=(function(prev){return function(){
   const lk={};SOC.forEach(([k,t])=>{lk[k]=inp(t+' link',(SITE.links||{})[k],'https://...')});
   const a=mk('div','ractions'),sv=mk('button','btn','Save site settings'),rl=mk('button','ghost','Remove logo and icon');
   sv.onclick=async()=>{const links={};SOC.forEach(([k])=>{const v=lk[k].value.trim();if(v)links[k]=v});
-    if(await dset('site/config',{name:nm.value.trim()||'Chiku Type',logo:sd.logo!==undefined?sd.logo:(SITE.logo||''),icon:sd.icon!==undefined?sd.icon:(SITE.icon||''),about:ta.value.trim(),links,showColleges:SITE.showColleges!==false,showEvents:SITE.showEvents!==false,showCollegeRank:SITE.showCollegeRank!==false,seo:SITE.seo||{},exams:SITE.exams||[],pageSeo:SITE.pageSeo||{},lessonAbout:SITE.lessonAbout||{},lessonOff:SITE.lessonOff||{},ts:Date.now()})){sd={};toast('Site settings saved')}};
+    if(await dsetM('site/config',{name:nm.value.trim()||'Chiku Type',logo:sd.logo!==undefined?sd.logo:(SITE.logo||''),icon:sd.icon!==undefined?sd.icon:(SITE.icon||''),about:ta.value.trim(),links,showColleges:SITE.showColleges!==false,showEvents:SITE.showEvents!==false,showCollegeRank:SITE.showCollegeRank!==false,seo:SITE.seo||{},exams:SITE.exams||[],pageSeo:SITE.pageSeo||{},lessonAbout:SITE.lessonAbout||{},lessonOff:SITE.lessonOff||{},ts:Date.now()})){sd={};toast('Site settings saved')}};
   rl.onclick=()=>{sd={logo:'',icon:''};renderAdmin();toast('Press Save to apply')};
   a.append(sv,rl);s.append(f,a);l.appendChild(s)}})(renderAdmin);
 applySite();
@@ -4167,7 +4175,7 @@ renderProfile=(function(prev){return function(){prev();const pb=$('#pColBox');if
 renderBoard=(function(prev){return function(){
   const off=SITE.showCollegeRank===false;if(off&&BS.scope==='college')BS.scope='global';
   prev();if(off)$$('#bTabs .tab').forEach(t=>{if(/College/.test(t.textContent))t.remove()})}})(renderBoard);
-applySite=(function(prev){return function(){prev();if(view==='board')renderBoard();if(typeof applySEO==='function')applySEO()}})(applySite);
+applySite=(function(prev){return function(){prev();if(view==='board')renderBoard();if(view==='about'&&typeof renderAbout==='function')renderAbout();if(typeof applySEO==='function')applySEO()}})(applySite);
 const setSite=async patch=>{try{await Board.db.doc('site/config').set(patch,{merge:true});toast('Saved');return true}catch(e){toast('Failed: '+((e&&e.code)||'error'));return false}};
 
 // ----- SEO -----
@@ -4262,7 +4270,7 @@ renderAdmin=(function(prev){return function(){
     else if(h.startsWith('🏫')||h.includes('College logins'))S.col.push(c);
     else if(h.startsWith('🌐')){const b=c.querySelector('button');if(b&&/Page is/.test(b.textContent))b.remove();c.querySelector('h3').textContent='🗺️ Sitemap for Google';S.seo.push(c)}
     else S.ver.push(c)});
-  S.dash=[adminDash(),adminFeatures()];S.les=[adminLessons()];S.sub=adminSub();S.seo=[adminPageSeo(),adminExams(),adminSEO()].concat(S.seo);S.mail=[adminMail()];S.pay=[adminPay()];S.evt=[adminEvents()];
+  S.dash=[adminDash(),adminFeatures(),adminAboutBoxes()];S.les=[adminLessons()];S.sub=adminSub();S.seo=[adminPageSeo(),adminExams(),adminSEO()].concat(S.seo);S.mail=[adminMail()];S.pay=[adminPay(),adminAboutBoxes()];S.evt=[adminEvents()];
   S.ana=(window.Ana&&AT==='ana')?[Ana.card()]:[];if(window.Ana&&AT!=='ana')Ana.stop();
   if(!S[AT])AT='dash';
   const tabs=[['dash','📊 Dashboard'],['ana','📈 Analytics'],['ver','🪪 Verification',Board.reqs.size],['site','🎨 Site & About'],['seo','🔎 SEO'],['col','🏫 Colleges'],['usr','👤 Users'],['mail','✉️ Email'],['les','📚 Lessons'],['sub','💳 Subscriptions'],['evt','🎁 Events'],['pay','💰 Payments'],['txt','📝 Typing texts']];
@@ -5869,6 +5877,7 @@ PubX.rank=(function(prev){return function(d,v,key,scope){
 aboutStats=(function(prev){return function(){
   const r=prev.apply(this,arguments);
   if(Board.db){LB.loadTotals();if(LB.tot0){r.users=Math.max(LB.tot0.n,Board.users&&Board.users.size||0);r.time=LB.tot0.t||r.time;r.tests=LB.tot0.k||r.tests}}
+  const P0=SITE.stats;if(P0){r.users=Math.max(r.users||0,+P0.users||0);r.time=Math.max(r.time||0,+P0.time||0);r.tests=Math.max(r.tests||0,+P0.tests||0)}
   return r}})(aboutStats);
 // after you post a score, refresh your rank
 Board._push=(function(prev){return async function(){
@@ -6243,6 +6252,80 @@ window.addEventListener('popstate',()=>UserPage.route());
       }catch(e){if(my===n)res.innerHTML='<div class="note">Search is not available right now.</div>'}},300)}})();
 {const fb=$('#fBlog');if(fb&&UserPage.can)fb.href='/blog'}
 UserPage.route();
+
+/* ===== About page: Total collection + Total expense (admin can hide / show) ===== */
+const inr=n=>'₹'+Math.round(+n||0).toLocaleString('en-IN');
+function finBoxes(){
+  const F=SITE.fin||{},adm=!!Board.admin;
+  const box=(key,ic,val,label)=>{const on=F[key]===true;if(!on&&!adm)return '';
+    return `<div class="abStat${on?'':' abOff'}"><i>${ic}</i><b>${esc(inr(val))}</b><span>${label}</span>`
+      +(adm?`<button class="abEye" data-fin="${key}">${on?'👁️ Visible to all · tap to hide':'🚫 Hidden from visitors · tap to show'}</button>`:'')+`</div>`};
+  const h=box('showCol','💰',F.col,'Total collection')+box('showExp','🧾',F.exp,'Total expense');
+  return h?`<div class="abStats abFin">${h}</div>`:'';
+}
+async function finToggle(key){
+  if(!Board.admin||!Board.db)return;
+  const F=SITE.fin||{};
+  try{await Board.db.doc('site/config').set({fin:{[key]:!(F[key]===true)}},{merge:true});toast('Saved')}
+  catch(e){toast('Failed: '+((e&&e.code)||'error'))}
+}
+// admin computes the totals once in a while and publishes them in site/config, so guests and normal users see the same numbers
+const PUBT={busy:false,last:0,payN:null};
+async function pubTotals(force){
+  if(!Board.admin||!Board.db||PUBT.busy)return;
+  if(!force&&Date.now()-PUBT.last<600000)return;
+  if(!Board.users||!Board.users.size)return;            // admin's user list not loaded yet
+  PUBT.busy=true;PUBT.last=Date.now();
+  try{
+    const per=new Map();
+    const sc=await Board.db.collection('scores').limit(5000).get();
+    sc.docs.forEach(d=>{const x=d.data();per.set(d.id,{t:+x.time||0,k:+x.tests||0})});
+    Board.users.forEach((u,id)=>{const o=per.get(id)||{t:0,k:0};per.set(id,{t:Math.max(o.t,+u.time||0),k:Math.max(o.k,Array.isArray(u.H)?u.H.length:0)})});
+    let users=0,time=0,tests=0;
+    per.forEach((v,id)=>{if(Board.blocked&&Board.blocked.has(id))return;users++;time+=v.t;tests+=v.k});
+    let col=null;
+    try{const pm=await Board.db.collection('payments').where('status','==','paid').limit(5000).get();
+      col=0;pm.docs.forEach(d=>{col+=Number(d.data().amount)||0});PUBT.payN=pm.size}catch(e){console.warn('collection total',e)}
+    const patch={stats:{users,time,tests,ts:Date.now()}};
+    if(col!==null)patch.fin={col:col,colTs:Date.now()};
+    await Board.db.doc('site/config').set(patch,{merge:true});
+    if(force)toast('Totals updated');
+  }catch(e){console.warn('pubTotals',e);if(force)toast('Could not update totals ('+((e&&e.code)||'error')+')')}
+  PUBT.busy=false;
+}
+async function saveExpenses(list){
+  const exp=list.reduce((n,x)=>n+(+x.amt||0),0);
+  try{await Board.db.doc('site/config').set({fin:{expenses:list,exp:exp}},{merge:true});toast('Saved');return true}
+  catch(e){toast('Failed: '+((e&&e.code)||'error'));return false}
+}
+const FINUI={amt:'',note:''};
+function adminAboutBoxes(){
+  const F=SITE.fin||{},c=mk('div','card');
+  c.appendChild(mk('h3','','💰 About page: Total collection & Total expense'));c.firstChild.style.marginBottom='4px';
+  c.appendChild(mk('p','muted','These two boxes show on the About page. Both are hidden from visitors until you switch them on. You will always see them on the About page (dimmed when hidden).'));
+  [['showCol','💰 Total collection','Money received from online payments (paid payments only).'],
+   ['showExp','🧾 Total expense','Sum of the expenses you add below.']].forEach(([k,t,d])=>{
+    const r=mk('div','frow'),w=mk('div');w.appendChild(mk('b','',t));w.appendChild(mk('p','note',d));
+    const on=F[k]===true,b=mk('button','sw'+(on?' on':''));b.title=on?'Visible: click to hide':'Hidden: click to show';b.setAttribute('aria-pressed',on);
+    b.onclick=()=>{b.disabled=true;finToggle(k).then(()=>{b.disabled=false})};r.append(w,b);c.appendChild(r)});
+  const st=mk('p','muted','Collection: '+inr(F.col)+(PUBT.payN!=null?' ('+PUBT.payN+' paid payments)':'')+'  ·  Expense: '+inr(F.exp));st.style.margin='12px 0 6px';c.appendChild(st);
+  const rf=mk('button','ghost','Refresh collection & user totals');rf.onclick=()=>{rf.disabled=true;pubTotals(true).then(()=>{rf.disabled=false;renderAdmin()})};c.appendChild(rf);
+  c.appendChild(mk('h4','','Add an expense'));c.lastChild.style.margin='16px 0 6px';
+  const row=mk('div','');row.style.cssText='display:flex;gap:8px;flex-wrap:wrap;align-items:center';
+  const a=mk('input');a.type='number';a.min='0';a.placeholder='Amount ₹';a.value=FINUI.amt;a.style.maxWidth='140px';a.oninput=()=>{FINUI.amt=a.value};
+  const n=mk('input');n.type='text';n.maxLength=60;n.placeholder='Note (e.g. server, ads). Visible only in site settings';n.value=FINUI.note;n.style.cssText='flex:1;min-width:180px';n.oninput=()=>{FINUI.note=n.value};
+  const add=mk('button','btn','Add expense');
+  add.onclick=async()=>{const v=Math.round(+FINUI.amt);if(!(v>0)){toast('Enter an amount');return}
+    const list=(F.expenses||[]).concat([{id:'x'+Date.now(),amt:v,note:FINUI.note.trim().slice(0,60),ts:Date.now()}]);
+    add.disabled=true;if(await saveExpenses(list)){FINUI.amt='';FINUI.note='';}add.disabled=false;renderAdmin()};
+  row.append(a,n,add);c.appendChild(row);
+  const L=(F.expenses||[]).slice().sort((x,y)=>(y.ts||0)-(x.ts||0));
+  if(L.length){const box=mk('div','');box.style.marginTop='10px';
+    L.slice(0,50).forEach(x=>{const r=mk('div','crow');r.appendChild(mk('span','',new Date(x.ts||0).toLocaleDateString()+' · '+inr(x.amt)+(x.note?' · '+x.note:'')));
+      const del=mk('button','ghost','Delete');del.onclick=async()=>{if(!confirm('Delete this expense?'))return;await saveExpenses((F.expenses||[]).filter(y=>y.id!==x.id));renderAdmin()};r.appendChild(del);box.appendChild(r)});
+    c.appendChild(box)}
+  try{pubTotals()}catch(e){}
+  return c}
 </script>
 </body>
 </html>
