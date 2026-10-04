@@ -1,13 +1,7 @@
 {
-  "functions": {
-    "api/profile.js": { "includeFiles": "index.html" },
-    "api/sitemap-users.js": { "includeFiles": "index.html" }
-  },
   "rewrites": [
     { "source": "/lessons", "destination": "/index.html" },
     { "source": "/leaderboard", "destination": "/index.html" },
-    { "source": "/blog", "destination": "/blog.html" },
-    { "source": "/sitemap-users.xml", "destination": "/api/sitemap-users" },
-    { "source": "/:u([A-Za-z0-9_.]+)", "destination": "/api/profile?u=:u" }
+    { "source": "/blog", "destination": "/blog.html" }
   ]
 }
