@@ -2,6 +2,7 @@
   "rewrites": [
     { "source": "/lessons", "destination": "/index.html" },
     { "source": "/leaderboard", "destination": "/index.html" },
-    { "source": "/blog", "destination": "/blog.html" }
+    { "source": "/blog", "destination": "/blog.html" },
+    { "source": "/:u([A-Za-z0-9_.]+)", "destination": "/index.html" }
   ]
 }
