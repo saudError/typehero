@@ -1,6 +1,16 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-TTDXZBWXDP"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-TTDXZBWXDP');
+  window.__ga=1; /* admin-panel GA loader skips itself, so the tag is never added twice */
+</script>
 <meta charset="utf-8">
 <link rel="preconnect" href="https://www.gstatic.com" crossorigin>
 <link rel="preload" as="script" href="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js">
@@ -71,6 +81,21 @@ html{scroll-padding-top:env(safe-area-inset-top,0px)}
   --margin:#E0664B;--err:#CF2C3A;--hl:rgba(255,206,64,.7);--accent:#0B5C46;--accent-t:#FFFFFF;
   --card:#FFFFFF;--border:#C6DDD1;--ok:#1E8E5A;--muted:#53736A;--soft:#EDF7F2;
 }
+:root[data-appt="white"]{--bg:#FFFFFF;--paper:#FFFFFF;--ink:#111111;--text:#1A1A1A;--dim:#A6A6A6;--line:#E7E7E7;--margin:#D9363E;--err:#D7263D;--hl:rgba(255,222,64,.6);--accent:#111111;--accent-t:#FFFFFF;--card:#FFFFFF;--border:#E2E2E2;--ok:#1E8E5A;--muted:#666666;--soft:#F4F4F4}
+:root[data-appt="soft"]{--bg:#EDE8DC;--paper:#F6F1E6;--ink:#3E4A59;--text:#3B3F46;--dim:#ABA595;--line:#DDD6C5;--margin:#C9695F;--err:#C2453D;--hl:rgba(240,200,90,.55);--accent:#5B6F8F;--accent-t:#FFFFFF;--card:#F8F4EA;--border:#D9D1BE;--ok:#3F8F63;--muted:#7A7767;--soft:#EFE9DB}
+:root[data-appt="eye"]{--bg:#F0DFB8;--paper:#F7EACB;--ink:#5B3A0E;--text:#4A3515;--dim:#B79F70;--line:#E3CFA0;--margin:#C0562F;--err:#B3261E;--hl:rgba(230,150,40,.45);--accent:#8A5200;--accent-t:#FFF6E3;--card:#F9EED3;--border:#DDC68F;--ok:#4C7A2A;--muted:#85703F;--soft:#F2E3BF}
+/* theme picker */
+.themebox{display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:10px;margin-top:10px;width:100%}
+.tcard{border:2px solid var(--border);border-radius:12px;padding:0;overflow:hidden;background:none;text-align:left;cursor:pointer}
+.tcard.on{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent)}
+.tcard .sw{display:block;padding:10px 10px 8px;font-family:var(--mono);font-size:15px;font-weight:700;line-height:1.2;white-space:nowrap}
+.tcard .nm{display:block;padding:6px 10px;font-size:12.5px;font-weight:700;background:var(--soft);color:var(--text)}
+.cust{border:1px solid var(--border);border-radius:12px;padding:6px 14px;margin:6px 0 10px;background:var(--soft)}
+.cust .row{border-color:var(--border)}
+.cust input[type=color]{width:44px;height:30px;border:1px solid var(--border);border-radius:6px;padding:0;background:none;cursor:pointer}
+.cust input[type=range]{width:150px}
+.cprev{font-family:var(--mono);font-size:20px;background:var(--paper);border:1px solid var(--border);border-radius:8px;padding:10px 14px;margin:8px 0;color:var(--dim);white-space:nowrap;overflow:hidden}
+.cprev .o{color:var(--ink)}.cprev .b{color:var(--err)}
 
 *{box-sizing:border-box}
 body{margin:0;min-height:100vh;background:var(--bg);color:var(--text);font-family:var(--sans);font-size:16px;line-height:1.45;-webkit-font-smoothing:antialiased}
@@ -136,8 +161,8 @@ main{padding-bottom:60px}
 .w span.x{color:var(--err);opacity:.65}
 .w.e{border-bottom:2px solid var(--err);height:calc(var(--lh) - 2px)}
 .caret{position:absolute;left:0;top:0;height:var(--lh);width:3px;z-index:0;pointer-events:none;transition:transform .09s ease-out,width .09s;background:var(--hl);border-radius:3px;mix-blend-mode:normal}
-.caret.line{background:var(--margin);opacity:1;width:3px!important}
-.caret.under{background:none;border-bottom:4px solid var(--margin);height:calc(var(--lh) - 6px);border-radius:0}
+.caret.line{background:var(--caretc,var(--margin));opacity:1;width:3px!important}
+.caret.under{background:none;border-bottom:4px solid var(--caretc,var(--margin));height:calc(var(--lh) - 6px);border-radius:0}
 .blur .caret{opacity:.35}
 .hint{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-weight:600;color:var(--muted);backdrop-filter:blur(3px);background:color-mix(in srgb,var(--paper) 55%,transparent);z-index:5;text-align:center;padding:0 20px}
 .tips{display:flex;gap:18px;justify-content:center;margin-top:22px;color:var(--muted);font-size:14px;flex-wrap:wrap}
@@ -826,7 +851,8 @@ window.TYPEADDA_CONFIG={
 <p class="note" id="aMsg"></p><div class="ractions"><button class="btn" id="aGo">Login</button><button class="ghost" id="aForgot">Forgot password?</button></div></div></div>
 <div class="modal" id="mSettings" hidden><div class="box">
   <h3>Settings</h3>
-  <div class="row"><span>Theme</span><div class="seg" id="sTheme"></div></div>
+  <div class="row" style="display:block"><span>Theme</span><div class="themebox" id="sTheme"></div></div>
+  <div class="cust" id="custBox" hidden></div>
   <div class="row"><span>Text size</span><div class="seg" id="sSize"></div></div>
   <div class="row"><span>Caret style</span><div class="seg" id="sCaret"></div></div>
   <div class="row"><span>Focus mode <span class="note">hides menus while typing</span></span><div class="seg" id="sFocus"></div></div>
@@ -1154,7 +1180,8 @@ const DISTRICTS={"Bihar":BIHAR};
 const STATES=["Andaman and Nicobar Islands","Andhra Pradesh","Arunachal Pradesh","Assam","Bihar","Chandigarh","Chhattisgarh","Dadra and Nagar Haveli and Daman and Diu","Delhi","Goa","Gujarat","Haryana","Himachal Pradesh","Jammu and Kashmir","Jharkhand","Karnataka","Kerala","Ladakh","Lakshadweep","Madhya Pradesh","Maharashtra","Manipur","Meghalaya","Mizoram","Nagaland","Odisha","Puducherry","Punjab","Rajasthan","Sikkim","Tamil Nadu","Telangana","Tripura","Uttar Pradesh","Uttarakhand","West Bengal"];
 const COUNTRIES=["India","Nepal","Bangladesh","Sri Lanka","Pakistan","United States","United Kingdom","Canada","Australia","United Arab Emirates","Other"];
 /* ---------- settings & state ---------- */
-const S=Object.assign({theme:'auto',fs:26,caret:'block',sound:false,focus:true,live:true,vkb:false,blind:false,smooth:true,lkb:true,lfing:true,oneline:false,punct:false,nums:false,lang:'en',mode:'time',time:30,words:25},store.get('settings',{}));
+const S=Object.assign({theme:'auto',fs:26,caret:'line',sound:false,focus:true,live:true,vkb:false,blind:false,smooth:true,lkb:true,lfing:true,oneline:false,punct:false,nums:false,lang:'en',mode:'time',time:15,words:25},store.get('settings',{}));
+if(!S.v2){S.v2=1;S.caret='line';S.time=15;store.set('settings',S)}
 let P=Object.assign({name:'',country:'India',state:'',district:'',college:'',verifySent:false,verifyCollege:''},store.get('profile',{}));
 let H=store.get('history',[]);
 let TC=Math.max(store.get('testCount',0),H.length);
@@ -2274,7 +2301,6 @@ function seg(id,opts,get,set){
   opts.forEach(([v,label])=>{const b=mk('button',get()===v?'on':'',label);b.onclick=()=>{set(v);saveS();applySettings();seg(id,opts,get,set)};el.appendChild(b)});
 }
 function buildSettings(){
-  seg('#sTheme',[['auto','Auto'],['notebook','Notebook'],['blackboard','Blackboard'],['midnight','Midnight'],['mint','Mint']],()=>S.theme,v=>S.theme=v);
   seg('#sSize',[[20,'S'],[26,'M'],[32,'L'],[38,'XL']],()=>S.fs,v=>{S.fs=v;setTimeout(()=>{if(T)placeCaret()},50)});
   seg('#sCaret',[['block','Block'],['line','Line'],['under','Underline']],()=>S.caret,v=>S.caret=v);
   seg('#sFocus',[[true,'On'],[false,'Off']],()=>S.focus,v=>S.focus=v);
@@ -3803,7 +3829,7 @@ Ev.form=function(){
     const rm=mk('button','ghost','✕');rm.type='button';rm.onclick=()=>{D.prizes.splice(i,1);Ev.render()};
     row.append(document.createTextNode('Rank'),nf('from'),document.createTextNode('to'),nf('to'),tx,rm);pw.appendChild(row)});
   const ad=mk('button','btn sec','➕ Add prize');ad.type='button';ad.style.marginTop='8px';ad.onclick=()=>{if(D.prizes.length>=10){toast('Maximum 10 prizes');return}const l=D.prizes[D.prizes.length-1],n=l?(+l.to||0)+1:1;D.prizes.push({from:n,to:n,text:''});Ev.render()};pw.appendChild(ad);f.appendChild(pw);
-  F('Details to collect when user joins','collect',sel([['auto','Automatic (Cash → UPI, Product → Address)'],['none','Nothing'],['upi','PhonePe / Google Pay number or UPI ID'],['addr','Address + phone number'],['both','Both']]),'auto');
+  F('Details to collect from winners (asked after the event, not when joining)','collect',sel([['auto','Automatic (Cash → UPI, Product → Address)'],['none','Nothing'],['upi','PhonePe / Google Pay number or UPI ID'],['addr','Address + phone number'],['both','Both']]),'auto');
   F('Home page popup banner','popup',sel([['off','OFF'],['on','ON']]),'off');
   if(Board.admin){
     const opts=[['','All colleges (every verified student)']].concat([...Board.colleges].map(([id,d])=>[id,d.name]).sort((a,b)=>a[1].localeCompare(b[1])));F('Only for one college? (optional)','scope',sel(opts),'');
@@ -3812,7 +3838,7 @@ Ev.form=function(){
     f.appendChild(w);
   }else{const w=mk('label','','Who can join');const i=mk('input');i.value='Only '+Board.college.collegeName+' students';i.disabled=true;w.appendChild(i);f.appendChild(w)}
   const s1=mk('input');s1.type='datetime-local';F('Start date & time (optional)','start',s1,'');
-  const hn=mk('p','note','If you set a start time, the event starts exactly then and ends automatically after the typing time. Leave empty for an always-open event. Joined users\' prize details are visible only to admin.');hn.style.gridColumn='1/-1';f.appendChild(hn);
+  const hn=mk('p','note','If you set a start time, the event starts exactly then and ends automatically after the typing time. Leave empty for an always-open event. Winners\' prize details are visible only to admin.');hn.style.gridColumn='1/-1';f.appendChild(hn);
   const ta=mk('textarea');ta.rows=3;ta.placeholder='Leave empty for random words. Or paste your own passage.';F('Custom text (optional)','passage',ta,'',1);
   const a=mk('div','ractions'),sv=mk('button','btn','Publish event');
   sv.onclick=async()=>{
@@ -3829,23 +3855,57 @@ Ev.form=function(){
     if(await dset('events/'+id,doc)){this.draft={};this.formOpen=false;toast('Event published');this.render()}};
   a.appendChild(sv);c.append(f,a);return c};
 
+Ev.rankRows=function(ev){return [...Board.evRes.values()].filter(r=>r.eventId===ev.id).sort((x,y)=>y.wpm-x.wpm||y.acc-x.acc||x.ts-y.ts)};
+Ev.prizeFor=function(ev,rank){
+  const L=(ev.prizes||[]).slice().sort((x,y)=>x.from-y.from);
+  for(const p of L)if(rank>=p.from&&rank<=p.to)return p.text;
+  if(!L.length&&ev.prizeTitle&&ev.prizeType&&ev.prizeType!=='none'&&rank===1)return ev.prizeTitle;
+  return null};
+Ev.myWin=function(ev){
+  if(!Board.uid||this.status(ev)!=='ended')return null;
+  const rows=this.rankRows(ev),i=rows.findIndex(r=>r.uid===Board.uid);if(i<0)return null;
+  const prize=this.prizeFor(ev,i+1);return prize?{rank:i+1,prize}:null};
+Ev.collectType=function(ev){let c=ev.collect||'none';if(c==='auto')c=ev.prizeType==='cash'?'upi':ev.prizeType==='product'?'addr':'none';return c};
+/* joining asks for nothing: details are collected from winners only, after the event */
 Ev.joinModal=function(ev){
   const old=$('#mEvJoin');if(old)old.remove();
-  const col=ev.collect||'none',old0=Board.joins.get(ev.id+'_'+Board.uid)||{};
   const m=mk('div','modal');m.id='mEvJoin';const b=mk('div','box');m.appendChild(b);
   b.innerHTML='<h3>Join: '+esc(ev.title)+'</h3>'+this.prizeHTML(ev)+
+   (this.collectType(ev)!=='none'?'<p class="note" style="margin:8px 0">You do not need to enter any details now. If you win a prize, you will be asked for your prize details after the event ends.</p>':'')+
+   '<div class="ractions"><button class="btn" id="jGo">Join now</button><button class="btn sec" data-close>Cancel</button></div>';
+  document.body.appendChild(m);m.addEventListener('click',e=>{if(e.target===m||e.target.hasAttribute('data-close'))m.remove()});
+  const g=id=>$('#'+id,m);
+  g('jGo').onclick=async()=>{
+    const r={eventId:ev.id,uid:Board.uid,username:P.username||'',name:P.name||'',email:Board.email||'',collegeId:ev.collegeId||'',ts:Date.now()};
+    g('jGo').disabled=true;
+    if(await dset('eventJoins/'+ev.id+'_'+Board.uid,r)){Board.joins.set(ev.id+'_'+Board.uid,r);store.set('evjoin:'+ev.id,1);m.remove();toast('You have joined this event ✅');if(view==='events'&&this.mode==='detail')this.detail()}else g('jGo').disabled=false}};
+/* winner enters prize details after the event */
+Ev.prizeModal=function(ev,win){
+  const col=this.collectType(ev),old0=Board.joins.get(ev.id+'_'+Board.uid)||{};
+  const old=$('#mEvJoin');if(old)old.remove();
+  const m=mk('div','modal');m.id='mEvJoin';const b=mk('div','box');m.appendChild(b);
+  b.innerHTML='<h3>🎉 You won: '+esc(win.prize)+'</h3><p class="note" style="margin:0 0 8px">Rank '+win.rank+' in '+esc(ev.title)+'. Enter your details to receive the prize.</p>'+
    (col==='upi'||col==='both'?'<label class="full">Prize payment app<select id="jApp"><option>PhonePe</option><option>Google Pay</option><option>Paytm</option><option>Other UPI</option></select></label><label class="full">PhonePe / Google Pay number or UPI ID<input id="jPay" placeholder="9876543210 or name@upi" maxlength="60"></label>':'')+
    (col==='addr'||col==='both'?'<label class="full">Full address<textarea id="jAdr" rows="3" maxlength="300"></textarea></label><label class="full">Pincode<input id="jPin" inputmode="numeric" maxlength="6"></label><label class="full">Phone number<input id="jPh" inputmode="numeric" maxlength="10"></label>':'')+
-   '<p class="note" style="margin:8px 0">Your details are seen only by the admin and used only to send your prize.</p><div class="ractions"><button class="btn" id="jGo">'+(old0.ts?'Save details':'Join now')+'</button><button class="btn sec" data-close>Cancel</button></div>';
+   '<p class="note" style="margin:8px 0">Your details are seen only by the admin and used only to send your prize.</p><div class="ractions"><button class="btn" id="jGo">Save details</button><button class="btn sec" data-close>Cancel</button></div>';
   document.body.appendChild(m);m.addEventListener('click',e=>{if(e.target===m||e.target.hasAttribute('data-close'))m.remove()});
   const g=id=>$('#'+id,m);if(g('jApp'))g('jApp').value=old0.payApp||'PhonePe';if(g('jPay'))g('jPay').value=old0.pay||'';if(g('jAdr'))g('jAdr').value=old0.address||'';if(g('jPin'))g('jPin').value=old0.pincode||'';if(g('jPh'))g('jPh').value=old0.phone||'';
   g('jGo').onclick=async()=>{
-    const r={eventId:ev.id,uid:Board.uid,username:P.username||'',name:P.name||'',email:Board.email||'',collegeId:ev.collegeId||'',ts:Date.now()};
+    const r={eventId:ev.id,uid:Board.uid,username:P.username||'',name:P.name||'',email:Board.email||'',collegeId:ev.collegeId||'',ts:old0.ts||Date.now()};
     if(g('jPay')){const v=g('jPay').value.trim();if(!(/^[6-9]\d{9}$/.test(v)||/^[\w.\-]{2,256}@[a-zA-Z]{2,64}$/.test(v))){toast('Enter a valid 10 digit number or UPI ID');return}r.pay=v;r.payApp=g('jApp').value}
     if(g('jAdr')){const a=g('jAdr').value.trim(),pn=g('jPin').value.trim(),ph=g('jPh').value.trim();
       if(a.length<10){toast('Enter your full address');return}if(!/^\d{6}$/.test(pn)){toast('Enter a 6 digit pincode');return}if(!/^[6-9]\d{9}$/.test(ph)){toast('Enter a valid 10 digit phone number');return}r.address=a;r.pincode=pn;r.phone=ph}
     g('jGo').disabled=true;
-    if(await dset('eventJoins/'+ev.id+'_'+Board.uid,r)){Board.joins.set(ev.id+'_'+Board.uid,r);store.set('evjoin:'+ev.id,1);m.remove();toast('You have joined this event ✅');if(view==='events'&&this.mode==='detail')this.detail()}else g('jGo').disabled=false}};
+    if(await dset('eventJoins/'+ev.id+'_'+Board.uid,r)){Board.joins.set(ev.id+'_'+Board.uid,r);m.remove();toast('Prize details saved ✅');if(view==='events'&&this.mode==='detail')this.detail()}else g('jGo').disabled=false}};
+Ev.winCard=function(ev){
+  if(Board.admin||Board.college)return null;
+  const w=this.myWin(ev);if(!w)return null;
+  const col=this.collectType(ev),j=Board.joins.get(ev.id+'_'+Board.uid)||{},have=!!(j.pay||j.address);
+  const c=mk('div','card');c.style.margin='14px 0';
+  c.innerHTML='<h3>🎉 Congratulations! You won '+esc(w.prize)+'</h3><p class="note" style="margin-top:6px">Your rank: '+w.rank+'</p>';
+  if(col==='none'){c.appendChild(mk('p','note','The organiser will contact you about your prize.'));return c}
+  c.appendChild(mk('p','note',have?'Your prize details are submitted ✅ You can edit them until the prize is sent.':'Please submit your prize details so we can send your prize.'));
+  const bt=mk('button','btn',have?'Edit prize details':'Submit prize details');bt.style.marginTop='8px';bt.onclick=()=>this.prizeModal(ev,w);c.appendChild(bt);return c};
 
 Ev.detail=function(){
   const root=$('#evRoot'),ev=Board.events.get(this.cur);
@@ -3866,13 +3926,13 @@ Ev.detail=function(){
   else if(!can)a.appendChild(mk('span','note',ev.collegeId?'This event is only for another college.':'Only college-verified students can take part.'));
   else if(need&&!jn){const b=mk('button','btn','Join now');b.onclick=()=>this.joinModal(ev);a.appendChild(b)}
   else{
-    if(need&&ev.collect&&ev.collect!=='none'){const e2=mk('button','ghost','Edit my details');e2.onclick=()=>this.joinModal(ev);a.appendChild(e2)}
     if(s==='upcoming'){const ob=mk('button','btn','Open typing screen');ob.onclick=()=>this.play(ev,false);a.appendChild(ob);a.appendChild(mk('span','note',(jn?'You have joined ✅ ':'')+'You can read the text now. Typing unlocks automatically at '+fmtDT(ev.startsAt)+'.'))}
     else{const b=mk('button','btn','Start event ('+ev.minutes+' min)');b.onclick=()=>{
       if(!P.username&&!P.name){toast('Add your name in Profile first');return}
       if(store.get('evstart:'+ev.id,0)){toast('Your attempt was already started on this device');return}
       if(confirm('Only one attempt. The timer starts on your first key. Start now?')){this.play(ev,false)}};a.appendChild(b)}}
   c.appendChild(a);root.appendChild(c);
+  {const wc=this.winCard(ev);if(wc)root.appendChild(wc)}
   const rows=[...Board.evRes.values()].filter(r=>r.eventId===ev.id).sort((x,y)=>y.wpm-x.wpm||y.acc-x.acc||x.ts-y.ts);
   const t=mk('div','card scroll-x');t.innerHTML='<h3 style="margin-bottom:8px">Leaderboard</h3>'+(rows.length?`<table><thead><tr><th class="n">#</th><th>Username</th>${ev.collegeId?'':'<th>College</th>'}<th class="n">WPM</th><th class="n">Accuracy</th></tr></thead><tbody>${rows.map((r,i)=>`<tr class="${r.uid===Board.uid?'me':''}"><td class="n">${i+1}</td><td>${esc(r.username||'-')}</td>${ev.collegeId?'':'<td>'+esc(r.college||'-')+'</td>'}<td class="n">${r.wpm}</td><td class="n">${r.acc}%</td></tr>`).join('')}</tbody></table>`:'<div class="empty">No results yet.</div>');
   root.appendChild(t);
@@ -3891,8 +3951,11 @@ Ev.manage=function(ev){
 
 Ev.people=function(ev){
   const rows=[...Board.joins.values()].filter(j=>j.eventId===ev.id).sort((a,b)=>a.ts-b.ts);
-  const c=mk('div','card scroll-x');c.style.marginTop='14px';c.innerHTML='<h3 style="margin-bottom:8px">👥 Joined users ('+rows.length+')</h3>'+(rows.length?`<table><thead><tr><th>User</th><th>Phone</th><th>Pay</th><th>Address</th></tr></thead><tbody>${rows.map(r=>`<tr><td>${esc(r.username||r.name||r.email||'-')}</td><td>${esc(r.phone||'-')}</td><td>${r.pay?esc((r.payApp||'')+' '+r.pay):'-'}</td><td>${r.address?esc(r.address+' - '+(r.pincode||'')):'-'}</td></tr>`).join('')}</tbody></table>`:'<div class="empty">Nobody has joined yet.</div>');
-  if(rows.length){const b=mk('button','btn sec','⬇ Download CSV');b.style.marginTop='10px';b.onclick=()=>{const q=x=>'"'+String(x||'').replace(/"/g,'""')+'"',L=[['Username','Name','Email','Phone','Pay app','UPI / number','Address','Pincode'].join(',')].concat(rows.map(r=>[r.username,r.name,r.email,r.phone,r.payApp,r.pay,r.address,r.pincode].map(q).join(',')));
+  const rk=this.rankRows(ev),ended=this.status(ev)==='ended';
+  const info=r=>{const i=rk.findIndex(x=>x.uid===r.uid);if(i<0)return {rank:'',prize:''};const pz=this.prizeFor(ev,i+1);return {rank:i+1,prize:pz||''}};
+  const det=r=>{const x=info(r);return x.prize&&!(r.pay||r.address)?(ended?'Pending':'-'):null};
+  const c=mk('div','card scroll-x');c.style.marginTop='14px';c.innerHTML='<h3 style="margin-bottom:8px">👥 Joined users ('+rows.length+')</h3><p class="note" style="margin-bottom:8px">Prize details appear here only after a winner submits them (after the event ends).</p>'+(rows.length?`<table><thead><tr><th>User</th><th>Rank</th><th>Prize</th><th>Phone</th><th>Pay</th><th>Address</th></tr></thead><tbody>${rows.map(r=>{const x=info(r),pd=det(r);return `<tr><td>${esc(r.username||r.name||r.email||'-')}</td><td>${x.rank||'-'}</td><td>${esc(x.prize||'-')}</td><td>${esc(r.phone||pd||'-')}</td><td>${r.pay?esc((r.payApp||'')+' '+r.pay):(pd||'-')}</td><td>${r.address?esc(r.address+' - '+(r.pincode||'')):(pd||'-')}</td></tr>`}).join('')}</tbody></table>`:'<div class="empty">Nobody has joined yet.</div>');
+  if(rows.length){const b=mk('button','btn sec','⬇ Download CSV');b.style.marginTop='10px';b.onclick=()=>{const q=x=>'"'+String(x||'').replace(/"/g,'""')+'"',L=[['Username','Name','Email','Rank','Prize','Phone','Pay app','UPI / number','Address','Pincode'].join(',')].concat(rows.map(r=>{const x=info(r);return [r.username,r.name,r.email,x.rank,x.prize,r.phone,r.payApp,r.pay,r.address,r.pincode].map(q).join(',')}));
     const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([L.join('\n')],{type:'text/csv'}));a.download=(ev.title||'event').replace(/\W+/g,'_')+'_joined.csv';a.click()};c.appendChild(b)}
   return c};
 
@@ -4353,18 +4416,82 @@ if(S.lang!=='hi')S.lang='en';
 if(!['gail','kruti','mangal'].includes(S.hkb))S.hkb='gail';
 P.days=P.days||[];P.certs=P.certs||[];
 
-/* themes: light / mid dark / dark */
+/* themes: presets + custom */
+const THEMES=[
+  ['light','Light','#EAF0F8','#FCFDFF','#1B3A9E','#9AA7BF'],
+  ['white','Pure White','#FFFFFF','#FFFFFF','#111111','#A6A6A6'],
+  ['soft','Soft Light','#EDE8DC','#F6F1E6','#3E4A59','#ABA595'],
+  ['eye','Eye Comfort','#F0DFB8','#F7EACB','#5B3A0E','#B79F70'],
+  ['middark','Mid Dark','#2B303B','#343A47','#E7EBF5','#7C8599'],
+  ['dark','Dark','#141E1A','#1B2823','#F0F3EA','#5F7168']
+];
+const THEME_CSS={light:'notebook',dark:'blackboard'};
+const CUSTVARS=['--bg','--paper','--card','--ink','--text','--dim','--line','--border','--soft','--muted','--hl','--caretc','--err','--accent','--accent-t'];
+const CUST_DEF={cbg:'#F6F1E6',ctext:'#2F3B52',cdim:'#A9B0BE',ccaret:'#E4574F',cerr:'#D7263D'};
+const hex2=h=>{h=String(h||'').replace('#','');if(h.length===3)h=h.replace(/./g,'$&$&');const n=parseInt(h,16);return isNaN(n)?[0,0,0]:[n>>16&255,n>>8&255,n&255]};
+const toHex=a=>'#'+a.map(v=>Math.round(Math.max(0,Math.min(255,v))).toString(16).padStart(2,'0')).join('');
+const mixc=(a,b,t)=>{const x=hex2(a),y=hex2(b);return toHex(x.map((v,i)=>v+(y[i]-v)*t))};
+const lumc=c=>{const [r,g,b]=hex2(c).map(v=>{v/=255;return v<=.03928?v/12.92:Math.pow((v+.055)/1.055,2.4)});return .2126*r+.7152*g+.0722*b};
+function customVars(){
+  const bg=S.cbg||CUST_DEF.cbg,ty=S.ctext||CUST_DEF.ctext,dm=S.cdim||CUST_DEF.cdim,cr=S.ccaret||CUST_DEF.ccaret,er=S.cerr||CUST_DEF.cerr;
+  const light=lumc(bg)>.4,[r,g,b]=hex2(cr);
+  return {'--bg':bg,'--paper':light?mixc(bg,'#ffffff',.6):mixc(bg,'#ffffff',.06),'--card':light?mixc(bg,'#ffffff',.7):mixc(bg,'#ffffff',.08),
+    '--ink':ty,'--text':ty,'--dim':dm,'--line':mixc(bg,ty,.13),'--border':mixc(bg,ty,.2),'--soft':mixc(bg,ty,.07),'--muted':mixc(ty,bg,.4),
+    '--hl':`rgba(${r},${g},${b},.4)`,'--caretc':cr,'--err':er,'--accent':ty,'--accent-t':lumc(ty)>.4?'#111111':'#ffffff'};
+}
 const _as=applySettings;
 applySettings=function(){
   const m={auto:'light',notebook:'light',mint:'light',blackboard:'dark',midnight:'dark'};if(m[S.theme])S.theme=m[S.theme];
+  if(S.theme!=='custom'&&!THEMES.some(t=>t[0]===S.theme))S.theme='light';
   _as();
-  document.documentElement.setAttribute('data-appt',{light:'notebook',middark:'middark',dark:'blackboard'}[S.theme]||'notebook');
+  const r=document.documentElement;
+  if(S.theme==='custom'){r.setAttribute('data-appt','custom');const v=customVars();for(const k in v)r.style.setProperty(k,v[k])}
+  else{CUSTVARS.forEach(k=>r.style.removeProperty(k));r.setAttribute('data-appt',THEME_CSS[S.theme]||S.theme)}
   document.body.classList.toggle('noerrhl',S.errHl===false);
 };
+function buildThemeBox(){
+  const box=$('#sTheme');if(!box)return;box.innerHTML='';
+  THEMES.forEach(([id,name,bg,paper,ink,dim])=>{
+    const b=mk('button','tcard'+(S.theme===id?' on':''));b.type='button';
+    const sw=mk('span','sw');sw.style.background=paper;
+    const a=mk('span','','ty'),c=mk('span','','pe');a.style.color=ink;c.style.color=dim;sw.append(a,c);
+    sw.style.borderBottom='1px solid '+bg;
+    b.append(sw,mk('span','nm',name));
+    b.onclick=()=>{S.theme=id;saveS();applySettings();buildSettings()};box.appendChild(b);
+  });
+  const cb=mk('button','tcard'+(S.theme==='custom'?' on':''));cb.type='button';
+  const sw=mk('span','sw','🎨 Aa');sw.style.background='var(--paper)';sw.style.color='var(--ink)';
+  cb.append(sw,mk('span','nm','Custom'));
+  cb.onclick=()=>{
+    if(S.theme!=='custom'){
+      const cs=getComputedStyle(document.documentElement),g=k=>cs.getPropertyValue(k).trim(),ok=v=>/^#[0-9a-f]{6}$/i.test(v);
+      if(!S.cbg){const bg=g('--paper');S.cbg=ok(bg)?bg:CUST_DEF.cbg;const t=g('--ink');S.ctext=ok(t)?t:CUST_DEF.ctext;const d=g('--dim');S.cdim=ok(d)?d:CUST_DEF.cdim;const m=g('--margin');S.ccaret=ok(m)?m:CUST_DEF.ccaret;const e=g('--err');S.cerr=ok(e)?e:CUST_DEF.cerr}
+      S.theme='custom';
+    }
+    saveS();applySettings();buildSettings();
+  };
+  box.appendChild(cb);
+  const cu=$('#custBox');if(!cu)return;cu.hidden=S.theme!=='custom';cu.innerHTML='';
+  if(S.theme!=='custom')return;
+  const row=(label,ctl)=>{const r=mk('div','row');r.appendChild(mk('span','',label));r.appendChild(ctl);cu.appendChild(r)};
+  const pv=mk('div','cprev');pv.innerHTML='<span class="o">typed </span><span class="b">x</span><span> upcoming text</span>';cu.appendChild(pv);
+  const col=(label,key)=>{const i=mk('input');i.type='color';i.value=S[key]||CUST_DEF[key];i.oninput=()=>{S[key]=i.value;saveS();applySettings()};row(label,i)};
+  col('Background','cbg');col('Text color (typed)','ctext');col('Upcoming text (to type)','cdim');col('Caret color','ccaret');col('Error color','cerr');
+  const wr=mk('div','');wr.style.cssText='display:flex;gap:8px;align-items:center';
+  const rg=mk('input');rg.type='range';rg.min=16;rg.max=56;rg.step=1;rg.value=S.fs||26;
+  const val=mk('b','',(S.fs||26)+'px');
+  rg.oninput=()=>{S.fs=+rg.value;val.textContent=S.fs+'px';saveS();applySettings();if(T)placeCaret()};
+  wr.append(rg,val);row('Text size',wr);
+  const cs=mk('div','seg');
+  [['block','Block'],['line','Line'],['under','Underline']].forEach(([v,l])=>{const b=mk('button',S.caret===v?'on':'',l);b.onclick=()=>{S.caret=v;saveS();applySettings();buildSettings()};cs.appendChild(b)});
+  row('Caret style',cs);
+  const rs=mk('button','btn sec','Reset custom colors');rs.style.margin='8px 0';
+  rs.onclick=()=>{Object.assign(S,CUST_DEF);saveS();applySettings();buildSettings()};cu.appendChild(rs);
+}
 const _bs2=buildSettings;
 buildSettings=function(){
   _bs2();const oo=[[true,'On'],[false,'Off']];
-  seg('#sTheme',[['light','Light'],['middark','Mid dark'],['dark','Dark']],()=>S.theme,v=>S.theme=v);
+  buildThemeBox();
   seg('#sLwpm',[[true,'Show'],[false,'Hide']],()=>S.lwpm,v=>S.lwpm=v);
   seg('#sLacc',[[true,'Show'],[false,'Hide']],()=>S.lacc,v=>S.lacc=v);
   seg('#sKeySnd',oo,()=>S.keySnd,v=>S.keySnd=v);
