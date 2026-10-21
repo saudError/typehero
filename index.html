@@ -3321,7 +3321,7 @@ const Pub={async open(id){
 renderBoard=(function(prev){return function(){prev();if(!Board.db)return;
   const rows=boardRows(BS.key).filter(r=>inScope(r,BS.scope)),mi=rows.findIndex(r=>r.id===Board.uid);
   $$('#bTable tbody tr').forEach((tr,i)=>{const r=rows[i];if(!r)return;const d=Board.scores.get(r.id)||{};
-    tr.children[1].innerHTML=avaHTML(d.thumb,r.name,'sm')+esc(r.name);tr.style.cursor='pointer';tr.title='View profile';tr.onclick=()=>Pub.open(r.id)})}})(renderBoard);
+    const nm=(d.username&&!reservedUsername(d.username))?'<a class="ulnk" href="/'+esc(d.username)+'">'+esc(r.name)+'</a>':esc(r.name);tr.children[1].innerHTML=avaHTML(d.thumb,r.name,'sm')+nm;tr.style.cursor='pointer';tr.title='View profile';tr.onclick=e=>{if(e&&(e.ctrlKey||e.metaKey||e.shiftKey))return;if(e)e.preventDefault();Pub.open(r.id)}})}})(renderBoard);
 
 // site name, logo, icon, About page (edited in Admin)
 const _siteFix=o=>{try{return JSON.parse(JSON.stringify(o||{}).replace(/TypeAdda/g,'Chiku Type'))}catch(e){return o||{}}};
@@ -3462,13 +3462,32 @@ Board._push=async function(){
 };
 
 // public profile: About + social icons
+function copyLink(url){(navigator.clipboard?navigator.clipboard.writeText(url):Promise.reject()).then(()=>toast('Profile link copied')).catch(()=>{prompt('Copy this link',url)})}
+function shareLink(url){const t='Check my typing speed on Chiku Type';if(navigator.share){navigator.share({title:'Chiku Type profile',text:t,url}).catch(()=>{})}else window.open('https://wa.me/?text='+encodeURIComponent(t+': '+url),'_blank','noopener')}
 Pub.show=function(d,v,pic,box){const ver=v&&v.ok,b=d.best||{},body=box||$('#pubBody');
   const L={};SOCU.forEach(([k])=>{const u=cleanURL((d.links||{})[k]);if(u)L[k]=u});
-  body.innerHTML=`<div style="display:flex;gap:16px;align-items:center;flex-wrap:wrap">${avaHTML(pic,d.name,'lg')}<div><h3 style="margin:0 0 4px">${esc(d.name||'Anonymous')}${ver?'<span class="badge">verified</span>':''}</h3>${d.username?'<p class="muted">@'+esc(d.username)+'</p>':''}${d.bio?`<p>${esc(d.bio)}</p>`:''}<p class="muted">${esc([d.district,d.state,d.country].filter(Boolean).join(', ')||'-')}</p>${d.college||ver?`<p>🎓 ${esc(ver?v.college:d.college)}</p>`:''}</div></div>`
-   +(Object.keys(L).length?`<div class="socs">${socRow(L)}</div>`:'')
-   +(d.about?`<h3 style="margin:14px 0 6px">About</h3>${String(d.about).split(/\n+/).map(x=>'<p style="margin-bottom:8px">'+esc(x)+'</p>').join('')}`:'')
-   +`<div class="rstats"><div><b>${d.tests||0}</b><span>tests taken</span></div><div><b>${fmtDur(d.time||0)}</b><span>time typed</span></div><div><b>${d.lessons||0}/${LESSONS.length}</b><span>lessons done</span></div></div>`
+  const loc=[d.district,d.state,d.country].filter(Boolean).join(', ');
+  const url=(d.username&&!reservedUsername(d.username))?(UserPage.origin()+'/'+d.username):'';
+  /* top speed (plain English tests) */
+  const src=Object.assign({},b,d.pb||{});let top=null;
+  Object.keys(src).forEach(k=>{if(/^t\d+$/.test(k)&&src[k]&&(!top||src[k].wpm>top.x.wpm))top={k,x:src[k]}});
+  const rk=['t60','t15','t600'].find(k=>b[k]);
+  const tile=(ic,lab,val,sub)=>`<div class="kt"><small>${ic} ${lab}</small><b>${val}</b><span>${sub||'&nbsp;'}</span></div>`;
+  body.innerHTML=
+   `<div class="pbox pb-head"><div class="phd">${avaHTML(pic,d.name,'lg')}<div class="phi"><h3>${esc(d.name||'Anonymous')}${ver?'<span class="badge">verified</span>':''}</h3>${d.username?'<p class="muted">@'+esc(d.username)+'</p>':''}${loc?'<p class="muted">📍 '+esc(loc)+'</p>':''}${d.college||ver?`<p>🎓 ${esc(ver?v.college:d.college)}</p>`:''}${d.bio?`<p class="pbio">${esc(d.bio)}</p>`:''}</div></div>`
+   +(url?`<div class="plink"><span>${esc(url.replace(/^https?:\/\//,''))}</span><button type="button" class="btn sec plcopy">Copy</button><button type="button" class="btn sec plshare">Share</button></div>`:'')+`</div>`
+   +`<div class="pbox"><h3>📊 Key stats</h3><div class="kstats">`
+   +tile('⚡','Top speed',top?Math.round(top.x.wpm)+' <em>WPM</em>':'-',top?esc(KEYLBL[top.k]||top.k)+' test':'No test yet')
+   +tile('🎯','Accuracy',top?Math.round(top.x.acc)+'%':'-','in top-speed test')
+   +tile('🌍','Global rank',rk?this.rank(d,v,rk,'global'):'-',rk?esc(KEYLBL[rk]):'Not ranked')
+   +tile('📝','Tests taken',d.tests||0,'')
+   +tile('⏱️','Time typed',esc(fmtDur(d.time||0)),'')
+   +tile('🎓','Lessons done',(d.lessons||0)+'/'+LESSONS.length,'')
+   +`</div></div>`;
+  if(url){const c=body.querySelector('.plcopy'),sh=body.querySelector('.plshare');if(c)c.onclick=()=>copyLink(url);if(sh)sh.onclick=()=>shareLink(url)}
   PubX.after(body,d,v);
+  if(d.about){const ab=mk('div','pbox');ab.innerHTML='<h3>📝 About</h3>'+String(d.about).split(/\n+/).map(x=>'<p style="margin-bottom:8px">'+esc(x)+'</p>').join('');body.appendChild(ab)}
+  if(Object.keys(L).length){const lk=mk('div','pbox');lk.innerHTML='<h3>🔗 Links</h3><div class="socs">'+socRow(L)+'</div>';body.appendChild(lk)}
   if(!box)openModal('mPub')};
 
 /* ===== Public profile: rank cards + personal bests (English / Hindi) ===== */
@@ -3493,27 +3512,24 @@ const PubX={
     const T=[[15,'15 seconds'],[30,'30 seconds'],[60,'60 seconds'],[120,'2 minutes'],[300,'5 minutes'],[600,'10 minutes']],W=[[10,'10 words'],[25,'25 words'],[50,'50 words'],[100,'100 words']];
     return `<div class="pbgrid"><div class="pbp">${T.map(([n,l])=>this.cell(this.pbOf(d,'t'+n+sfx),l)).join('')}</div><div class="pbp">${W.map(([n,l])=>this.cell(this.pbOf(d,'w'+n+sfx),l)).join('')}</div></div>`},
   after(body,d,v){
-    const el=mk('div');el.className='pubx';body.appendChild(el);
-    const draw=()=>{
-      const KS=[['t15','15s'],['t60','60s'],['t600','10 min']];
-      let h=`<h3 class="pxh">Leaderboard rank</h3><div class="pchips">${KS.map(([k,l])=>`<button class="${k===this.key?'on':''}" data-k="${k}">${l}</button>`).join('')}</div><div class="rkgrid">${this.scopes.map(([sc,l])=>`<div class="rkc"><small>${l}</small><b>${this.rank(d,v,this.key,sc)}</b></div>`).join('')}</div>`;
-      const all=d.pb||{};
-      h+=`<h3 class="pxh">Personal bests</h3><div class="pxl">English</div>`+this.grid(d,'');
-      /* Hindi appears only if the user has typed Hindi */
-      const hk=Object.keys(all).filter(k=>/^[tw]\d+h$/.test(k));
-      if(hk.length){
-        const kbs=[...new Set(hk.map(k=>all[k].kb||''))];
-        kbs.forEach(kb=>{
-          const sub=Object.assign({},d,{pb:Object.fromEntries(hk.filter(k=>(all[k].kb||'')===kb).map(k=>[k,all[k]]))});
-          h+=`<div class="pxl">Hindi${kb&&HKNAME[kb]?' · '+esc(HKNAME[kb]):''}</div>`+this.grid(sub,'h');
-        });
-      }
-      const ex=Object.keys(all).filter(k=>/^[tw]\d+[pn]+h?$/.test(k)).sort();
-      if(ex.length)h+=`<div class="pxl">With punctuation / numbers</div><div class="scroll-x"><table><thead><tr><th>Test</th><th class="n">WPM</th><th class="n">Acc</th></tr></thead><tbody>${ex.map(k=>`<tr><td>${esc(labelKey(k))}</td><td class="n">${Math.round(all[k].wpm*10)/10}</td><td class="n">${Math.round(all[k].acc)}%</td></tr>`).join('')}</tbody></table></div>`;
-      el.innerHTML=h;
-      el.querySelectorAll('.pchips button').forEach(b=>b.onclick=()=>{this.key=b.dataset.k;draw()});
+    const KS=[['t15','15s'],['t60','60s'],['t600','10 min']],self=this;
+    const rb=mk('div','pbox');body.appendChild(rb);
+    const drawRank=()=>{
+      rb.innerHTML=`<h3>🏅 Leaderboard rank</h3><div class="pchips">${KS.map(([k,l])=>`<button type="button" class="${k===self.key?'on':''}" data-k="${k}">${l}</button>`).join('')}</div><div class="rkgrid">${self.scopes.map(([sc,l])=>`<div class="rkc"><small>${l}</small><b>${self.rank(d,v,self.key,sc)}</b></div>`).join('')}</div>`;
+      rb.querySelectorAll('.pchips button').forEach(bt=>bt.onclick=()=>{self.key=bt.dataset.k;drawRank()});
     };
-    draw();
+    drawRank();
+    const all=d.pb||{};
+    const eb=mk('div','pbox');eb.innerHTML='<h3>⌨️ Personal bests · English</h3>'+this.grid(d,'');body.appendChild(eb);
+    /* Hindi appears only if the user has typed Hindi */
+    const hk=Object.keys(all).filter(k=>/^[tw]\d+h$/.test(k));
+    if(hk.length){
+      [...new Set(hk.map(k=>all[k].kb||''))].forEach(kb=>{
+        const sub=Object.assign({},d,{pb:Object.fromEntries(hk.filter(k=>(all[k].kb||'')===kb).map(k=>[k,all[k]]))});
+        const hb=mk('div','pbox');hb.innerHTML='<h3>🇮🇳 Personal bests · Hindi'+(kb&&HKNAME[kb]?' · '+esc(HKNAME[kb]):'')+'</h3>'+this.grid(sub,'h');body.appendChild(hb)});
+    }
+    const ex=Object.keys(all).filter(k=>/^[tw]\d+[pn]+h?$/.test(k)).sort();
+    if(ex.length){const xb=mk('div','pbox');xb.innerHTML=`<h3>🔣 With punctuation / numbers</h3><div class="scroll-x"><table><thead><tr><th>Test</th><th class="n">WPM</th><th class="n">Acc</th></tr></thead><tbody>${ex.map(k=>`<tr><td>${esc(labelKey(k))}</td><td class="n">${Math.round(all[k].wpm*10)/10}</td><td class="n">${Math.round(all[k].acc)}%</td></tr>`).join('')}</tbody></table></div>`;body.appendChild(xb)}
   }
 };
 (()=>{const st=document.createElement('style');st.textContent=`
@@ -3534,11 +3550,37 @@ const PubX={
 .pbc b.no{opacity:.4}
 .pbc span{font-size:12px;color:var(--muted)}
 @media(max-width:620px){.pbgrid{grid-template-columns:1fr}.rkgrid{grid-template-columns:repeat(3,1fr)}}
+.pbox{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:16px 18px;margin:0 0 12px}
+.pbox>h3{margin:0 0 10px;font-size:16px}
+.pbox .pxl{margin:12px 0 6px;font-weight:700;font-size:13px;letter-spacing:.04em;text-transform:uppercase;color:var(--muted)}
+.pbox .pchips{margin-bottom:10px}
+.pb-head .phd{display:flex;gap:16px;align-items:center;flex-wrap:wrap}
+.pb-head .phi{min-width:0;flex:1}.pb-head h3{margin:0 0 4px;font-size:20px}.pb-head p{margin:2px 0}.pb-head .pbio{margin-top:8px}
+.plink{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:14px;padding:8px 10px;border:1px dashed var(--border);border-radius:10px}
+.plink span{flex:1;min-width:140px;font-weight:700;color:var(--ink);word-break:break-all}
+.plink .btn{padding:6px 14px}
+.kstats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.kt{border:1px solid rgba(128,128,128,.3);border-radius:12px;padding:10px 12px;background:rgba(128,128,128,.08);min-width:0}
+.kt small{display:block;font-size:12px;color:var(--muted)}
+.kt b{display:block;font-size:24px;line-height:1.25;color:var(--ink)}.kt b em{font-size:12px;font-style:normal;color:var(--muted)}
+.kt span{font-size:12px;color:var(--muted)}
+.ulnk{color:inherit;text-decoration:none}.ulnk:hover{text-decoration:underline}
+#pLinkBox .plrow{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+#pLinkBox .plrow .field{flex:1;min-width:160px}
+#pLinkBox .plbig{font-size:18px;font-weight:700;color:var(--ink);word-break:break-all;flex:1;min-width:160px}
+@media(max-width:620px){.kstats{grid-template-columns:repeat(2,1fr)}}
 `;document.head.appendChild(st)})();
 Pub.open=async function(id){let d=Board.scores.get(id);if(!d&&Board.db){try{const sn=await Board.db.doc('scores/'+id).get();if(sn.exists){d=sn.data();Board.scores.set(id,d)}}catch(e){}}if(!d)return;const v=Board.verified.get(id);
   d=Object.assign({},d,{_id:id});this.show(d,v,d.thumb);
   try{const sn=await Board.db.doc('avatars/'+id).get();if(sn.exists&&sn.data().pic)this.show(d,v,sn.data().pic)}catch(e){}};
-$('#pView').onclick=()=>{
+$('#pView').onclick=async()=>{
+  if(typeof UserPage!=='undefined'&&UserPage.can&&Board.uid&&P.username&&!reservedUsername(P.username)){
+    $('#pMsg').textContent='Opening your page...';
+    try{await Board.submit()}catch(er){}
+    let ok=false;try{const sn=await Board.db.doc('scores/'+Board.uid).get();ok=sn.exists&&sn.data().username===P.username}catch(er){}
+    $('#pMsg').textContent='';
+    if(ok&&UserPage.go(P.username))return;
+  }
   const mine=Board.scores.get(Board.uid)||{};
   const d=Object.assign({},mine,{username:P.username,name:P.name||'You',country:P.country,state:P.state,district:P.district,college:P.college,bio:P.bio,about:P.about,links:P.links,best:Object.assign({},PB&&Object.fromEntries(LBKEYS.filter(k=>PB[k]).map(k=>[k,PB[k]]))),pb:PB,_id:Board.uid||'local',tests:Math.max(TC,H.length,mine.tests||0),time:Math.round(TT),lessons:LESSONS.filter(l=>lessonStars(l)>0).length});
   Pub.show(d,Board.verified.get(Board.uid),P.pic||d.thumb)};
@@ -6392,10 +6434,10 @@ const UserPage={
   decorate(body,d){
     body.querySelectorAll('.ubadges,.ulink').forEach(x=>x.remove());
     const id=d._id;if(!id||id==='local')return;
-    const bx=mk('div','ubadges');bx.hidden=true;body.insertBefore(bx,body.firstChild);
+    const bx=mk('div','ubadges');bx.hidden=true;const hd=body.querySelector('.pb-head');if(hd)hd.after(bx);else body.insertBefore(bx,body.firstChild);
     this.records(id,d).then(rs=>{if(!rs.length||!bx.isConnected)return;bx.hidden=false;
       bx.innerHTML=rs.map(r=>`<div class="ub"><span class="ubi">🏆</span><div><b>${esc(r.label)}</b><small>${esc(r.rec)} &middot; ${r.keys.map(k=>esc(KEYLBL[k])).join(', ')} &middot; ${Math.round(r.wpm)} WPM</small></div></div>`).join('')});
-    if(d.username&&body.id!=='userBody'){const p=mk('p','note ulink',this.origin().replace(/^https?:\/\//,'')+'/'+d.username);p.style.marginTop='10px';body.appendChild(p)}},
+},
   /* ---- the page ---- */
   async render(u){
     const root=$('#userRoot');root.innerHTML='<p class="muted" style="padding:28px 0;text-align:center">Loading profile...</p>';
@@ -6411,9 +6453,9 @@ const UserPage={
       this.seoOn('Typist not found | Chiku Type','This Chiku Type profile does not exist.','',null,this.origin()+'/'+u);this._set('meta[name=robots]','content','noindex,follow');return}
     let v=Board.verified.get(id);if(!v){try{const sn=await Board.db.doc('verified/'+id).get();if(sn.exists)v=sn.data()}catch(e){}}
     const dd=Object.assign({},d,{_id:id});
-    root.innerHTML='<div class="ubar"><button class="ghost" id="uHome">&larr; Home</button><button class="btn sec" id="uCopy">Copy profile link</button></div><div class="card" id="userBody"></div><p class="note" style="margin-top:10px">'+esc(this.origin().replace(/^https?:\/\//,''))+'/'+esc(u)+'</p>';
+    root.innerHTML='<div class="ubar"><button class="ghost" id="uHome">&larr; Home</button><button class="btn sec" id="uBoard">Leaderboard</button></div><div id="userBody"></div>';
     $('#uHome').onclick=()=>show('type');
-    $('#uCopy').onclick=()=>{const url=this.origin()+'/'+u;(navigator.clipboard?navigator.clipboard.writeText(url):Promise.reject()).then(()=>toast('Profile link copied')).catch(()=>{prompt('Copy this link',url)})};
+    $('#uBoard').onclick=()=>show('board');
     const box=$('#userBody');
     Pub.show(dd,v,d.thumb,box);
     this.seo(u,dd,[]);
@@ -6443,6 +6485,51 @@ window.addEventListener('popstate',()=>UserPage.route());
       }catch(e){if(my===n)res.innerHTML='<div class="note">Search is not available right now.</div>'}},300)}})();
 {const fb=$('#fBlog');if(fb&&UserPage.can)fb.href='/blog'}
 UserPage.route();
+
+/* ===== My public profile link box (top of Profile page) ===== */
+(()=>{
+  const hero=$('#pHero');if(!hero)return;
+  const box=mk('div','card');box.id='pLinkBox';hero.after(box);let last='';
+  const clean=x=>String(x||'').toLowerCase().replace(/[^a-z0-9_.]+/g,'_').replace(/^[_.]+|[_.]+$/g,'');
+  const suggest=()=>{let s=clean(P.name||(Board.email||'').split('@')[0]).slice(0,16);if(s.length<3)s=(s+'_typist').slice(0,16);return s};
+  async function freeOne(){
+    const base=suggest();
+    for(let i=0;i<8;i++){const c=i?base.slice(0,16)+Math.floor(10+Math.random()*990):base;if(c.length>20||reservedUsername(c))continue;
+      try{const sn=await Board.db.doc('usernames/'+c).get();if(!sn.exists)return c}catch(e){return base}}
+    return base}
+  function draw(force){
+    const key=[Board.uid,P.username,P.name].join('|');if(!force&&key===last&&box.firstChild)return;last=key;
+    box.innerHTML='';box.hidden=false;
+    if(typeof isStaff==='function'&&isStaff()){box.hidden=true;return}
+    const h=mk('h3','','🔗 My public profile link');h.style.marginBottom='6px';box.appendChild(h);
+    if(!Board.uid){box.appendChild(mk('p','note','Login or register to get your own link like chikutype.com/yourname. Anyone can open it and see your speed, rank and records.'));return}
+    const o=UserPage.origin().replace(/^https?:\/\//,'');
+    if(P.username){
+      const url=UserPage.origin()+'/'+P.username,r=mk('div','plrow');
+      r.appendChild(mk('span','plbig',o+'/'+P.username));
+      const op=mk('button','btn','Open'),cp=mk('button','btn sec','Copy'),sh=mk('button','btn sec','Share');
+      op.onclick=()=>$('#pView').click();cp.onclick=()=>copyLink(url);sh.onclick=()=>shareLink(url);
+      r.append(op,cp,sh);box.appendChild(r);
+      box.appendChild(mk('p','note','Your leaderboard row also opens this page. '+(P.name?'':'Add your full name below and save, so the page goes live.')));
+    }else{
+      box.appendChild(mk('p','note','Pick a username: it becomes your own link. Small letters, numbers, _ or . (3 to 20 characters).'));
+      const r=mk('div','plrow'),pre=mk('span','muted',o+'/'),inp=mk('input','field');inp.maxLength=20;inp.autocapitalize='off';inp.spellcheck=false;
+      const go=mk('button','btn','Create my link'),msg=mk('p','note','');
+      r.append(pre,inp,go);box.append(r,msg);
+      freeOne().then(c=>{if(!inp.value)inp.value=c});
+      go.onclick=async()=>{const nu=inp.value.trim().toLowerCase();if(!nu){msg.textContent='Type a username first';return}
+        go.disabled=true;msg.textContent='Checking...';
+        const er=await claimUsername(nu);if(er){msg.textContent=er;go.disabled=false;return}
+        store.set('profile',P);try{updateChip()}catch(e){}
+        const pu=$('#pUser');if(pu)pu.value=P.username;
+        if(P.name){try{await Board.submit()}catch(e){}}
+        draw(true);toast('Your link is ready')}
+    }
+  }
+  renderProfile=(function(prev){return function(){const r=prev.apply(this,arguments);try{draw()}catch(e){console.warn('link box',e)}return r}})(renderProfile);
+  try{draw()}catch(e){}
+})();
+
 
 /* ===== About page: Total collection + Total expense (admin can hide / show) ===== */
 const inr=n=>'₹'+Math.round(+n||0).toLocaleString('en-IN');
