@@ -655,7 +655,17 @@ body.nosmooth .caret,body.nosmooth .words{transition:none}
 .seocopy a{color:var(--ink);font-weight:600}.seocopy details{border-bottom:1px solid var(--border);padding:8px 0}.seocopy summary{cursor:pointer;font-weight:700}
 .seolinks{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}.seolinks a{background:var(--soft);border:1px solid var(--border);border-radius:999px;padding:7px 14px;text-decoration:none;font-weight:600;font-size:14px}
 .seocopy h1{font-size:24px;line-height:1.25;margin:0 0 8px;color:var(--ink)}.seocopy ul{padding-left:22px}.seorel{font-size:13px;color:var(--muted);margin-top:14px}
+/* ===== Ads (controlled from Admin > Ads manager) ===== */
+.adslot{display:block;margin:0 auto;max-width:100%;text-align:center;overflow:hidden}
+.adslot.has{margin:18px auto}
+.adslot .adlab{display:block;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-bottom:4px}
+#lDone[hidden]+.adslot{display:none!important}
+.lside .adslot.has{margin:10px 0 0;width:100%}
+@media (max-width:760px){.lside .adslot{display:none!important}}
+@media (min-width:1460px){#results .adslot[data-ad="result"]{position:fixed;left:calc(50% + 566px);top:96px;width:160px;margin:0}}
+body.typing .adslot{visibility:hidden}
 </style>
+
 <script type="application/ld+json">{"@context": "https://schema.org", "@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "Is Chiku Type free?", "acceptedAnswer": {"@type": "Answer", "text": "Mostly yes. Typing tests, Hindi and English typing practice, games, leaderboards and English lessons are free. Only the Hindi lessons need a paid plan, starting at Rs 15 for 30 days."}}, {"@type": "Question", "name": "Which Hindi typing layouts are available?", "acceptedAnswer": {"@type": "Answer", "text": "Kruti Dev 010, Remington Gail and Mangal (InScript). You type on a normal English keyboard and each key is converted to the Hindi layout you pick."}}, {"@type": "Question", "name": "Can I prepare for the SSC typing test here?", "acceptedAnswer": {"@type": "Answer", "text": "Yes. Choose a 10 minute test in English or Hindi and practise against the usual CHSL LDC/JSA targets of 35 WPM English or 30 WPM Hindi. Always confirm the latest rules in the official SSC notification."}}, {"@type": "Question", "name": "What is a good typing speed?", "acceptedAnswer": {"@type": "Answer", "text": "For most government exams 30 to 35 WPM is the target. Above 45 WPM is considered good for everyday work."}}]}</script>
 </head>
 <body>
@@ -752,6 +762,7 @@ window.TYPEADDA_CONFIG={
       <button class="btn sec" id="rSame">Repeat same words</button>
       <span class="note" id="rNote"></span>
     </div>
+    <div class="adslot" data-ad="result"></div>
   </div>
 
   <div hidden aria-hidden="true"><div id="pgSeo-type"></div><div id="examSec" hidden><div id="examChips"></div></div></div>
@@ -784,6 +795,7 @@ window.TYPEADDA_CONFIG={
       <div class="fl" id="kbLegend" hidden></div>
     </div>
     <div class="card" id="lDone" hidden></div>
+    <div class="adslot" data-ad="lessondone"></div>
   </div>
 </section>
 
@@ -792,6 +804,7 @@ window.TYPEADDA_CONFIG={
   <div id="gameMenu">
     <div class="head"><div><h2>Typing games</h2><p class="muted">Practice speed without noticing you are practising.</p></div></div>
     <div class="gcards" id="gcards"></div>
+    <div class="adslot" data-ad="games"></div>
   </div>
   <div id="gameRun" hidden>
     <div class="lesson-top"><button class="ghost" id="gBack">All games</button><b id="gTitle"></b><span class="note" id="gHelp"></span></div>
@@ -811,6 +824,7 @@ window.TYPEADDA_CONFIG={
   <div class="tabs" id="bTabs"></div>
   <div class="card scroll-x" id="bTable"></div>
   <p class="note" style="margin-top:12px" id="bNote"></p>
+  <div class="adslot" data-ad="board"></div>
 </section>
 
 <!-- USER PROFILE PAGE (chikutype.com/username) -->
@@ -873,7 +887,7 @@ window.TYPEADDA_CONFIG={
 <section id="v-events" class="view"><div id="evRoot"></div></section>
 <section id="v-about" class="view"><div id="aboutRoot"></div></section>
 <section id="v-colleges" class="view">
-  <div id="colList"><div class="head"><div><h2>Colleges on Chiku Type</h2><p class="muted">Courses, fees and details shared by the colleges themselves.</p></div><input class="field" id="colQ" placeholder="Search colleges" style="max-width:280px"></div><div class="colgrid" id="colGrid"></div></div>
+  <div id="colList"><div class="head"><div><h2>Colleges on Chiku Type</h2><p class="muted">Courses, fees and details shared by the colleges themselves.</p></div><input class="field" id="colQ" placeholder="Search colleges" style="max-width:280px"></div><div class="colgrid" id="colGrid"></div><div class="adslot" data-ad="colleges"></div></div>
   <div id="colDetail" hidden></div>
 </section>
 </main>
@@ -3184,7 +3198,7 @@ $('#aboutRoot').onclick=e=>{const fb=e.target.closest('[data-fin]');if(fb){finTo
 const INFO={
  about:['About Chiku Type','<p>Chiku Type is a free place to practise typing: timed tests, step-by-step lessons with finger guides, games, and leaderboards. Hindi lessons are available with a paid plan.</p><p>Create an account to keep your progress, speed records and typing time on every device.</p>'],
  terms:['Terms &amp; Conditions','<p>Chiku Type is operated by <b>Xorinta Global</b>, First Floor, Ashfaque Complex, Kolashi, Katihar, Bihar, India, 854106.</p><p>By using Chiku Type you agree to use it fairly. Do not use bots, scripts or any tool to fake typing speed. Scores that look unnatural may be removed.</p><p>Uploaded college ID images are used only for verification and are deleted after the admin approves or rejects them.</p><p>The admin may block accounts that cheat, abuse the service or post offensive names. The service is provided as is, without any guarantee.</p><p>Paid plans (for Hindi lessons only, everything else is free) are listed on the Pricing page. All payments are final and non-refundable, as explained in the Refund Policy.</p>'],
- privacy:['Privacy','<p>We store your email, display name, location fields you enter, and your typing results so your account works on all devices. We do not sell your data. Your name, location and scores are visible on the public leaderboard.</p><p>To understand how the site is used we record visit details such as IP address, approximate location, device, browser, traffic source and pages visited. This is used only by the site admin for statistics.</p><p>To delete your account data, contact us using the email on the Contact page.</p><p>Chiku Type is operated by Xorinta Global. Online payments are processed by our payment gateway partner. We do not see or store your card, UPI or bank details.</p>'],
+ privacy:['Privacy','<p>We store your email, display name, location fields you enter, and your typing results so your account works on all devices. We do not sell your data. Ads on this site are served by third-party networks such as Google AdSense, which may use cookies to show ads based on your visits. You can manage this at google.com/settings/ads. Your name, location and scores are visible on the public leaderboard.</p><p>To understand how the site is used we record visit details such as IP address, approximate location, device, browser, traffic source and pages visited. This is used only by the site admin for statistics.</p><p>To delete your account data, contact us using the email on the Contact page.</p><p>Chiku Type is operated by Xorinta Global. Online payments are processed by our payment gateway partner. We do not see or store your card, UPI or bank details.</p>'],
  contact:['Contact','<p>Questions, feedback or problems? Write to <b>'+esc((window.TYPEADDA_CONFIG||{}).contact||'')+'</b></p>']
 };
 $('#foot').onclick=e=>{const a=e.target.closest('[data-info]');if(!a)return;const i=INFO[a.dataset.info];$('#iTitle').innerHTML=i[0];$('#iBody').innerHTML=i[1];openModal('mInfo')};
@@ -3320,6 +3334,7 @@ Lesson.list=function(){
   info.forEach((ch,i)=>{const b=mk('button','citem'+(i===this.chIdx?' on':'')+(ch.done?' fin':''));
     b.innerHTML=`<span>${esc(ch.name)}</span><span class="cs" title="${ch.done?'Chapter complete':ch.n+' of '+ch.total+' done'}">${ch.done?'✔':ch.n+'/'+ch.total}</span>`;
     b.onclick=()=>{this.chIdx=i;store.set('chap',i);this.list()};side.appendChild(b)});
+  if(window.Ads)side.appendChild(window.Ads.node('lessons'));
   const ch=info[this.chIdx],main=mk('div','lmain chap');
   const pct=Math.round(ch.rows.reduce((t,r)=>t+Math.min(r.d,r.st.length)/r.st.length,0)/Math.max(1,ch.rows.length)*100);
   main.appendChild(mk('h3','',ch.name));
@@ -3424,6 +3439,74 @@ renderAdmin=(function(prev){return function(){
     if(await dsetM('site/config',{name:nm.value.trim()||'Chiku Type',logo:sd.logo!==undefined?sd.logo:(SITE.logo||''),icon:sd.icon!==undefined?sd.icon:(SITE.icon||''),about:ta.value.trim(),links,showColleges:SITE.showColleges!==false,showEvents:SITE.showEvents!==false,showCollegeRank:SITE.showCollegeRank!==false,seo:SITE.seo||{},exams:SITE.exams||[],pageSeo:SITE.pageSeo||{},lessonAbout:SITE.lessonAbout||{},lessonOff:SITE.lessonOff||{},ts:Date.now()})){sd={};toast('Site settings saved')}};
   rl.onclick=()=>{sd={logo:'',icon:''};renderAdmin();toast('Press Save to apply')};
   a.append(sv,rl);s.append(f,a);l.appendChild(s)}})(renderAdmin);
+
+/* ================= Ads manager (Admin > Ads manager) =================
+   Everything is OFF until the admin switches it on. Ads never appear while typing, during a lesson or a game,
+   and are not shown to the admin login. Config is stored as a JSON string in site/config.adsCfg */
+const ADP=[
+ ['result','After a typing test','Right side rail on wide screens, below the buttons on smaller ones. Only after the result appears.'],
+ ['lessons','Lessons sidebar','Empty space under the chapter list (desktop only, English and Hindi lessons).'],
+ ['lessondone','Lesson complete','Under the result card after a lesson is finished.'],
+ ['board','Leaderboard','Below the ranking table.'],
+ ['games','Games menu','Below the game cards (not during a game).'],
+ ['colleges','Colleges list','Below the college cards.'],
+ ['page','Blog and practice pages','Before the FAQ on blog.html and the SEO practice pages.']
+];
+const Ads=window.Ads={els:new Set(),io:null,
+ cfg(){try{return JSON.parse(SITE.adsCfg||'{}')||{}}catch(e){return {}}},
+ plan(key){const c=this.cfg();if(!c.on)return null;const p=(c.s||{})[key];if(!p||!p.n)return null;
+  if(p.n==='g'){return(c.g&&c.g.on&&c.g.pub&&/^\d{6,}$/.test(p.id||''))?{n:'g',pub:c.g.pub,id:p.id}:null}
+  return null},
+ reg(el){if(this.els.has(el))return;this.els.add(el);if(!this.io){this.io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting)this.fill(e.target)}),{rootMargin:'200px'})}this.io.observe(el)},
+ node(key){this.nodes=this.nodes||{};if(!this.nodes[key]){const d=document.createElement('div');d.className='adslot';d.dataset.ad=key;this.nodes[key]=d;this.reg(d)}return this.nodes[key]},
+ scan(){document.querySelectorAll('.adslot[data-ad]').forEach(e=>this.reg(e))},
+ refresh(){this.scan();this.els.forEach(e=>{if(this.io){this.io.unobserve(e);this.io.observe(e)}})},
+ fill(el){try{
+  if(el.dataset.done)return;if(window.Board&&Board.admin)return;
+  const pl=this.plan(el.dataset.ad);if(!pl)return;
+  if(document.body.classList.contains('typing'))return;
+  el.dataset.done='1';el.classList.add('has');el.innerHTML='<span class="adlab">Advertisement</span>';
+  if(pl.n==='g'){
+   if(!document.querySelector('script[src*="adsbygoogle.js"]')){const sc=document.createElement('script');sc.async=true;sc.crossOrigin='anonymous';sc.src='https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client='+encodeURIComponent(pl.pub);document.head.appendChild(sc)}
+   const ins=document.createElement('ins');ins.className='adsbygoogle';ins.style.display='block';
+   ins.setAttribute('data-ad-client',pl.pub);ins.setAttribute('data-ad-slot',pl.id);ins.setAttribute('data-ad-format','auto');
+   ins.setAttribute('data-full-width-responsive',getComputedStyle(el).position==='fixed'?'false':'true');
+   el.appendChild(ins);try{(window.adsbygoogle=window.adsbygoogle||[]).push({})}catch(e){}
+  }
+ }catch(e){}}};
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>Ads.scan());else Ads.scan();
+Board.init=(function(prev){return async function(){await prev.call(this);if(!this.db)return;
+  this.db.doc('site/config').onSnapshot(()=>{setTimeout(()=>Ads.refresh(),50)},()=>{})}})(Board.init);
+setTimeout(()=>Ads.refresh(),1500);
+
+renderAdmin=(function(prev){return function(){
+  const l=$('#aList'),ae=document.activeElement;if(l.contains(ae)&&/INPUT|TEXTAREA|SELECT/.test(ae.tagName))return;
+  prev();if(!Board.admin)return;
+  const c=Ads.cfg(),card=mk('div','card');card.appendChild(mk('h3','','📢 Ads manager (Google AdSense)'));card.firstChild.style.marginBottom='8px';
+  card.appendChild(mk('p','muted','Everything is OFF until you turn it on. Ads show only in the safe spots below, never while someone is typing, in a lesson or in a game. You do not see ads yourself while logged in as admin, so open the site in a private window to check them.'));
+  const f=mk('div','form');
+  const sel=(lab,val,opts,full)=>{const w=mk('label',full?'full':'',lab),s=mk('select');opts.forEach(([v,t])=>{const o=mk('option','',t);o.value=v;s.appendChild(o)});s.value=val;w.appendChild(s);f.appendChild(w);return s};
+  const inp=(lab,val,ph,full)=>{const w=mk('label',full?'full':'',lab),i=mk('input');i.value=val||'';i.placeholder=ph||'';w.appendChild(i);f.appendChild(w);return i};
+  const OO=[['1','ON'],['0','OFF']];
+  const mAll=sel('All ads (master switch)',c.on?'1':'0',OO,true);
+  const gOn=sel('Google AdSense',c.g&&c.g.on?'1':'0',OO);
+  const gPub=inp('AdSense publisher ID',(c.g&&c.g.pub)||'ca-pub-8146751589764271','ca-pub-XXXXXXXXXXXXXXXX');
+  f.appendChild(mk('p','note full','Google AdSense needs a numeric ad unit ID for each place, created in AdSense > Ads > By ad unit > Display ads.'));
+  f.appendChild(mk('div','psec full','Where ads can appear'));
+  const rows={};
+  ADP.forEach(([k,t,d])=>{const p=(c.s||{})[k]||{};
+   const h=mk('div','full');h.innerHTML='<b style="font-size:14px">'+esc(t)+'</b><div class="note">'+esc(d)+'</div>';f.appendChild(h);
+   const s=sel('Show',p.n||'',[['','Off'],['g','Google']]);
+   const id=inp('Google ad unit ID',p.id||'','e.g. 1234567890');rows[k]={s,id}});
+  const a=mk('div','ractions'),sv=mk('button','btn','Save ads settings'),msg=mk('span','note');
+  sv.onclick=async()=>{const s={};
+   ADP.forEach(([k])=>{const r=rows[k];s[k]={n:r.s.value,id:r.id.value.trim()}});
+   const nc={on:mAll.value==='1',g:{on:gOn.value==='1',pub:gPub.value.trim()},s};
+   const bad=ADP.filter(([k])=>s[k].n==='g'&&!/^\d{6,}$/.test(s[k].id)).map(x=>x[1]);
+   if(await dsetM('site/config',{adsCfg:JSON.stringify(nc),ts:Date.now()})){SITE.adsCfg=JSON.stringify(nc);store.set('site',SITE);
+    msg.textContent=bad.length?'Saved. These places will stay empty until you add a Google ad unit ID: '+bad.join(', ')+'.':'Saved.';toast('Ads settings saved')}};
+  a.append(sv,msg);card.append(f,a);l.appendChild(card)}})(renderAdmin);
+
 applySite();
 
 /* ================= Contact page (edited in Admin) ================= */
@@ -5122,6 +5205,7 @@ const HL={
     info.forEach((ch,i)=>{const b=mk('button','citem'+(i===this.chIdx?' on':'')+(ch.done?' fin':''));
       b.innerHTML=`<span>${esc(ch.name)}</span><span class="cs">${ch.done?'✔':ch.n+'/'+ch.total}</span>`;
       b.onclick=()=>{this.chIdx=i;store.set('hchap',i);this.list()};side.appendChild(b)});
+    if(window.Ads)side.appendChild(window.Ads.node('lessons'));
     const ch=info[this.chIdx],main=mk('div','lmain chap');
     const pct=Math.round(ch.rows.reduce((t,r)=>t+Math.min(r.d,3)/3,0)/Math.max(1,ch.rows.length)*100);
     main.appendChild(mk('h3','',ch.name));
