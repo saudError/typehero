@@ -3467,7 +3467,7 @@ function shareLink(url){const t='Check my typing speed on Chiku Type';if(navigat
 Pub.show=function(d,v,pic,box){const ver=v&&v.ok,b=d.best||{},body=box||$('#pubBody');
   const L={};SOCU.forEach(([k])=>{const u=cleanURL((d.links||{})[k]);if(u)L[k]=u});
   const loc=[d.district,d.state,d.country].filter(Boolean).join(', ');
-  const url=(d.username&&!reservedUsername(d.username))?(UserPage.origin()+'/'+d.username):'';
+  const url=(d.username&&!reservedUsername(d.username))?(UserPage.origin()+'/'+d.username):((box&&box.id==='userBody'&&d._id&&d._id!=='local')?(UserPage.origin()+'/?user='+d._id):'');
   /* top speed (plain English tests) */
   const src=Object.assign({},b,d.pb||{});let top=null;
   Object.keys(src).forEach(k=>{if(/^t\d+$/.test(k)&&src[k]&&(!top||src[k].wpm>top.x.wpm))top={k,x:src[k]}});
@@ -6386,8 +6386,10 @@ const UserPage={
   origin(){return this.can?location.origin:'https://chikutype.com'},
   pathName(){if(!this.can)return '';const m=location.pathname.match(/^\/([A-Za-z0-9_.]{3,20})\/?$/);if(!m)return '';const u=m[1].toLowerCase();return reservedUsername(u)?'':u},
   go(u){if(!this.can)return false;try{history.pushState(null,'','/'+u)}catch(e){return false}this.route();return true},
+  qid(){if(!this.can)return '';const m=location.search.match(/[?&]user=([A-Za-z0-9]{10,40})(&|$)/);return m?m[1]:''},
+  goId(id){if(!this.can||!id||id==='local')return false;try{history.pushState(null,'','/?user='+id)}catch(e){return false}this.route();return true},
   route(){
-    const u=this.pathName();
+    const u0=this.pathName(),qid=u0?'':this.qid(),u=u0||(qid?'id:'+qid:'');
     if(!u){if(this.active){this.leave(true);const p=location.pathname.replace(/^\/|\/$/g,'');show(({lessons:'lessons',leaderboard:'board'})[p]||'type')}return}
     this.active=true;this.u=u;show('user');this.render(u)},
   leave(skipUrl){this.active=false;this.u='';if(!skipUrl){try{history.replaceState(null,'','/')}catch(e){}}this.seoOff()},
@@ -6445,9 +6447,10 @@ const UserPage={
     if(!this.active||this.u!==u)return;
     if(!ok){root.innerHTML='<p class="muted" style="padding:28px 0;text-align:center">Profiles need an internet connection.</p>';return}
     let id=null,d=null;
-    const own=!!Board.uid&&u===P.username;
+    const byId=u.slice(0,3)==='id:';
+    const own=!!Board.uid&&(u===P.username||(byId&&u.slice(3)===Board.uid));
     if(own&&P.name){try{await Board.submit()}catch(e){}}
-    try{const sn=await Board.db.collection('scores').where('username','==',u).limit(1).get();if(!sn.empty){id=sn.docs[0].id;d=sn.docs[0].data();Board.scores.set(id,d)}}catch(e){console.warn('profile',e)}
+    try{if(byId){const sn=await Board.db.doc('scores/'+u.slice(3)).get();if(sn.exists){id=sn.id;d=sn.data();Board.scores.set(id,d)}}else{const sn=await Board.db.collection('scores').where('username','==',u).limit(1).get();if(!sn.empty){id=sn.docs[0].id;d=sn.docs[0].data();Board.scores.set(id,d)}}}catch(e){console.warn('profile',e)}
     if(!d&&own&&UserPage.mineData){id=Board.uid;d=UserPage.mineData()}
     if(!this.active||this.u!==u)return;
     if(!d){
@@ -6456,14 +6459,15 @@ const UserPage={
       this.seoOn('Typist not found | Chiku Type','This Chiku Type profile does not exist.','',null,this.origin()+'/'+u);this._set('meta[name=robots]','content','noindex,follow');return}
     let v=Board.verified.get(id);if(!v){try{const sn=await Board.db.doc('verified/'+id).get();if(sn.exists)v=sn.data()}catch(e){}}
     const dd=Object.assign({},d,{_id:id});
+    const slug=byId?((d.username&&!reservedUsername(d.username))?d.username:''):u;
+    if(byId&&slug){try{history.replaceState(null,'','/'+slug)}catch(e){}}
     root.innerHTML='<div class="ubar"><button class="ghost" id="uHome">&larr; Home</button><button class="btn sec" id="uBoard">Leaderboard</button><button class="btn" id="uEdit" hidden>✏️ Edit profile</button></div><div id="userBody"></div>';
     $('#uHome').onclick=()=>show('type');
     $('#uBoard').onclick=()=>show('board');
     if(Board.uid&&id===Board.uid){const eb=$('#uEdit');eb.hidden=false;eb.onclick=()=>show('profile')}
     const box=$('#userBody');
     Pub.show(dd,v,d.thumb,box);
-    this.seo(u,dd,[]);
-    this.records(id,dd).then(r=>{if(this.active&&this.u===u)this.seo(u,dd,r)});
+    if(slug){this.seo(slug,dd,[]);this.records(id,dd).then(r=>{if(this.active&&this.u===u)this.seo(slug,dd,r)})}else{this._set('meta[name=robots]','content','noindex,follow');this.records(id,dd)}
     try{const sn=await Board.db.doc('avatars/'+id).get();if(sn.exists&&sn.data().pic&&this.active&&this.u===u)Pub.show(dd,v,sn.data().pic,box)}catch(e){}
   }
 };
@@ -6475,6 +6479,7 @@ const UserPage={
   if(Board.uid&&id===Board.uid&&P.username){if(P.name){try{await Board.submit()}catch(e){}}d=Object.assign({},d||{},{username:P.username})}
   if(d&&!d.username&&Board.db){try{const un=await Board.db.collection('usernames').where('uid','==',id).limit(1).get();if(!un.empty){d=Object.assign({},d,{username:un.docs[0].id});Board.scores.set(id,d)}}catch(e){}}
   if(d&&d.username&&!reservedUsername(d.username)&&UserPage.go(d.username))return;
+  if(d&&UserPage.goId(id))return;
   return _open.call(this,id)}})();
 // leaving the profile page puts the address bar back to the home address
 show=(function(p){return function(v){if(v!=='user'&&UserPage.active)UserPage.leave();return p.apply(this,arguments)}})(show);
