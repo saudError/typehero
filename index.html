@@ -24,7 +24,7 @@
 <meta property="og:url" content="https://chikutype.com/">
 <meta property="og:site_name" content="Chiku Type">
 <meta name="twitter:card" content="summary">
-<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"WebSite","name":"Chiku Type","alternateName":["ChikuType","Chiku Typing"],"url":"https://chikutype.com/"},{"@type":"WebApplication","name":"Chiku Type","url":"https://chikutype.com/","applicationCategory":"EducationalApplication","operatingSystem":"Any","browserRequirements":"Requires JavaScript","offers":{"@type":"Offer","price":"0","priceCurrency":"INR"},"description":"Free typing test, Hindi typing practice (Kruti Dev, Remington Gail, Mangal), lessons, games and leaderboards."}]}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"WebSite","@id":"https://chikutype.com/#website","name":"Chiku Type","alternateName":["ChikuType","Chiku Typing","chikutype.com"],"url":"https://chikutype.com/","publisher":{"@id":"https://chikutype.com/#org"}},{"@type":"Organization","@id":"https://chikutype.com/#org","name":"Chiku Type","legalName":"Xorinta Global","alternateName":["ChikuType","Chiku Typing"],"url":"https://chikutype.com/","address":{"@type":"PostalAddress","streetAddress":"First Floor, Ashfaque Complex, Kolashi","addressLocality":"Katihar","addressRegion":"Bihar","postalCode":"854106","addressCountry":"IN"}},{"@type":"WebApplication","name":"Chiku Type","url":"https://chikutype.com/","applicationCategory":"EducationalApplication","operatingSystem":"Any","browserRequirements":"Requires JavaScript","offers":{"@type":"Offer","price":"0","priceCurrency":"INR"},"description":"Free typing test, Hindi typing practice (Kruti Dev, Remington Gail, Mangal), lessons, games and leaderboards."}]}</script>
 <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8146751589764271"
      crossorigin="anonymous"></script>
 <meta name="robots" content="index,follow,max-image-preview:large">
@@ -84,6 +84,42 @@ html{scroll-padding-top:env(safe-area-inset-top,0px)}
 :root[data-appt="white"]{--bg:#FFFFFF;--paper:#FFFFFF;--ink:#111111;--text:#1A1A1A;--dim:#A6A6A6;--line:#E7E7E7;--margin:#D9363E;--err:#D7263D;--hl:rgba(255,222,64,.6);--accent:#111111;--accent-t:#FFFFFF;--card:#FFFFFF;--border:#E2E2E2;--ok:#1E8E5A;--muted:#666666;--soft:#F4F4F4}
 :root[data-appt="soft"]{--bg:#EDE8DC;--paper:#F6F1E6;--ink:#3E4A59;--text:#3B3F46;--dim:#ABA595;--line:#DDD6C5;--margin:#C9695F;--err:#C2453D;--hl:rgba(240,200,90,.55);--accent:#5B6F8F;--accent-t:#FFFFFF;--card:#F8F4EA;--border:#D9D1BE;--ok:#3F8F63;--muted:#7A7767;--soft:#EFE9DB}
 :root[data-appt="eye"]{--bg:#F0DFB8;--paper:#F7EACB;--ink:#5B3A0E;--text:#4A3515;--dim:#B79F70;--line:#E3CFA0;--margin:#C0562F;--err:#B3261E;--hl:rgba(230,150,40,.45);--accent:#8A5200;--accent-t:#FFF6E3;--card:#F9EED3;--border:#DDC68F;--ok:#4C7A2A;--muted:#85703F;--soft:#F2E3BF}
+:root[data-appt="dracula"]{--bg:#21222C;--paper:#282A36;--ink:#F8F8F2;--text:#E6E6EE;--dim:#6272A4;--line:#3A3D50;--margin:#FF79C6;--err:#FF5555;--hl:rgba(189,147,249,.30);--accent:#BD93F9;--accent-t:#1E1F29;--card:#282A36;--border:#44475A;--ok:#50FA7B;--muted:#9AA3C7;--soft:#303241}
+:root[data-appt="nord"]{--bg:#2E3440;--paper:#3B4252;--ink:#ECEFF4;--text:#D8DEE9;--dim:#6B768C;--line:#4C566A;--margin:#88C0D0;--err:#BF616A;--hl:rgba(136,192,208,.28);--accent:#88C0D0;--accent-t:#2E3440;--card:#3B4252;--border:#4C566A;--ok:#A3BE8C;--muted:#A5AFC2;--soft:#434C5E}
+:root[data-appt="solardark"]{--bg:#002B36;--paper:#073642;--ink:#EEE8D5;--text:#93A1A1;--dim:#586E75;--line:#0F4755;--margin:#B58900;--err:#DC322F;--hl:rgba(181,137,0,.30);--accent:#B58900;--accent-t:#002B36;--card:#073642;--border:#1B4F5C;--ok:#859900;--muted:#839496;--soft:#0A3D4A}
+:root[data-appt="solarlight"]{--bg:#EEE8D5;--paper:#FDF6E3;--ink:#073642;--text:#586E75;--dim:#A3AFA9;--line:#E3DCC3;--margin:#CB4B16;--err:#DC322F;--hl:rgba(181,137,0,.35);--accent:#268BD2;--accent-t:#FDF6E3;--card:#FDF6E3;--border:#DDD6BF;--ok:#859900;--muted:#657B83;--soft:#F4EEDB}
+:root[data-appt="gruvbox"]{--bg:#1D2021;--paper:#282828;--ink:#EBDBB2;--text:#D5C4A1;--dim:#7C6F64;--line:#3C3836;--margin:#FABD2F;--err:#FB4934;--hl:rgba(250,189,47,.28);--accent:#FABD2F;--accent-t:#1D2021;--card:#282828;--border:#504945;--ok:#B8BB26;--muted:#A89984;--soft:#32302F}
+:root[data-appt="mocha"]{--bg:#181825;--paper:#1E1E2E;--ink:#CDD6F4;--text:#BAC2DE;--dim:#6C7086;--line:#313244;--margin:#F5C2E7;--err:#F38BA8;--hl:rgba(203,166,247,.28);--accent:#CBA6F7;--accent-t:#1E1E2E;--card:#1E1E2E;--border:#45475A;--ok:#A6E3A1;--muted:#A6ADC8;--soft:#26273A}
+:root[data-appt="tokyo"]{--bg:#16161E;--paper:#1A1B26;--ink:#C0CAF5;--text:#A9B1D6;--dim:#565F89;--line:#2A2E45;--margin:#7AA2F7;--err:#F7768E;--hl:rgba(122,162,247,.28);--accent:#7AA2F7;--accent-t:#1A1B26;--card:#1A1B26;--border:#3B4261;--ok:#9ECE6A;--muted:#7982A9;--soft:#202233}
+:root[data-appt="gold"]{--bg:#26282B;--paper:#2E3033;--ink:#E8E6DC;--text:#D6D4CA;--dim:#6F7378;--line:#3A3D41;--margin:#F2B705;--err:#E5534B;--hl:rgba(242,183,5,.25);--accent:#F2B705;--accent-t:#1F2022;--card:#2E3033;--border:#44474C;--ok:#7BC47F;--muted:#9A9D9F;--soft:#35373A}
+:root[data-appt="ocean"]{--bg:#0B1C2C;--paper:#102A43;--ink:#E6F1FA;--text:#CFE0EE;--dim:#4F7396;--line:#1B3A57;--margin:#2DD4BF;--err:#FF6B6B;--hl:rgba(45,212,191,.25);--accent:#2DD4BF;--accent-t:#0B1C2C;--card:#102A43;--border:#24486B;--ok:#5EE0A0;--muted:#86A6C2;--soft:#163350}
+:root[data-appt="amoled"]{--bg:#000000;--paper:#0A0A0A;--ink:#E8E8E8;--text:#CFCFCF;--dim:#5A5A5A;--line:#1C1C1C;--margin:#FF9F1C;--err:#FF5C5C;--hl:rgba(255,159,28,.28);--accent:#FF9F1C;--accent-t:#000000;--card:#0A0A0A;--border:#262626;--ok:#5CD68A;--muted:#8A8A8A;--soft:#111111}
+:root[data-appt="sakura"]{--bg:#F8E8EE;--paper:#FFF6F9;--ink:#7A2E4F;--text:#4A2A38;--dim:#C7A3B3;--line:#F0D3DE;--margin:#E0527F;--err:#C62845;--hl:rgba(255,176,196,.55);--accent:#C2416E;--accent-t:#FFFFFF;--card:#FFFFFF;--border:#EBCBD8;--ok:#3F9B6C;--muted:#9A6B80;--soft:#FCEFF4}
+:root[data-appt="lavender"]{--bg:#ECE9F7;--paper:#F8F6FF;--ink:#3B2E7E;--text:#2C2748;--dim:#A9A3CC;--line:#DDD8F0;--margin:#7C5CFA;--err:#D12F55;--hl:rgba(180,160,255,.5);--accent:#5B43D6;--accent-t:#FFFFFF;--card:#FFFFFF;--border:#D6D0EE;--ok:#2F9E6E;--muted:#6F68A0;--soft:#F1EEFC}
+/* settings panel */
+.modal .box.setbox{max-width:940px;width:100%;padding:0;display:flex;flex-direction:column;overflow:hidden;height:min(88vh,740px)}
+.sethead{display:flex;justify-content:space-between;align-items:center;padding:14px 22px;border-bottom:1px solid var(--border);flex:none}
+.sethead h3{margin:0;font-size:20px}
+.setwrap{display:flex;flex:1;min-height:0}
+.setnav{display:flex;flex-direction:column;gap:4px;padding:14px;width:176px;border-right:1px solid var(--border);flex:none}
+.setnav button{text-align:left;background:none;border:0;border-radius:8px;padding:9px 12px;font-weight:700;font-size:14.5px;color:var(--muted);cursor:pointer}
+.setnav button:hover{background:var(--soft);color:var(--text)}
+.setnav button.on{background:var(--soft);color:var(--accent)}
+.setmain{position:relative;flex:1;overflow:auto;padding:4px 22px 24px}
+.setmain section{padding-top:20px}
+.setmain h4{margin:0 0 4px;font-size:12.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--accent)}
+.srow{display:flex;gap:14px;align-items:center;justify-content:space-between;padding:12px 14px;border:1px solid var(--border);border-radius:12px;background:var(--soft);margin-top:8px;flex-wrap:wrap}
+.srow.col{display:block}
+.srow .stx{flex:1 1 230px;min-width:0}
+.srow .stx b{display:block;font-size:15px}
+.srow .stx p{margin:2px 0 0;font-size:12.5px;color:var(--muted);line-height:1.4}
+.srow .seg{gap:2px;padding:3px;border:1px solid var(--border);border-radius:10px;background:var(--card);flex-wrap:nowrap}
+.srow .seg button{border:0;background:none;border-radius:8px;padding:6px 13px;color:var(--muted);cursor:pointer}
+.srow .seg button:hover{color:var(--text)}
+.srow .seg button.on{background:var(--accent);color:var(--accent-t)}
+.srow.col .themebox{margin-top:12px}
+.setnote{margin-top:22px}
+@media(max-width:700px){.modal .box.setbox{height:92vh}.setwrap{flex-direction:column}.setnav{flex-direction:row;width:auto;overflow-x:auto;border-right:0;border-bottom:1px solid var(--border);padding:8px 10px}.setnav button{white-space:nowrap}.setmain{padding:2px 14px 20px}.srow .seg{flex-wrap:wrap}}
 /* theme picker */
 .themebox{display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:10px;margin-top:10px;width:100%}
 .tcard{border:2px solid var(--border);border-radius:12px;padding:0;overflow:hidden;background:none;text-align:left;cursor:pointer}
@@ -645,10 +681,10 @@ window.TYPEADDA_CONFIG={
 </script>
 
 <noscript><div style="max-width:860px;margin:20px auto;padding:0 18px;font-family:system-ui,sans-serif"><h1>Chiku Type - Free Typing Test and Hindi Typing Practice</h1><p>Chiku Type needs JavaScript for the typing test. Please enable JavaScript. Practice pages: <a href="free-typing-test.html">Free typing test</a>, <a href="hindi-typing-practice.html">Hindi typing practice</a>, <a href="ssc-typing-practice.html">SSC typing practice</a>, <a href="kruti-dev-typing-test.html">Kruti Dev typing test</a>, <a href="remington-gail-typing-test.html">Remington Gail typing test</a>.</p></div></noscript>
-<div class="chrome"><div class="wrap">
+<div><div class="wrap">
   <header class="bar">
     <a class="brand" id="brand" tabindex="0">Chiku Type</a>
-    <nav id="nav" aria-label="Main">
+    <nav id="nav" class="chrome" aria-label="Main">
       <button data-v="type" class="on">Type</button>
       <button data-v="lessons">Lessons</button>
       <button data-v="games">Games</button>
@@ -656,7 +692,7 @@ window.TYPEADDA_CONFIG={
       <button data-v="events" hidden>Events</button>
       <button data-v="admin" hidden>Admin</button>
     </nav>
-    <div class="right">
+    <div class="right chrome">
       <button id="btnSettings" class="ghost">Settings</button>
       <button id="chip" class="chip">Set up profile</button>
     </div>
@@ -849,26 +885,40 @@ window.TYPEADDA_CONFIG={
 <div class="seg" id="aTabs" style="margin-bottom:10px"><button data-m="login" class="on">Login</button><button data-m="reg">Sign up</button></div>
 <input class="field" id="aName" placeholder="Your name" maxlength="24" hidden><input class="field" id="aMail" type="text" autocapitalize="off" autocomplete="username" placeholder="Email or username"><input class="field" id="aPass" type="password" placeholder="Password (min 6 characters)">
 <p class="note" id="aMsg"></p><div class="ractions"><button class="btn" id="aGo">Login</button><button class="ghost" id="aForgot">Forgot password?</button></div></div></div>
-<div class="modal" id="mSettings" hidden><div class="box">
-  <h3>Settings</h3>
-  <div class="row" style="display:block"><span>Theme</span><div class="themebox" id="sTheme"></div></div>
-  <div class="cust" id="custBox" hidden></div>
-  <div class="row"><span>Text size</span><div class="seg" id="sSize"></div></div>
-  <div class="row"><span>Caret style</span><div class="seg" id="sCaret"></div></div>
-  <div class="row"><span>Focus mode <span class="note">hides menus while typing</span></span><div class="seg" id="sFocus"></div></div>
-  <div class="row"><span>Live WPM</span><div class="seg" id="sLwpm"></div></div>
-  <div class="row"><span>Live accuracy</span><div class="seg" id="sLacc"></div></div>
-  <div class="row"><span>Sound <span class="note">master switch</span></span><div class="seg" id="sSound"></div></div>
-  <div class="row"><span>Keypress sound</span><div class="seg" id="sKeySnd"></div></div>
-  <div class="row"><span>Error sound</span><div class="seg" id="sErrSnd"></div></div>
-  <div class="row"><span>Error highlighting <span class="note">show wrong letters in red</span></span><div class="seg" id="sErrHl"></div></div>
-  <div class="row"><span>Stop on error <span class="note">cannot move on until the letter is correct</span></span><div class="seg" id="sStop"></div></div>
-  <div class="row"><span>Backspace</span><div class="seg" id="sBsp"></div></div>
-    <div class="row"><span>Virtual keyboard <span class="note">green = right, red = wrong</span></span><div class="seg" id="sVkb"></div></div>
-  <div class="row"><span>Blind mode <span class="note">hide mistakes until the end</span></span><div class="seg" id="sBlind"></div></div>
-  <div class="row"><span>Caret smoothness</span><div class="seg" id="sSmooth"></div></div>
-  <div class="row"><span class="note">Tip: press Esc while typing to open this panel</span></div>
-  <div class="ractions"><button class="btn" data-close>Done</button></div>
+<div class="modal" id="mSettings" hidden><div class="box setbox">
+  <div class="sethead"><h3>Settings</h3><button class="ghost" data-close aria-label="Close settings">&#10005;</button></div>
+  <div class="setwrap">
+    <nav class="setnav" id="setNav" aria-label="Settings sections"><button type="button" data-s="behavior" class="on">Behavior</button><button type="button" data-s="display">Display</button><button type="button" data-s="sound">Sound</button><button type="button" data-s="caret">Caret</button><button type="button" data-s="theme">Theme</button></nav>
+    <div class="setmain" id="setMain">
+      <section data-sec="behavior"><h4>Behavior</h4>
+        <div class="srow"><div class="stx"><b>Focus mode</b><p>Hides the menus while you type, so only the words stay on screen.</p></div><div class="seg" id="sFocus"></div></div>
+        <div class="srow"><div class="stx"><b>Stop on error</b><p>You cannot move on until the current letter is correct.</p></div><div class="seg" id="sStop"></div></div>
+        <div class="srow"><div class="stx"><b>Backspace</b><p>Allow deleting letters you typed wrong.</p></div><div class="seg" id="sBsp"></div></div>
+        <div class="srow"><div class="stx"><b>Blind mode</b><p>Hide your mistakes until the test ends.</p></div><div class="seg" id="sBlind"></div></div>
+        <div class="srow"><div class="stx"><b>Error highlighting</b><p>Show wrong letters in red while typing.</p></div><div class="seg" id="sErrHl"></div></div>
+      </section>
+      <section data-sec="display"><h4>Display</h4>
+        <div class="srow"><div class="stx"><b>Text size</b><p>Size of the words in the typing test.</p></div><div class="seg" id="sSize"></div></div>
+        <div class="srow"><div class="stx"><b>Live WPM</b><p>Show your speed while the test runs.</p></div><div class="seg" id="sLwpm"></div></div>
+        <div class="srow"><div class="stx"><b>Live accuracy</b><p>Show your accuracy while the test runs.</p></div><div class="seg" id="sLacc"></div></div>
+        <div class="srow"><div class="stx"><b>Virtual keyboard</b><p>On-screen keyboard. Green is right, red is wrong.</p></div><div class="seg" id="sVkb"></div></div>
+      </section>
+      <section data-sec="sound"><h4>Sound</h4>
+        <div class="srow"><div class="stx"><b>Sound</b><p>Master switch for all sounds, including games.</p></div><div class="seg" id="sSound"></div></div>
+        <div class="srow"><div class="stx"><b>Keypress sound</b><p>A soft click on every key.</p></div><div class="seg" id="sKeySnd"></div></div>
+        <div class="srow"><div class="stx"><b>Error sound</b><p>A low tone when you type a wrong letter.</p></div><div class="seg" id="sErrSnd"></div></div>
+      </section>
+      <section data-sec="caret"><h4>Caret</h4>
+        <div class="srow"><div class="stx"><b>Caret style</b><p>The mark that shows which letter to type next.</p></div><div class="seg" id="sCaret"></div></div>
+        <div class="srow"><div class="stx"><b>Smooth caret</b><p>The caret glides from letter to letter at your typing speed.</p></div><div class="seg" id="sSmooth"></div></div>
+      </section>
+      <section data-sec="theme"><h4>Theme</h4>
+        <div class="srow col"><div class="stx"><b>Colors</b><p>Pick a theme, or build your own with Custom.</p></div><div class="themebox" id="sTheme"></div></div>
+        <div class="cust" id="custBox" hidden></div>
+      </section>
+      <p class="note setnote">Tip: press Esc while typing to open Settings. Your choices are saved on this device.</p>
+    </div>
+  </div>
 </div></div>
 
 <div class="modal" id="mPub" hidden><div class="box"><div id="pubBody"></div><div class="ractions"><button class="btn sec" data-close>Close</button></div></div></div>
@@ -1279,6 +1329,19 @@ function setLive(){
   $('#liveMain').textContent=S.mode==='time'?S.time:(T?`0/${T.words.length}`:'');
   $('#liveWpm').textContent='0 wpm';$('#liveAcc').textContent='100%';
 }
+/* caret glides at the speed you type: the slide time follows your keystroke rhythm, so it never lags behind at 100+ WPM.
+   Input handling is untouched, this only changes how the caret is drawn. */
+const CP={t:0,ema:150,x:0,y:0};
+function caretGlide(x,y){
+  if(!S.smooth){caret.style.transition='';return}
+  const now=performance.now(),dt=now-CP.t;CP.t=now;
+  if(dt>0&&dt<700)CP.ema=CP.ema*.65+dt*.35;
+  let d=Math.max(28,Math.min(100,CP.ema*.8));
+  const dx=x-CP.x,dy=y-CP.y;
+  if(dy!==0||Math.abs(dx)>charW*8||dx<-charW*2.2)d=0;   // new line or restart: jump, do not slide across the screen
+  CP.x=x;CP.y=y;
+  caret.style.transition=d?`transform ${d}ms linear,width ${d}ms linear`:'none';
+}
 function placeCaret(){
   if(!T)return;
   const w=$('#w'+T.idx);if(!w)return;
@@ -1286,6 +1349,7 @@ function placeCaret(){
   const ci=isDev(T.words[T.idx])?caretUnit(T.words[T.idx],t):t.length;
   if(ci<sp.length){const s=sp[ci];x=w.offsetLeft+s.offsetLeft;wd=s.offsetWidth}
   else{const s=sp[sp.length-1];x=w.offsetLeft+s.offsetLeft+s.offsetWidth;wd=charW}
+  caretGlide(x,w.offsetTop);
   caret.style.width=(S.caret==='line'?3:wd)+'px';
   caret.style.transform=`translate(${x}px,${w.offsetTop}px)`;
   if(S.oneline){
@@ -4465,7 +4529,19 @@ const THEMES=[
   ['soft','Soft Light','#EDE8DC','#F6F1E6','#3E4A59','#ABA595'],
   ['eye','Eye Comfort','#F0DFB8','#F7EACB','#5B3A0E','#B79F70'],
   ['middark','Mid Dark','#2B303B','#343A47','#E7EBF5','#7C8599'],
-  ['dark','Dark','#141E1A','#1B2823','#F0F3EA','#5F7168']
+  ['dark','Dark','#141E1A','#1B2823','#F0F3EA','#5F7168'],
+  ['dracula','Dracula','#21222C','#282A36','#F8F8F2','#6272A4'],
+  ['nord','Nord','#2E3440','#3B4252','#ECEFF4','#6B768C'],
+  ['solardark','Solarized Dark','#002B36','#073642','#EEE8D5','#586E75'],
+  ['solarlight','Solarized Light','#EEE8D5','#FDF6E3','#073642','#A3AFA9'],
+  ['gruvbox','Gruvbox','#1D2021','#282828','#EBDBB2','#7C6F64'],
+  ['mocha','Catppuccin','#181825','#1E1E2E','#CDD6F4','#6C7086'],
+  ['tokyo','Tokyo Night','#16161E','#1A1B26','#C0CAF5','#565F89'],
+  ['gold','Charcoal Gold','#26282B','#2E3033','#E8E6DC','#6F7378'],
+  ['ocean','Ocean','#0B1C2C','#102A43','#E6F1FA','#4F7396'],
+  ['amoled','Black','#000000','#0A0A0A','#E8E8E8','#5A5A5A'],
+  ['sakura','Sakura','#F8E8EE','#FFF6F9','#7A2E4F','#C7A3B3'],
+  ['lavender','Lavender','#ECE9F7','#F8F6FF','#3B2E7E','#A9A3CC']
 ];
 const THEME_CSS={light:'notebook',dark:'blackboard'};
 const CUSTVARS=['--bg','--paper','--card','--ink','--text','--dim','--line','--border','--soft','--muted','--hl','--caretc','--err','--accent','--accent-t'];
@@ -6496,6 +6572,19 @@ window.addEventListener('popstate',()=>UserPage.route());
       }catch(e){if(my===n)res.innerHTML='<div class="note">Search is not available right now.</div>'}},300)}})();
 {const fb=$('#fBlog');if(fb&&UserPage.can)fb.href='/blog'}
 UserPage.route();
+
+/* ===== Settings panel: section menu + scroll highlight ===== */
+(()=>{
+  const nav=$('#setNav'),main=$('#setMain');if(!nav||!main)return;
+  const secs=()=>$$('#setMain section');
+  nav.onclick=e=>{const b=e.target.closest('button');if(!b)return;const t=main.querySelector('[data-sec="'+b.dataset.s+'"]');if(t)main.scrollTo({top:t.offsetTop-6,behavior:'smooth'})};
+  const spy=()=>{let cur=secs()[0];secs().forEach(x=>{if(x.offsetTop-main.scrollTop<=70)cur=x});
+    $$('#setNav button').forEach(b=>b.classList.toggle('on',b.dataset.s===cur.dataset.sec))};
+  main.addEventListener('scroll',spy,{passive:true});
+  const mo=new MutationObserver(()=>{if(!$('#mSettings').hidden){main.scrollTop=0;spy()}});
+  mo.observe($('#mSettings'),{attributes:true,attributeFilter:['hidden']});
+})();
+
 
 /* ===== Profile click -> public profile page (/username) ===== */
 (()=>{
