@@ -6390,7 +6390,7 @@ const UserPage={
   goId(id){if(!this.can||!id||id==='local')return false;try{history.pushState(null,'','/?user='+id)}catch(e){return false}this.route();return true},
   route(){
     const u0=this.pathName(),qid=u0?'':this.qid(),u=u0||(qid?'id:'+qid:'');
-    if(!u){if(this.active){this.leave(true);const p=location.pathname.replace(/^\/|\/$/g,'');show(({lessons:'lessons',leaderboard:'board'})[p]||'type')}return}
+    if(!u){if(this.active){this.leave(true);const p=location.pathname.replace(/^\/|\/$/g,'');window.__nl=1;try{show((window.PATHV||{})[p]||'type')}finally{window.__nl=0}}return}
     this.active=true;this.u=u;show('user');this.render(u)},
   leave(skipUrl){this.active=false;this.u='';if(!skipUrl){try{history.replaceState(null,'','/')}catch(e){}}this.seoOff()},
   /* ---- search-engine tags ---- */
@@ -6482,7 +6482,7 @@ const UserPage={
   if(d&&UserPage.goId(id))return;
   return _open.call(this,id)}})();
 // leaving the profile page puts the address bar back to the home address
-show=(function(p){return function(v){if(v!=='user'&&UserPage.active)UserPage.leave();return p.apply(this,arguments)}})(show);
+show=(function(p){return function(v){if(v!=='user'&&UserPage.active)UserPage.leave(true);return p.apply(this,arguments)}})(show);
 window.addEventListener('popstate',()=>UserPage.route());
 // search a typist by username (leaderboard page)
 (()=>{const inp=$('#uSearch'),res=$('#uRes');if(!inp)return;let t=null,n=0;
@@ -6529,6 +6529,38 @@ UserPage.route();
   const pv=$('#pView');if(pv){pv.hidden=true;pv.style.display='none'}
   /* keep the username in your leaderboard record so others can open your page */
   Board.whenReady(()=>{try{if(Board.uid&&P.username&&P.name&&!sessionStorage.getItem('ct:unpush')){sessionStorage.setItem('ct:unpush','1');Board.submit()}}catch(e){}});
+})();
+
+/* ===== Browser back/forward + real addresses for every page ===== */
+(()=>{
+  const VPATH={type:'/',lessons:'/lessons',board:'/leaderboard',games:'/games',events:'/events',about:'/about',colleges:'/colleges',profile:'/profile',admin:'/admin'};
+  window.PATHV=Object.fromEntries(Object.entries(VPATH).map(([k,v])=>[v.replace(/^\//,''),k]));
+  const curPath=()=>location.pathname.replace(/\/+$/,'')||'/';
+  show=(function(p){return function(v){
+    const r=p.apply(this,arguments);
+    try{if(UserPage.can&&!window.__nl&&VPATH[v]&&view===v&&curPath()!==VPATH[v])history.pushState(null,'',VPATH[v])}catch(e){}
+    return r}})(show);
+  window.addEventListener('popstate',()=>{
+    try{
+      if(!UserPage.can||UserPage.pathName()||UserPage.qid())return;   // profile pages: UserPage handles them
+      const v=window.PATHV[location.pathname.replace(/^\/+|\/+$/g,'')];
+      if(v&&view!==v&&!(v==='colleges'&&new URLSearchParams(location.search).get('college'))){window.__nl=1;try{show(v)}finally{window.__nl=0}}
+    }catch(e){console.warn('nav',e)}});
+  /* open the right page when someone lands on /games, /events, /about ... directly */
+  (()=>{
+    if(!UserPage.can||UserPage.pathName()||UserPage.qid())return;
+    const v=window.PATHV[location.pathname.replace(/^\/+|\/+$/g,'')];
+    if(!v||v==='type'||v==='lessons'||v==='board')return;
+    const home=()=>{try{history.replaceState(null,'','/')}catch(e){}};
+    const go=()=>{window.__nl=1;try{show(v)}finally{window.__nl=0}};
+    if(v==='games'||v==='about'){go();return}
+    Board.whenReady(()=>{
+      if(v==='colleges'){go();return}
+      if(v==='events'){let n=0;const t=setInterval(()=>{if(typeof canEvents==='function'&&canEvents()){clearInterval(t);go()}else if(++n>25){clearInterval(t);home()}},400);return}
+      if(v==='profile'){if(Board.uid&&!(typeof isStaff==='function'&&isStaff()))go();else home();return}
+      if(v==='admin'){if(Board.uid&&((typeof isStaff==='function'&&isStaff())||(typeof isCollAdmin==='function'&&isCollAdmin())))go();else home()}
+    });
+  })();
 })();
 
 

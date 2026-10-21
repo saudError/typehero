@@ -1,13 +1,56 @@
 {
   "functions": {
-    "api/profile.js": { "includeFiles": "index.html" },
-    "api/sitemap-users.js": { "includeFiles": "index.html" }
+    "api/profile.js": {
+      "includeFiles": "index.html"
+    },
+    "api/sitemap-users.js": {
+      "includeFiles": "index.html"
+    }
   },
   "rewrites": [
-    { "source": "/lessons", "destination": "/index.html" },
-    { "source": "/leaderboard", "destination": "/index.html" },
-    { "source": "/blog", "destination": "/blog.html" },
-    { "source": "/sitemap-users.xml", "destination": "/api/sitemap-users" },
-    { "source": "/:u([A-Za-z0-9_.]+)", "destination": "/api/profile?u=:u" }
+    {
+      "source": "/lessons",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/leaderboard",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/blog",
+      "destination": "/blog.html"
+    },
+    {
+      "source": "/sitemap-users.xml",
+      "destination": "/api/sitemap-users"
+    },
+    {
+      "source": "/games",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/events",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/about",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/colleges",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/profile",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/admin",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/:u([A-Za-z0-9_.]+)",
+      "destination": "/api/profile?u=:u"
+    }
   ]
 }
