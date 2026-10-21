@@ -3479,7 +3479,7 @@ Pub.show=function(d,v,pic,box){const ver=v&&v.ok,b=d.best||{},body=box||$('#pubB
    +`<div class="pbox"><h3>📊 Key stats</h3><div class="kstats">`
    +tile('⚡','Top speed',top?Math.round(top.x.wpm)+' <em>WPM</em>':'-',top?esc(KEYLBL[top.k]||top.k)+' test':'No test yet')
    +tile('🎯','Accuracy',top?Math.round(top.x.acc)+'%':'-','in top-speed test')
-   +tile('🌍','Global rank',rk?this.rank(d,v,rk,'global'):'-',rk?esc(KEYLBL[rk]):'Not ranked')
+   +tile('🌍','Global rank',rk?PubX.rank(d,v,rk,'global'):'-',rk?esc(KEYLBL[rk]):'Not ranked')
    +tile('📝','Tests taken',d.tests||0,'')
    +tile('⏱️','Time typed',esc(fmtDur(d.time||0)),'')
    +tile('🎓','Lessons done',(d.lessons||0)+'/'+LESSONS.length,'')
@@ -6445,7 +6445,10 @@ const UserPage={
     if(!this.active||this.u!==u)return;
     if(!ok){root.innerHTML='<p class="muted" style="padding:28px 0;text-align:center">Profiles need an internet connection.</p>';return}
     let id=null,d=null;
+    const own=!!Board.uid&&u===P.username;
+    if(own&&P.name){try{await Board.submit()}catch(e){}}
     try{const sn=await Board.db.collection('scores').where('username','==',u).limit(1).get();if(!sn.empty){id=sn.docs[0].id;d=sn.docs[0].data();Board.scores.set(id,d)}}catch(e){console.warn('profile',e)}
+    if(!d&&own&&UserPage.mineData){id=Board.uid;d=UserPage.mineData()}
     if(!this.active||this.u!==u)return;
     if(!d){
       root.innerHTML='<div class="card" style="text-align:center;padding:28px"><h3>Typist not found</h3><p class="muted">There is no profile with the username <b>@'+esc(u)+'</b>.</p><div class="ractions" style="justify-content:center"><button class="btn" id="uHome">Go to Chiku Type</button></div></div>';
@@ -6453,9 +6456,10 @@ const UserPage={
       this.seoOn('Typist not found | Chiku Type','This Chiku Type profile does not exist.','',null,this.origin()+'/'+u);this._set('meta[name=robots]','content','noindex,follow');return}
     let v=Board.verified.get(id);if(!v){try{const sn=await Board.db.doc('verified/'+id).get();if(sn.exists)v=sn.data()}catch(e){}}
     const dd=Object.assign({},d,{_id:id});
-    root.innerHTML='<div class="ubar"><button class="ghost" id="uHome">&larr; Home</button><button class="btn sec" id="uBoard">Leaderboard</button></div><div id="userBody"></div>';
+    root.innerHTML='<div class="ubar"><button class="ghost" id="uHome">&larr; Home</button><button class="btn sec" id="uBoard">Leaderboard</button><button class="btn" id="uEdit" hidden>✏️ Edit profile</button></div><div id="userBody"></div>';
     $('#uHome').onclick=()=>show('type');
     $('#uBoard').onclick=()=>show('board');
+    if(Board.uid&&id===Board.uid){const eb=$('#uEdit');eb.hidden=false;eb.onclick=()=>show('profile')}
     const box=$('#userBody');
     Pub.show(dd,v,d.thumb,box);
     this.seo(u,dd,[]);
@@ -6468,6 +6472,8 @@ const UserPage={
 // clicking a typist (leaderboard, search) opens chikutype.com/username when they have a username
 (()=>{const _open=Pub.open;Pub.open=async function(id){
   let d=Board.scores.get(id);if(!d&&Board.db){try{const sn=await Board.db.doc('scores/'+id).get();if(sn.exists){d=sn.data();Board.scores.set(id,d)}}catch(e){}}
+  if(Board.uid&&id===Board.uid&&P.username){if(P.name){try{await Board.submit()}catch(e){}}d=Object.assign({},d||{},{username:P.username})}
+  if(d&&!d.username&&Board.db){try{const un=await Board.db.collection('usernames').where('uid','==',id).limit(1).get();if(!un.empty){d=Object.assign({},d,{username:un.docs[0].id});Board.scores.set(id,d)}}catch(e){}}
   if(d&&d.username&&!reservedUsername(d.username)&&UserPage.go(d.username))return;
   return _open.call(this,id)}})();
 // leaving the profile page puts the address bar back to the home address
@@ -6486,10 +6492,8 @@ window.addEventListener('popstate',()=>UserPage.route());
 {const fb=$('#fBlog');if(fb&&UserPage.can)fb.href='/blog'}
 UserPage.route();
 
-/* ===== My public profile link box (top of Profile page) ===== */
+/* ===== Profile click -> public profile page (/username) ===== */
 (()=>{
-  const hero=$('#pHero');if(!hero)return;
-  const box=mk('div','card');box.id='pLinkBox';hero.after(box);let last='';
   const clean=x=>String(x||'').toLowerCase().replace(/[^a-z0-9_.]+/g,'_').replace(/^[_.]+|[_.]+$/g,'');
   const suggest=()=>{let s=clean(P.name||(Board.email||'').split('@')[0]).slice(0,16);if(s.length<3)s=(s+'_typist').slice(0,16);return s};
   async function freeOne(){
@@ -6497,37 +6501,29 @@ UserPage.route();
     for(let i=0;i<8;i++){const c=i?base.slice(0,16)+Math.floor(10+Math.random()*990):base;if(c.length>20||reservedUsername(c))continue;
       try{const sn=await Board.db.doc('usernames/'+c).get();if(!sn.exists)return c}catch(e){return base}}
     return base}
-  function draw(force){
-    const key=[Board.uid,P.username,P.name].join('|');if(!force&&key===last&&box.firstChild)return;last=key;
-    box.innerHTML='';box.hidden=false;
-    if(typeof isStaff==='function'&&isStaff()){box.hidden=true;return}
-    const h=mk('h3','','🔗 My public profile link');h.style.marginBottom='6px';box.appendChild(h);
-    if(!Board.uid){box.appendChild(mk('p','note','Login or register to get your own link like chikutype.com/yourname. Anyone can open it and see your speed, rank and records.'));return}
-    const o=UserPage.origin().replace(/^https?:\/\//,'');
-    if(P.username){
-      const url=UserPage.origin()+'/'+P.username,r=mk('div','plrow');
-      r.appendChild(mk('span','plbig',o+'/'+P.username));
-      const op=mk('button','btn','Open'),cp=mk('button','btn sec','Copy'),sh=mk('button','btn sec','Share');
-      op.onclick=()=>$('#pView').click();cp.onclick=()=>copyLink(url);sh.onclick=()=>shareLink(url);
-      r.append(op,cp,sh);box.appendChild(r);
-      box.appendChild(mk('p','note','Your leaderboard row also opens this page. '+(P.name?'':'Add your full name below and save, so the page goes live.')));
-    }else{
-      box.appendChild(mk('p','note','Pick a username: it becomes your own link. Small letters, numbers, _ or . (3 to 20 characters).'));
-      const r=mk('div','plrow'),pre=mk('span','muted',o+'/'),inp=mk('input','field');inp.maxLength=20;inp.autocapitalize='off';inp.spellcheck=false;
-      const go=mk('button','btn','Create my link'),msg=mk('p','note','');
-      r.append(pre,inp,go);box.append(r,msg);
-      freeOne().then(c=>{if(!inp.value)inp.value=c});
-      go.onclick=async()=>{const nu=inp.value.trim().toLowerCase();if(!nu){msg.textContent='Type a username first';return}
-        go.disabled=true;msg.textContent='Checking...';
-        const er=await claimUsername(nu);if(er){msg.textContent=er;go.disabled=false;return}
-        store.set('profile',P);try{updateChip()}catch(e){}
-        const pu=$('#pUser');if(pu)pu.value=P.username;
-        if(P.name){try{await Board.submit()}catch(e){}}
-        draw(true);toast('Your link is ready')}
+  UserPage.mineData=function(){const mine=Board.scores.get(Board.uid)||{};
+    return Object.assign({},mine,{username:P.username,name:P.name||P.username,country:P.country,state:P.state,district:P.district,college:P.college,bio:P.bio,about:P.about,links:P.links,thumb:P.thumb||mine.thumb||'',
+      best:Object.fromEntries(LBKEYS.filter(k=>PB[k]).map(k=>[k,PB[k]])),pb:PB,tests:Math.max(TC,H.length,mine.tests||0),time:Math.round(TT),lessons:LESSONS.filter(l=>lessonStars(l)>0).length})};
+  UserPage.openMine=async function(){
+    if(!this.can||!Board.db){show('profile');return}
+    if(!P.username){
+      toast('Creating your public link...');
+      const c=await freeOne(),er=await claimUsername(c);
+      if(er){toast(er);show('profile');return}
+      store.set('profile',P);try{updateChip()}catch(e){}
+      const pu=$('#pUser');if(pu)pu.value=P.username;
+      toast('Your link: '+this.origin().replace(/^https?:\/\//,'')+'/'+P.username+' (change it from Edit profile)');
     }
-  }
-  renderProfile=(function(prev){return function(){const r=prev.apply(this,arguments);try{draw()}catch(e){console.warn('link box',e)}return r}})(renderProfile);
-  try{draw()}catch(e){}
+    if(P.name){try{await Board.submit()}catch(e){}}
+    if(!this.go(P.username))show('profile')};
+  /* clicking the profile name (top right) opens the public page. Editing is the button on that page */
+  $('#chip').onclick=()=>{if(!Board.uid){Auth.open();return}
+    if(typeof isCollAdmin==='function'&&isCollAdmin()){show('admin');return}
+    if(typeof isStaff==='function'&&isStaff()){show('profile');return}
+    UserPage.openMine()};
+  const pv=$('#pView');if(pv){pv.hidden=true;pv.style.display='none'}
+  /* keep the username in your leaderboard record so others can open your page */
+  Board.whenReady(()=>{try{if(Board.uid&&P.username&&P.name&&!sessionStorage.getItem('ct:unpush')){sessionStorage.setItem('ct:unpush','1');Board.submit()}}catch(e){}});
 })();
 
 
