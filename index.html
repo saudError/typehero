@@ -12,6 +12,7 @@
   window.__ga=1; /* admin-panel GA loader skips itself, so the tag is never added twice */
 </script>
 <meta charset="utf-8">
+<base href="/">
 <link rel="preconnect" href="https://www.gstatic.com" crossorigin>
 <link rel="preload" as="script" href="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js">
 <link rel="preload" as="script" href="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js">
@@ -1000,15 +1001,35 @@ const HK=(()=>{
       s:['ऒ ऍ ॅ ्र र् ज्ञ त्र क्ष श्र ( ) ः ऋ','औ ऐ आ ई ऊ भ ङ घ ध झ ढ ञ ऑ','ओ ए अ इ उ फ ऱ ख थ छ ठ','ऎ ँ ण ऩ ऴ ळ श ष । य़']
     }
   };
-  const MAPS={};
-  Object.keys(L).forEach(k=>{
-    const m={};
-    ROWS.forEach((row,r)=>{
-      const n=L[k].n[r].split(' '),s=L[k].s[r].split(' ');
-      row.forEach((code,c)=>{m[code]=[n[c],s[c]]});
-    });
-    MAPS[k]=m;
-  });
+  const HKN={gail:'Remington Gail Hindi',kruti:'Kruti Dev 010 Hindi',mangal:'Mangal Hindi'};
+  /* built-in "other ways": [keys typed in a row..., result] */
+  const SEED=[['अ','ा','आ'],['ा','े','ो'],['ा','ै','ौ'],['आ','े','ओ'],['आ','ै','औ'],['अ','े','ओ'],['अ','ै','औ'],['ए','े','ऐ'],['ा','ॅ','ॉ'],['उ','ू','ऊ'],['इ','ी','ई']];
+  const MAPS={},RULES={},STY={},TR={},D0={};let CUR={};
+  ['gail','kruti','mangal'].forEach(k=>{const m={};
+    ROWS.forEach((row,r)=>{const n=L[k].n[r].split(' '),s=L[k].s[r].split(' ');row.forEach((code,c)=>{m[code]=[n[c],s[c]]})});
+    D0[k]={id:k,name:HKN[k],style:k==='mangal'?'i':'r',m,rules:SEED.map(x=>({seq:x.slice(0,-1),out:x[x.length-1]})),builtin:1}});
+  /* letters a half-typed key can still turn into (a + aa = aa ...) */
+  function trans(rs){const T={'इ':'ई'};rs.forEach(r=>{const p=r.seq.slice(0,-1).join(''),o=r.out;let k=0;while(k<p.length&&k<o.length&&p[k]===o[k])k++;if(p.length-k===1&&o.length>k){const c=p[k];T[c]=(T[c]||'')+o[k]}});return T}
+  /* load layouts: built-ins plus whatever the admin saved (override or new) */
+  function apply(over){
+    const all=JSON.parse(JSON.stringify(D0));
+    (over||[]).forEach(o=>{if(o&&o.id&&o.m)all[o.id]=Object.assign({},o,{builtin:D0[o.id]?1:0})});
+    Object.keys(MAPS).forEach(k=>{delete MAPS[k];delete RULES[k];delete STY[k];delete TR[k]});
+    Object.keys(all).forEach(id=>{const d=all[id];
+      ROWS.forEach(row=>row.forEach(c=>{if(!d.m[c])d.m[c]=['','']}));
+      d.rules=(d.rules||[]).filter(r=>r&&Array.isArray(r.seq)&&r.seq.length>1&&r.out);
+      MAPS[id]=d.m;STY[id]=d.style==='i'?'i':'r';RULES[id]=d.rules.slice().sort((x,y)=>y.seq.length-x.seq.length);TR[id]=trans(RULES[id])});
+    CUR=all;
+  }
+  apply();
+  const rule=(out,t,lay)=>{for(const r of RULES[lay]||[]){if(r.seq[r.seq.length-1]!==t)continue;const p=r.seq.slice(0,-1).join('');if(p&&out.endsWith(p))return out.slice(0,-p.length)+r.out}return null};
+  /* every way to type a letter that needs more than one key: admin rules + conjuncts split into half letter + letter */
+  function alts(d){const T=new Set(),out=(d.rules||[]).map(r=>({seq:r.seq,out:r.out}));
+    Object.values(d.m).forEach(p=>p.forEach(t=>{if(t)T.add(t)}));
+    T.forEach(c=>{if(c==='R^'||c.length<3||!c.includes('्'))return;const i=c.indexOf('्')+1,a=c.slice(0,i),b=c.slice(i);
+      if(b&&T.has(a)&&T.has(b)&&!out.some(o=>o.out===c))out.push({seq:[a,b],out:c,auto:1})});
+    return out}
+  const keyOf=(d,t)=>{for(const code of Object.keys(d.m))for(const s of [0,1])if(d.m[code][s]===t)return {code,shift:!!s};return null};
   const CONS='कखगघङचछजझञटठडढणतथदधनपफबभमयरलवशषसहळऩऱऴ';
   const isC=ch=>CONS.includes(ch)||ch==='क़'; 
   const MATRA='ािीुूृॄेैोौंँःॅॉॆॊ़';
@@ -1016,7 +1037,7 @@ const HK=(()=>{
   /* compose a list of key entries (strings) into a Unicode string.
      style 'logical' = InScript (plain), 'remington' = Remington Gail / Kruti Dev (pre-matra, reph after syllable, half+aa) */
   function compose(toks,layout){
-    if(layout==='mangal')return {s:toks.join(''),pend:false};
+    if(STY[layout]==='i'){let o='';for(const t of toks){const q=rule(o,t,layout);o=q===null?o+t:q}return {s:o,pend:false}}
     let out='',pendI=false,insI=false,lastHalf=false;
     const flush=()=>{if(insI){out+='ि';insI=false}};
     for(const t of toks){
@@ -1038,13 +1059,7 @@ const HK=(()=>{
         if(pendI){pendI=false;insI=true}
         continue;
       }
-      if(t==='ॅ'&&out.endsWith('ा')&&!insI){out=out.slice(0,-1)+'ॉ';continue}
-      if((t==='े'||t==='ै')&&!insI){
-        const last=out[out.length-1];
-        if(last==='ा'){out=out.slice(0,-1)+(t==='े'?'ो':'ौ');continue}
-        if(FULLV[t]&&FULLV[t][last]){out=out.slice(0,-1)+FULLV[t][last];continue}
-      }
-      if(t==='ा'&&!insI&&out.endsWith('अ')){out=out.slice(0,-1)+'आ';continue}
+      if(!insI){const q=rule(out,t,layout);if(q!==null){out=q;continue}}
       const ch0=t[0];
       if(t==='्र'||t==='़'){out+=t;continue}
       if(isC(ch0)){
@@ -1061,14 +1076,13 @@ const HK=(()=>{
     return {s:out+(insI?'ि':''),pend:pendI};
   }
   /* is the typed text a valid in-progress version of the target word?  (returns index in target consumed, or -1) */
-  const TRANS={'ा':'ोौॉ','अ':'आओऔ','आ':'ओऔ','इ':'ई','ए':'ऐ','उ':'ऊ'};
   function align(w,t,layout,sk){
-    if(layout==='mangal'){return w.startsWith(t)?t.length:-1}
+    if(STY[layout]==='i'){let i=0;while(i<t.length&&i<w.length&&t[i]===w[i])i++;if(i===t.length)return i;if(i===t.length-1&&TR[layout]&&TR[layout][t[i]]&&TR[layout][t[i]].includes(w[i])){if(sk)sk.push(i);return t.length}return -1}
     let i=0,j=0;
     while(j<t.length){
       if(i<w.length&&t[j]===w[i]){i++;j++;continue}
       /* last key may still change into a longer letter (aa+e = o, a+aa = aa ...) */
-      if(j===t.length-1&&i<w.length&&TRANS[t[j]]&&TRANS[t[j]].includes(w[i])){if(sk)sk.push(i);i++;j++;continue}
+      if(j===t.length-1&&i<w.length&&TR[layout]&&TR[layout][t[j]]&&TR[layout][t[j]].includes(w[i])){if(sk)sk.push(i);i++;j++;continue}
       /* a half letter waiting for its 'aa' stem (or the next letter) */
       if(j===t.length-1&&t[j]==='्'&&i>0&&t[j-1]===w[i-1]){if(sk)sk.push(i-1);j++;continue}
       /* reph still to be typed after the syllable */
@@ -1077,7 +1091,7 @@ const HK=(()=>{
     }
     return i;
   }
-  const lookup=(code,shift,layout)=>{const m=MAPS[layout][code];return m?m[shift?1:0]:null};
+  const lookup=(code,shift,layout)=>{const m=MAPS[layout]&&MAPS[layout][code];return m&&m[shift?1:0]?m[shift?1:0]:null};
   const codeFromChar=ch=>{
     for(let r=0;r<4;r++){
       let c=QWERTY[r].indexOf(ch);if(c>=0)return {code:ROWS[r][c],shift:false};
@@ -1085,7 +1099,7 @@ const HK=(()=>{
     }
     return null;
   };
-  return {ROWS,QWERTY,QSHIFT,MAPS,compose,align,lookup,codeFromChar,isC};
+  return {ROWS,QWERTY,QSHIFT,MAPS,compose,align,lookup,codeFromChar,isC,apply,alts,keyOf,pref:null,st:l=>STY[l],get DEFS(){return CUR}};
 })();
 
 
@@ -1286,7 +1300,7 @@ caret=mk('div','caret');caret.id='caret';wordsEl.appendChild(caret);
 const LH=()=>Math.round(S.fs*1.85);
 
 function genWords(n){
-  const list=S.lang==='hi'?(S.hkb==='mangal'?HIN:HI_NOCH):EN, out=[];let cap=false;
+  const cw=S.lang==='hi'&&HK.DEFS[S.hkb]&&HK.DEFS[S.hkb].words,list=S.lang==='hi'?(cw&&cw.length?cw.map(w=>w.normalize('NFC')):HK.st(S.hkb)==='i'?HIN:HI_NOCH):EN, out=[];let cap=false;
   for(let i=0;i<n;i++){
     let w;do{w=pick(list)}while(w===out[out.length-1]);
     if(S.nums&&Math.random()<.13){w=String(rnd(Math.random()<.5?100:10000))}
@@ -3787,7 +3801,7 @@ const CHAP=[
 ];
 const mmss=t=>Math.floor(t/60)+':'+String(Math.round(t%60)).padStart(2,'0');
 Lesson.chIdx=store.get('chap',null);
-function chapInfo(){let pf=true;return CHAP.map(([name,ids])=>{const rows=ids.map(i=>LESSONS.find(x=>x.id===i)).filter(Boolean).map(l=>{const st=stagesFor(l),d=stagesDone(l),full=d>=st.length,unlocked=pf||d>0;pf=full;return{l,st,d,full,unlocked}});
+function chapInfo(){let pf=true;return CHAP.map(([name,ids])=>{const rows=ids.map(i=>LESSONS.find(x=>x.id===i)).filter(Boolean).map(l=>{const st=stagesFor(l),d=stagesDone(l),full=d>=st.length,unlocked=true;pf=full;return{l,st,d,full,unlocked}});
   const n=rows.filter(r=>r.full).length;return{name,rows,n,total:rows.length,done:rows.length>0&&n===rows.length}})}
 Lesson.list=function(){
   $('#lessonList').hidden=false;$('#lessonRun').hidden=true;this.typer=null;
@@ -3870,6 +3884,7 @@ renderBoard=(function(prev){return function(){prev();if(!Board.db)return;
 // site name, logo, icon, About page (edited in Admin)
 const _siteFix=o=>{try{return JSON.parse(JSON.stringify(o||{}).replace(/TypeAdda/g,'Chiku Type'))}catch(e){return o||{}}};
 let SITE=_siteFix(store.get('site',{}));
+try{HK.apply(JSON.parse(SITE.layoutsJson||'[]'))}catch(e){}
 const SOC=[['instagram','Instagram'],['youtube','YouTube'],['facebook','Facebook'],['x','X / Twitter'],['linkedin','LinkedIn'],['telegram','Telegram'],['whatsapp','WhatsApp'],['website','Website']];
 /* footer links: hide/unhide from Admin. Hidden links stay in the HTML and the pages stay open and searchable */
 const FOOTLINKS=[['about','About',1],['blog','Blog',0],['colleges','Colleges',0],['terms','Terms & Conditions',1],['privacy','Privacy',1],['pricing','Pricing',1],['refund','Refund Policy',1],['contact','Contact',1]];
@@ -5045,16 +5060,16 @@ renderAdmin=(function(prev){return function(){
   const l=$('#aList'),ae=document.activeElement;
   if(l.contains(ae)&&/INPUT|TEXTAREA|SELECT/.test(ae.tagName))return;
   l.classList.remove('adm');prev();if(!Board.admin||isCollAdmin())return;
-  const S={dash:[],ana:[],ver:[],site:[],seo:[],col:[],usr:[],txt:[],mail:[],les:[],sub:[],pay:[],evt:[]};
+  const S={dash:[],ana:[],ver:[],site:[],seo:[],col:[],usr:[],txt:[],mail:[],les:[],kbd:[],sub:[],pay:[],evt:[]};
   [...l.children].forEach(c=>{const h=(c.querySelector('h3')||{}).textContent||'';
     if(h.startsWith('📝'))S.txt.push(c);else if(h.startsWith('👤'))S.usr.push(c);else if(h.startsWith('🎨'))S.site.push(c);
     else if(h.startsWith('🏫')||h.includes('College logins'))S.col.push(c);
     else if(h.startsWith('🌐')){const b=c.querySelector('button');if(b&&/Page is/.test(b.textContent))b.remove();c.querySelector('h3').textContent='🗺️ Sitemap for Google';S.seo.push(c)}
     else S.ver.push(c)});
-  S.dash=[adminDash(),adminFeatures(),adminAboutBoxes()];S.les=[adminLessons()];S.sub=adminSub();S.seo=[adminPageSeo(),adminExams(),adminSEO()].concat(S.seo);S.mail=[adminMail()];S.pay=[adminPay(),adminAboutBoxes()];S.evt=[adminEvents()];
+  S.dash=[adminDash(),adminFeatures(),adminAboutBoxes()];S.les=[adminLessons()];S.kbd=[adminKeyboards()];S.sub=adminSub();S.seo=[adminPageSeo(),adminExams(),adminSEO()].concat(S.seo);S.mail=[adminMail()];S.pay=[adminPay(),adminAboutBoxes()];S.evt=[adminEvents()];
   S.ana=(window.Ana&&AT==='ana')?[Ana.card()]:[];if(window.Ana&&AT!=='ana')Ana.stop();
   if(!S[AT])AT='dash';
-  const tabs=[['dash','📊 Dashboard'],['ana','📈 Analytics'],['ver','🪪 Verification',Board.reqs.size],['site','🎨 Site & About'],['seo','🔎 SEO'],['col','🏫 Colleges'],['usr','👤 Users'],['mail','✉️ Email'],['les','📚 Lessons'],['sub','💳 Subscriptions'],['evt','🎁 Events'],['pay','💰 Payments'],['txt','📝 Typing texts']];
+  const tabs=[['dash','📊 Dashboard'],['ana','📈 Analytics'],['ver','🪪 Verification',Board.reqs.size],['site','🎨 Site & About'],['seo','🔎 SEO'],['col','🏫 Colleges'],['usr','👤 Users'],['mail','✉️ Email'],['les','📚 Lessons'],['kbd','⌨️ Keyboards'],['sub','💳 Subscriptions'],['evt','🎁 Events'],['pay','💰 Payments'],['txt','📝 Typing texts']];
   l.innerHTML='';const bar=mk('div','seg abar');
   tabs.forEach(([id,t,n])=>{const b=mk('button',id===AT?'on':'',t);if(n)b.appendChild(mk('span','bd',n));b.onclick=()=>{AT=id;store.set('adminTab',id);renderAdmin()};bar.appendChild(b)});
   l.appendChild(bar);S[AT].forEach(c=>l.appendChild(c));l.classList.add('adm');
@@ -5067,7 +5082,7 @@ applySEO();applyRoleUI();
 ['keySnd','errSnd','errHl','bsp','qr','lwpm','lacc'].forEach(k=>{if(S[k]===undefined)S[k]=(k==='lwpm'||k==='lacc')?S.live!==false:true});
 if(S.stopErr===undefined)S.stopErr=false;
 if(S.lang!=='hi')S.lang='en';
-if(!['gail','kruti','mangal'].includes(S.hkb))S.hkb='gail';
+if(!HK.MAPS[S.hkb])S.hkb='gail';
 P.days=P.days||[];P.certs=P.certs||[];
 
 /* themes: presets + custom */
@@ -5428,7 +5443,7 @@ if(/room=[A-Za-z0-9]{4}/.test(location.hash)){show('games');Games.open('room');c
   const q=new URLSearchParams(location.search),l=q.get('lang'),t=q.get('time'),v=q.get('view');
   let ch=false;
   if(l==='en'){S.lang='en';ch=true}
-  else if(['gail','kruti','mangal'].includes(l)){S.lang='hi';S.hkb=l;if(!S.hkbSeen){S.vkb=true;S.hkbSeen=1}ch=true}
+  else if(HK.MAPS[l]){S.lang='hi';S.hkb=l;if(!S.hkbSeen){S.vkb=true;S.hkbSeen=1}ch=true}
   if(t&&/^(15|30|60|120|300|600)$/.test(t)){S.mode='time';S.time=+t;ch=true}
   if(ch){saveS();applySettings();renderCfg();newTest();applyKB()}
   const pv=({lessons:'lessons',leaderboard:'board'})[location.pathname.replace(/^\/|\/$/g,'')];
@@ -5471,6 +5486,7 @@ const HC=[
   ['s2','Shift: top row','KeyQ KeyW KeyE KeyR KeyT KeyY KeyU KeyI KeyO KeyP BracketLeft BracketRight Backslash','S'],
   ['s3','Shift: bottom row','KeyZ KeyX KeyC KeyV KeyB KeyN KeyM Comma Period Slash','S'],
   ['s4','Shift: number row','Backquote Digit1 Digit2 Digit3 Digit4 Digit5 Digit6 Digit7 Digit8 Digit9 Digit0 Minus Equal','S']]],
+ ['Other Ways to Type',Array.from({length:24},(_,i)=>['x'+(i+1),'Another way '+(i+1)])],
  ['Words',[['w1','Short words'],['w2','Longer words'],['w3','Word challenge']]],
  ['Sentences',[['q1','Short sentences'],['q2','Longer sentences'],['q3','Sentence challenge']]],
  ['Exam Practice',[['e1','Hindi exam practice (25 WPM)'],['e2','Hindi exam practice (30 WPM)']]]
@@ -5478,7 +5494,7 @@ const HC=[
 const HLESS=[];
 (()=>{const A=new Set();
   HC.forEach(([cn,ls],ci)=>ls.forEach(([id,title,keys,flag])=>{
-    const kind='hmtns'.includes(id[0])?'key':id[0]==='w'?'words':id[0]==='q'?'sent':'exam';
+    const kind='hmtns'.includes(id[0])?'key':id[0]==='w'?'words':id[0]==='q'?'sent':id[0]==='x'?'alt':'exam';
     const L={id,title,ch:ci,kind,review:flag==='r',shift:flag==='S'};
     if(kind==='key'){L.keys=keys.split(' ');L.nw=L.keys.map(c=>c+(L.shift?'+':''));L.nw.forEach(e=>A.add(e));L.allowed=new Set(A)}
     HLESS.push(L)}))})();
@@ -5490,7 +5506,7 @@ function hNext(w,toks,lay,allowed){
   if(a0<0)return null;
   if(!cur.pend&&cur.s===w)return 'space';
   const keys=Object.keys(M);
-  if(lay!=='mangal'&&!cur.pend){
+  if(HK.st(lay)!=='i'&&!cur.pend){
     const u=dUnits(w).find(x=>x[0]===a0);
     if(u&&w.slice(u[0],u[1]).indexOf('ि')>0){
       for(const c of keys)for(const sh of [0,1]){const t=M[c][sh];if(t==='ि'&&(!allowed||allowed.has(c+(sh?'+':''))))return {code:c,shift:!!sh,t}}
@@ -5499,7 +5515,7 @@ function hNext(w,toks,lay,allowed){
   let best=null,bs=-1e9;
   for(const c of keys)for(const sh of [0,1]){
     if(allowed&&!allowed.has(c+(sh?'+':'')))continue;
-    const t=M[c][sh];if(!t)continue;
+    const t=M[c][sh];if(!t)continue;if(HK.pref&&t===HK.pref.out)continue;
     const r=HK.compose(toks.concat([t]),lay);let p;
     if(r.pend){if(!w.slice(Math.max(0,a0)).includes('ि'))continue;p=a0-0.5}
     else{
@@ -5538,6 +5554,15 @@ const hTypable=(w,lay)=>{const k=lay+'|'+w;if(!(k in _hOk))_hOk[k]=!!hPlan(w,lay
 function hStages(lay,L){
   const rep=(a,n)=>Array.from({length:n},()=>pick(a));
   const st=(label,words,acc,wpm)=>({label,text:(Array.isArray(words)?words.join(' '):words).trim(),acc,wpm:wpm||0,allowed:L.allowed||null});
+  HK.pref=null;
+  if(L.kind==='alt'){
+    const r=hAltRule(LM.track,L);if(!r)return [1,2,3].map(()=>st('Drill',['अ'],0));
+    const pf=x=>Object.assign(x,{prefer:r});
+    let base=HIN.filter(w=>w.includes(r.out)&&hTypable(w,lay)).slice(0,60);
+    if(base.length<3)base=base.concat([...'कमलनरसतपबदगजहव'].map(x=>x+r.out).filter(w=>hTypable(w,lay)));
+    if(!base.length)base=[r.out];
+    return [pf(st('Key drill',rep(base,12),85)),pf(st('Word practice',rep(base,16),88)),pf(st('Challenge',rep(base,24),90,5))];
+  }
   if(L.kind==='key'){
     const nw=new Set(L.nw);
     let dr=hDrills(lay,L,14);
@@ -5644,6 +5669,7 @@ const hPid=(tr,l)=>'h:'+tr+':'+l.id;
 const HPRE={h1:'Index fingers',h2:'Middle fingers',h3:'Ring fingers',h4:'Pinky fingers',h5:'Index reach',h6:'Pinky reach',t1:'Top row',t2:'Top row',t3:'Top row',t4:'Top row',t5:'Top row',m1:'Bottom row',m2:'Bottom row',m3:'Bottom row',m4:'Bottom row',m5:'Bottom row',n1:'Number row',n2:'Number row'};
 function hT(l,lay){
   lay=lay||(LM.track&&LM.track!=='en'?(COURSES.find(x=>x.id===LM.track)||{}).lay:null);
+  if(l.kind==='alt'){const r=hAltRule(LM.track,l);return r?'Another way: '+hkShow(r.out)+' = '+r.seq.map(hkShow).join(' + '):l.title}
   if(!lay||l.kind!=='key'||l.review||l.shift||!HPRE[l.id]||l.nw.length>5)return l.title;
   const ch=l.nw.map(e=>{const t=entTok(lay,e);return t?hkShow(t):null}).filter(Boolean);
   if(!ch.length)return l.title;
@@ -5653,7 +5679,7 @@ function hT(l,lay){
 const hDone=(tr,l)=>{const p=LP[hPid(tr,l)];return p&&p.stages?p.stages.filter(x=>x).length:0};
 const hFull=(tr,l)=>hDone(tr,l)>=3;
 function hInfo(tr){let pf=true;return HC.map(([name],ci)=>{
-  const rows=HLESS.filter(l=>l.ch===ci).map(l=>{const d=hDone(tr,l),full=d>=3,unlocked=pf||d>0;pf=full;return{l,d,full,unlocked}});
+  const rows=HLESS.filter(l=>l.ch===ci&&hAltOk(tr,l)).map(l=>{const d=hDone(tr,l),full=d>=3,unlocked=true;pf=full;return{l,d,full,unlocked}});
   const n=rows.filter(r=>r.full).length;return{name,rows,n,total:rows.length,done:n===rows.length}})}
 const HL={
   chIdx:store.get('hchap',null),typer:null,tm:null,cur:null,stages:null,si:0,
@@ -5664,7 +5690,7 @@ const HL={
     lessonHead(co.title,true);
     const info=hInfo(tr);
     if(this.chIdx==null||!info[this.chIdx]){const f=info.findIndex(c=>!c.done);this.chIdx=f<0?0:f}
-    $('#lessonSum').textContent=`${HLESS.filter(l=>hFull(tr,l)).length} of ${HLESS.length} lessons complete`;
+    $('#lessonSum').textContent=`${HLESS.filter(l=>hFull(tr,l)).length} of ${HLESS.filter(l=>hAltOk(tr,l)).length} lessons complete`;
     const c=$('#courses');c.innerHTML='';
     const wrap=mk('div','lsplit'),side=mk('aside','lside');side.appendChild(mk('h4','','Learn Hindi Typing'));
     info.forEach((ch,i)=>{const b=mk('button','citem'+(i===this.chIdx?' on':'')+(ch.done?' fin':''));
@@ -5698,11 +5724,13 @@ const HL={
     this.play();
   },
   keyHelp(){
-    const L=this.cur,lay=this.lay();if(L.kind!=='key'||L.nw.length>6)return '';
+    const L=this.cur,lay=this.lay();
+    if(L.kind==='alt'){const r=hAltRule(LM.track,L),d=HK.DEFS[lay];return r?' · '+hkShow(r.out)+' = '+r.seq.map(t=>{const k=HK.keyOf(d,t);return hkShow(t)+(k?' ('+(k.shift?'Shift+':'')+KNAME(k.code)+')':'')}).join(' then '):''}
+    if(L.kind!=='key'||L.nw.length>6)return '';
     return ' · '+L.nw.map(e=>{const t=entTok(lay,e);return t?`${e.endsWith('+')?'Shift+':''}${KNAME(e.replace('+',''))} = ${hkShow(t)}`:''}).filter(Boolean).join(',  ');
   },
   play(){
-    const s=this.stages[this.si],lay=this.lay();
+    const s=this.stages[this.si],lay=this.lay();HK.pref=s.prefer||null;
     $('#lIntro').hidden=true;$('#lDone').hidden=true;$('#lPlay').hidden=false;
     $('#lStage').textContent=`Step ${this.si+1} of 3: ${s.label}`+this.keyHelp();
     $('#lBar').style.width=(this.si/3*100)+'%';
@@ -5786,7 +5814,7 @@ function lessonHome(){
   COURSES.filter(co=>!courseOff(co)||isAdm).forEach(co=>{
     const b=mk('button','lch'+(courseOff(co)?' off':''));
     const done=co.id==='en'?LESSONS.filter(l=>lessonStars(l)>0).length:HLESS.filter(l=>hFull(co.id,l)).length;
-    const tot=co.id==='en'?LESSONS.length:HLESS.length;
+    const tot=co.id==='en'?LESSONS.length:HLESS.filter(l=>hAltOk(co.id,l)).length;
     b.innerHTML=`<span class="lt">${esc(co.title)}</span><span class="la">${esc(courseAbout(co))}</span><span class="lp">${done} of ${tot} lessons done${courseOff(co)?' · hidden from students':''}</span>`;
     b.onclick=()=>{LM.track=co.id;Lesson.list()};
     g.appendChild(b)});
@@ -5867,8 +5895,122 @@ function adminLessons(){
   c.appendChild(save);
   return c;
 }
+/* ================= Keyboard layouts as data (Admin > Keyboards) ================= */
+const hLay=tr=>(COURSES.find(x=>x.id===tr)||{}).lay;
+const hAltRule=(tr,l)=>{const lay=hLay(tr),d=lay&&HK.DEFS[lay];return d?(HK.alts(d)[+l.id.slice(1)-1]||null):null};
+const hAltOk=(tr,l)=>l.kind!=='alt'||!!hAltRule(tr,l);
+function applyLayouts(){
+  let list=[];try{list=JSON.parse(SITE.layoutsJson||'[]')}catch(e){}
+  HK.apply(list);
+  for(let i=COURSES.length-1;i>=0;i--)if(COURSES[i].custom)COURSES.splice(i,1);
+  Object.values(HK.DEFS).forEach(d=>{HKNAME[d.id]=d.name;if(!d.builtin&&!COURSES.some(c=>c.id===d.id))COURSES.push({id:d.id,title:d.name,lay:d.id,def:d.name+' typing',custom:1})});
+  if(!HK.MAPS[S.hkb])S.hkb='gail';
+  const sel=$('#selLang');
+  if(sel){sel.innerHTML='<option value="en">English</option>'+Object.values(HK.DEFS).map(d=>`<option value="hi:${esc(d.id)}">${esc(d.name)}</option>`).join('');sel.value=S.lang==='hi'?'hi:'+S.hkb:'en'}
+  Object.keys(_hOk).forEach(k=>delete _hOk[k]);
+}
+applyLayouts();
+
+const KS={id:null,d:null};
+const kbList=()=>{try{return JSON.parse(SITE.layoutsJson||'[]')}catch(e){return []}};
+const kbSave=l=>setSite({layoutsJson:JSON.stringify(l)});
+const kbPut=d=>kbSave(kbList().filter(x=>x.id!==d.id).concat([d]));
+const KB_PROMPT=['Create a JSON keyboard layout file for the typing website Chiku Type. Language / layout: <WRITE NAME HERE>. Reply with valid JSON only, no explanation, in exactly this format:',
+'{"format":"chiku-keyboard-1","layouts":[{"id":"shortname","name":"Display name","style":"typewriter","keys":{"a":["क","क्"],"s":["...","..."]},"rules":[{"seq":["अ","ा"],"out":"आ"}],"words":["word1","word2"]}]}',
+'Rules:',
+'- "keys" must list all 47 keys of a US QWERTY keyboard, written as the unshifted character: \x60 1 2 3 4 5 6 7 8 9 0 - = q w e r t y u i o p [ ] \\ a s d f g h j k l ; \' z x c v b n m , . /',
+'- Each value is [what the key types, what Shift+key types], using real Unicode characters. A key may type a whole conjunct such as "क्ष". Use "" when nothing is typed.',
+'- "style": "typewriter" for Kruti Dev / Remington style (the matra ि is typed BEFORE the letter, and reph is the special value "R^"), or "inscript" when letters are typed in normal order.',
+'- "rules" must list EVERY other way to get a letter or matra by pressing several keys in a row: "seq" = what each key types, "out" = the final result.',
+'- "words": 200 or more common words of the language (optional).'].join('\n');
+const kbDl=(n,t)=>{const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([t],{type:'application/json'}));a.download=n;a.click()};
+const kbExp=d=>({id:d.id,name:d.name,style:d.style==='i'?'inscript':'typewriter',keys:Object.fromEntries(HK.ROWS.flat().map(c=>[QCH[c],d.m[c]||['','']])),rules:d.rules||[],words:d.words||[]});
+function kbImp(o){
+  const id=String((o&&(o.id||o.name))||'').toLowerCase().replace(/[^a-z0-9]/g,'').slice(0,20);if(!id)return null;
+  const m={};HK.ROWS.flat().forEach(c=>m[c]=['','']);let n=0;
+  Object.entries(o.keys||{}).forEach(([ch,v])=>{const f=HK.codeFromChar(ch);if(!f)return;
+    const a=Array.isArray(v)?v:typeof v==='string'?[v,'']:[v.normal||v.n||'',v.shift||v.s||''];
+    m[f.code]=[String(a[0]||'').normalize('NFC'),String(a[1]||'').normalize('NFC')];n++});
+  if(n<5)return null;
+  const rules=(o.rules||[]).map(r=>({seq:Array.isArray(r.seq)?r.seq.map(String):String(r.seq||'').trim().split(/\s+/),out:String(r.out||'')})).filter(r=>r.seq.length>1&&r.out);
+  return {id,name:String(o.name||id),style:/^(i|inscript|logical)$/i.test(o.style||'')?'i':'r',m,rules,words:Array.isArray(o.words)?o.words.map(String).slice(0,5000):[]};
+}
+function adminKeyboards(){
+  const c=mk('div','card'),re=()=>renderAdmin();
+  c.appendChild(mk('h3','','⌨️ Keyboard layouts'));
+  c.appendChild(mk('p','muted','Every Hindi layout lives here as data. Fix a wrong key, add another way to type a letter, or add a whole new language (Devanagari based, like Marathi or Nepali) with a file. No code change needed.'));
+  const ids=Object.keys(HK.DEFS);if(!KS.id||!HK.DEFS[KS.id])KS.id=ids[0];
+  if(!KS.d||KS.d.id!==KS.id)KS.d=JSON.parse(JSON.stringify(HK.DEFS[KS.id]));
+  const d=KS.d,row=()=>{const x=mk('div');x.style.cssText='display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:10px 0';return x};
+  const B=(t,f,cls)=>{const b=mk('button','btn '+(cls===undefined?'sec':cls),t);b.onclick=f;return b};
+  const sel=mk('select','field');sel.style.maxWidth='260px';ids.forEach(i=>{const o=mk('option','',HK.DEFS[i].name);o.value=i;sel.appendChild(o)});sel.value=KS.id;sel.onchange=()=>{KS.id=sel.value;KS.d=null;re()};
+  const file=mk('input');file.type='file';file.accept='.json,application/json';file.hidden=true;
+  file.onchange=async()=>{const f=file.files[0];file.value='';if(!f)return;
+    try{const j=JSON.parse(await f.text()),arr=Array.isArray(j)?j:Array.isArray(j.layouts)?j.layouts:[j],ok=arr.map(kbImp).filter(Boolean);
+      if(!ok.length){toast('No valid layout found in this file');return}
+      const ii=ok.map(x=>x.id);if(await kbSave(kbList().filter(x=>!ii.includes(x.id)).concat(ok))){KS.id=ok[0].id;KS.d=null;toast('Imported: '+ok.map(x=>x.name).join(', '))}
+    }catch(e){toast('This file is not valid JSON')}};
+  const top=row();top.append(sel,
+    B('＋ New language',async()=>{const nm=(prompt('Name of the new language / layout (for example: Marathi InScript)')||'').trim();if(!nm)return;
+      const id=nm.toLowerCase().replace(/[^a-z0-9]/g,'').slice(0,20);if(!id||HK.DEFS[id]){toast('Choose a different name');return}
+      const m={};HK.ROWS.flat().forEach(k=>m[k]=['','']);if(await kbPut({id,name:nm,style:'i',m,rules:[],words:[]})){KS.id=id;KS.d=null}},''),
+    B('⬆ Import file',()=>file.click()),file,
+    B('⬇ Export this',()=>kbDl(d.id+'-layout.json',JSON.stringify({format:'chiku-keyboard-1',layouts:[kbExp(d)]},null,1))),
+    B('⬇ Export all',()=>kbDl('chiku-keyboards.json',JSON.stringify({format:'chiku-keyboard-1',layouts:Object.values(HK.DEFS).map(kbExp)},null,1))),
+    B('🤖 Copy AI prompt',()=>{(navigator.clipboard?navigator.clipboard.writeText(KB_PROMPT):Promise.reject()).then(()=>toast('Prompt copied. Paste it in any AI, then import the JSON it gives you'),()=>toast('Could not copy'))}));
+  c.appendChild(top);
+  const nm=mk('input','field');nm.value=d.name;nm.style.maxWidth='260px';nm.oninput=()=>{d.name=nm.value};
+  const st=mk('select','field');st.style.maxWidth='420px';[['r','Typewriter style (Kruti Dev, Remington): matra before the letter, reph after'],['i','InScript style (Mangal): letters in normal order']].forEach(([v,t])=>{const o=mk('option','',t);o.value=v;st.appendChild(o)});
+  st.value=d.style==='i'?'i':'r';st.onchange=()=>{d.style=st.value};
+  const r1=row();r1.append(mk('b','','Name'),nm,st);c.appendChild(r1);
+  /* key grid: edit what every key types */
+  c.appendChild(mk('h4','','1. Keys: what each English key types (top box normal, shaded box with Shift)'));
+  c.appendChild(mk('p','muted','Type the Hindi letter in the box. Use R^ for reph. A box can hold a whole conjunct such as क्ष.'));
+  const g=mk('div');g.style.cssText='margin:8px 0;overflow-x:auto';
+  HK.ROWS.forEach((rw,ri)=>{const x=mk('div');x.style.cssText='display:flex;gap:6px;margin-bottom:6px;padding-left:'+[0,14,22,34][ri]+'px';
+    rw.forEach(code=>{const cell=mk('div');cell.style.cssText='display:flex;flex-direction:column;align-items:center;gap:2px';cell.appendChild(mk('small','muted',KNAME(code)));
+      [0,1].forEach(si=>{const i=mk('input','field');i.value=(d.m[code]||['',''])[si];i.title=(si?'Shift + ':'')+KNAME(code);
+        i.style.cssText='width:48px;padding:4px;text-align:center;font-size:16px;'+(si?'background:rgba(120,130,160,.15)':'');
+        i.oninput=()=>{d.m[code]=d.m[code]||['',''];d.m[code][si]=i.value.trim().normalize('NFC')};cell.appendChild(i)});
+      x.appendChild(cell)});g.appendChild(x)});
+  c.appendChild(g);
+  /* ways to type with several keys */
+  c.appendChild(mk('h4','','2. Other ways to type a letter (several keys in a row)'));
+  c.appendChild(mk('p','muted','Example: अ ा = आ means pressing the key for अ and then the key for ा gives आ. Separate the letters with a space. Students learn these in the lesson chapter "Other Ways to Type". Conjuncts like क्ष typed as क् + ष are found automatically.'));
+  d.rules=d.rules||[];
+  const rl=mk('div');
+  const drawRules=()=>{rl.innerHTML='';d.rules.forEach((r,i)=>{const x=row();x.style.margin='4px 0';
+    const a=mk('input','field');a.value=r.seq.join(' ');a.placeholder='अ ा';a.style.cssText='width:150px;font-size:16px';a.oninput=()=>{r.seq=a.value.trim().split(/\s+/).map(s=>s.normalize('NFC'))};
+    const o=mk('input','field');o.value=r.out;o.placeholder='आ';o.style.cssText='width:90px;font-size:16px';o.oninput=()=>{r.out=o.value.trim().normalize('NFC')};
+    x.append(a,mk('b','','='),o,B('✕',()=>{d.rules.splice(i,1);drawRules()}));rl.appendChild(x)})};
+  drawRules();c.append(rl,B('＋ Add a way',()=>{d.rules.push({seq:['',''],out:''});drawRules()}));
+  /* letter list */
+  c.appendChild(mk('h4','','3. Letter list: how every letter is typed (fix a wrong one in the last column)'));
+  const LET='अ आ इ ई उ ऊ ऋ ए ऐ ओ औ ऑ क ख ग घ ङ च छ ज झ ञ ट ठ ड ढ ण त थ द ध न प फ ब भ म य र ल व श ष स ह ळ क्ष त्र ज्ञ श्र ा ि ी ु ू ृ े ै ो ौ ॉ ॅ ं ँ ः ् ़ ।'.split(' ');
+  const A=HK.alts(d),tb=mk('table');tb.style.cssText='width:100%;border-collapse:collapse;margin-top:6px';
+  const td=h=>{const x=mk('td');x.style.cssText='border:1px solid rgba(120,130,160,.35);padding:5px 8px';if(h instanceof Node)x.appendChild(h);else x.innerHTML=h;return x};
+  tb.innerHTML='<tr><th style="text-align:left;padding:5px 8px">Letter</th><th style="text-align:left;padding:5px 8px">How to type it</th><th style="text-align:left;padding:5px 8px">Set key</th></tr>';
+  LET.forEach(Lt=>{const direct=[];HK.ROWS.flat().forEach(code=>[0,1].forEach(si=>{if(((d.m[code]||[])[si])===Lt)direct.push((si?'Shift + ':'')+KNAME(code))}));
+    const ways=direct.concat(A.filter(a=>a.out===Lt).map(a=>a.seq.map(t=>{const k=HK.keyOf(d,t);return hkShow(t)+(k?' ('+(k.shift?'Shift+':'')+KNAME(k.code)+')':'')}).join(' + ')));
+    const inp=mk('input','field');inp.placeholder='a or A';inp.maxLength=1;inp.style.cssText='width:70px;padding:4px';
+    inp.onchange=()=>{const f=HK.codeFromChar(inp.value);if(!f){toast('Type one English key');return}
+      d.m[f.code]=d.m[f.code]||['',''];d.m[f.code][f.shift?1:0]=Lt;re()};
+    const tr=mk('tr');tr.append(td('<b style="font-size:20px">'+esc(hkShow(Lt))+'</b>'),td(ways.length?esc(ways.join('    |    ')):'<span style="color:#b91c1c">not set</span>'),td(inp));tb.appendChild(tr)});
+  c.appendChild(tb);
+  /* words */
+  c.appendChild(mk('h4','','4. Typing words (optional, one per line; empty = use the default Hindi words)'));
+  const ta=mk('textarea','field');ta.rows=4;ta.style.cssText='width:100%;max-width:none;font-size:16px';ta.value=(d.words||[]).join('\n');ta.oninput=()=>{d.words=ta.value.split(/\n+/).map(s=>s.trim().normalize('NFC')).filter(Boolean)};c.appendChild(ta);
+  /* save */
+  const sv=row();sv.append(
+    B('💾 Save layout',async()=>{d.rules=d.rules.filter(r=>r.seq.length>1&&r.seq.every(Boolean)&&r.out);const o=JSON.parse(JSON.stringify(d));delete o.builtin;if(await kbPut(o))toast('Layout saved')},''),
+    d.builtin?B('↺ Reset to original',async()=>{if(confirm('Go back to the original '+d.name+' layout?')&&await kbSave(kbList().filter(x=>x.id!==d.id))){KS.d=null}}):
+              B('🗑 Delete this language',async()=>{if(confirm('Delete '+d.name+'?')&&await kbSave(kbList().filter(x=>x.id!==d.id))){KS.id=null;KS.d=null}}));
+  c.appendChild(sv);
+  return c;
+}
+
 /* live update when admin changes the cards */
-(()=>{const o=applySite;applySite=function(){o();if(view==='lessons'&&LM.track==null)lessonHome()}})();
+(()=>{const o=applySite;applySite=function(){o();try{applyLayouts();applyKB()}catch(e){}if(view==='lessons'&&LM.track==null)lessonHome()}})();
 
 
 /* ================= SUBSCRIPTIONS ================= */
@@ -6993,7 +7135,7 @@ try{pageSeo(view)}catch(e){}
 
 /* ===== Chiku Type: public profile pages (chikutype.com/username), rank-1 records, typist search ===== */
 const RECORD_MIN_TYPISTS=3; // a place needs at least this many ranked typists before anyone is called its No.1
-const RESERVED_USERNAMES=new Set(['lessons','leaderboard','blog','api','admin','profile','about','games','events','colleges','college','login','logout','register','signup','signin','settings','index','home','privacy','terms','contact','sitemap','robots','favicon','www','support','help','chikutype','chiku','cert','certificate']);
+const RESERVED_USERNAMES=new Set(['lessons','leaderboard','blog','api','admin','profile','about','games','events','colleges','college','login','logout','register','signup','signin','settings','index','home','privacy','terms','contact','sitemap','robots','favicon','www','support','help','chikutype','chiku','cert','certificate','lesson','game']);
 function reservedUsername(u){u=String(u||'').toLowerCase();return RESERVED_USERNAMES.has(u)||/\.(html?|xml|txt|json|js|css|ico|png|jpe?g|svg|webp|gif|map|php|webmanifest|pdf)$/.test(u)}
 const whenDB=cb=>{let n=0;const t=setInterval(()=>{if(Board.db){clearInterval(t);cb(true)}else if(++n>60){clearInterval(t);cb(false)}},200)};
 (()=>{const st=document.createElement('style');st.textContent=`
@@ -7167,6 +7309,69 @@ UserPage.route();
   const pv=$('#pView');if(pv){pv.hidden=true;pv.style.display='none'}
   /* keep the username in your leaderboard record so others can open your page */
   Board.whenReady(()=>{try{if(Board.uid&&P.username&&P.name&&!sessionStorage.getItem('ct:unpush')){sessionStorage.setItem('ct:unpush','1');Board.submit()}}catch(e){}});
+})();
+
+/* ===== Separate, SEO-friendly addresses: /lessons/<course>/<lesson>, /games/<game> ===== */
+(()=>{
+  const slug=t=>String(t||'').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'');
+  const cSlug=id=>id==='en'?'english':id;
+  const origin=()=>((SITE.seo||{}).url||location.origin+'/').replace(/[^/]*$/,'').replace(/\/$/,'');
+  const parts=()=>location.pathname.replace(/^\/+|\/+$/g,'').split('/');
+  const gDef=()=>Games.cur&&GAMEDEFS.find(d=>d.g===Games.cur);
+  const lessonNow=()=>{const r=$('#lessonRun');return !r||r.hidden?null:(LM.track==='en'?Lesson.cur:HL.cur)};
+  const lSlug=(c,l)=>'/lessons/'+cSlug(c)+'/'+l.id+'-'+slug(l.title);
+  function want(){
+    if(view==='lessons'){if(LM.track==null)return '/lessons';const l=lessonNow();return l?lSlug(LM.track,l):'/lessons/'+cSlug(LM.track)}
+    if(view==='games'){const g=$('#gameRun'),d=g&&!g.hidden&&gDef();return d?'/games/'+slug(d.g.title):'/games'}
+    return null}
+  function sync(){
+    try{const p=want();if(p&&UserPage.can&&location.pathname.replace(/\/+$/,'')!==p)history[window.__nl?'replaceState':'pushState'](null,'',p)}catch(e){}
+    try{seo()}catch(e){console.warn('seo',e)}}
+  function seo(){
+    const m=parts(),sec=m[0],old=$('#rtSeo');if(old)old.remove();
+    if(sec!=='lessons'&&sec!=='games')return;
+    const n=SITE.name||'Chiku Type',base=origin();let t=null,d,h,links=[];
+    if(sec==='lessons'){
+      if(m.length===1)links=COURSES.filter(c=>!courseOff(c)).map(c=>['/lessons/'+cSlug(c.id),c.title+' typing lessons']);
+      else{const co=COURSES.find(x=>cSlug(x.id)===m[1]);if(!co)return;const l=lessonNow();
+        if(l){const lt=co.id==='en'?l.title:hT(l);t=lt+' - '+co.title+' Typing Lesson | '+n;
+          d='Free typing lesson "'+lt+'" in the '+co.title+' course on '+n+'. Practise step by step and check your WPM and accuracy.'+(co.id==='en'&&l.tip?' '+l.tip:'');h=lt+' - '+co.title+' typing lesson';
+          links=[['/lessons/'+cSlug(co.id),'All '+co.title+' lessons']]}
+        else{t=co.title+' Typing Lessons - Free Step by Step Course | '+n;d='Learn '+co.title+' typing online for free with step-by-step lessons: finger placement, keys, words, sentences and exam practice. Track your speed and accuracy.';h=co.title+' typing lessons';
+          links=(co.id==='en'?LESSONS:HLESS.filter(l=>hAltOk(co.id,l))).map(l=>[lSlug(co.id,l),co.id==='en'?l.title:hT(l)])}}
+    }else{
+      if(m.length===1)links=GAMEDEFS.map(x=>['/games/'+slug(x.g.title),x.g.title]);
+      else{const g=gDef();if(!g)return;t=g.g.title+' - Free Online Typing Game | '+n;d=g.d;h=g.g.title+' typing game';links=[['/games','All typing games']]}}
+    if(t){const cu=base+location.pathname.replace(/\/+$/,'');
+      document.title=t;metaSet('meta[name=description]','name','description',d);metaSet('meta[property="og:title"]','property','og:title',t);metaSet('meta[property="og:description"]','property','og:description',d);
+      let c=$('link[rel=canonical]');if(!c){c=document.createElement('link');c.rel='canonical';document.head.appendChild(c)}c.href=cu}
+    const sx=document.createElement('section');sx.id='rtSeo';sx.className='seocopy chrome';
+    sx.innerHTML=(h?'<h1>'+esc(h)+'</h1><p>'+esc(d)+'</p>':'')+(links.length?'<p class="seorel">'+links.map(([u,x])=>'<a href="'+u+'">'+esc(x)+'</a>').join(' · ')+'</p>':'');
+    sx.onclick=e=>{const a=e.target.closest('a');if(!a||e.ctrlKey||e.metaKey||e.shiftKey||e.button)return;e.preventDefault();try{history.pushState(null,'',a.getAttribute('href'))}catch(x){return}
+      const q=parts();if(q.length===1){window.__nl=1;try{q[0]==='games'?Games.menu():(LM.track=null,Lesson.list())}finally{window.__nl=0}}else routeIn(9)};
+    const host=$(sec==='games'?'#v-games':'#v-lessons');if(host)host.appendChild(sx)}
+  function routeIn(tries){
+    const m=parts();if((m[0]!=='lessons'&&m[0]!=='games')||m.length<2)return;
+    let ok=false;window.__nl=1;
+    try{
+      if(m[0]==='lessons'){
+        const c=m[1]==='english'?'en':m[1],co=COURSES.find(x=>x.id===c);
+        if(co){show('lessons');LM.track=c;Lesson.list();ok=true;
+          if(m[2]){const id=m[2].split('-')[0],ex=c==='en'?LESSONS.find(l=>l.id===id):HLESS.find(l=>l.id===id&&hAltOk(c,l));if(ex)(c==='en'?Lesson:HL).open(id)}}
+      }else{const d=GAMEDEFS.find(x=>x.id===m[1]||slug(x.g.title)===m[1]);if(d){show('games');Games.open(d.id);ok=true}}
+    }catch(e){console.warn('route',e)}finally{window.__nl=0}
+    if(ok)sync();else if((tries||0)<6)setTimeout(()=>routeIn((tries||0)+1),700);
+  }
+  const hk=(o,k)=>{const f=o[k];o[k]=function(){const r=f.apply(this,arguments);sync();return r}};
+  hk(Lesson,'list');hk(Lesson,'open');hk(HL,'open');hk(Games,'menu');hk(Games,'open');
+  pageSeo=(function(p){return function(v){p.apply(this,arguments);try{seo()}catch(e){}}})(pageSeo);
+  window.addEventListener('popstate',()=>{try{
+    if(UserPage.pathName&&UserPage.pathName())return;const m=parts();
+    if(m[0]!=='lessons'&&m[0]!=='games')return;
+    if(m.length>1){routeIn(9);return}
+    if(view==='lessons'){window.__nl=1;try{LM.track=null;Lesson.list()}finally{window.__nl=0}}
+    else if(view==='games'){window.__nl=1;try{Games.menu()}finally{window.__nl=0}}}catch(e){}});
+  routeIn(0);
 })();
 
 /* ===== Browser back/forward + real addresses for every page ===== */

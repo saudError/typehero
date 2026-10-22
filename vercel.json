@@ -29,6 +29,14 @@
       "destination": "/index.html"
     },
     {
+      "source": "/lessons/:path*",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/games/:path*",
+      "destination": "/index.html"
+    },
+    {
       "source": "/events",
       "destination": "/index.html"
     },
@@ -51,6 +59,23 @@
     {
       "source": "/:u([A-Za-z0-9_.]+)",
       "destination": "/api/profile?u=:u"
+    }
+  ],
+  "redirects": [
+    {
+      "source": "/lesson",
+      "destination": "/lessons",
+      "permanent": true
+    },
+    {
+      "source": "/lesson/:path*",
+      "destination": "/lessons/:path*",
+      "permanent": true
+    },
+    {
+      "source": "/game",
+      "destination": "/games",
+      "permanent": true
     }
   ]
 }
