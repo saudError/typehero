@@ -3656,7 +3656,7 @@ function renderAbout(){
   <div class="abStats">
     <div class="abStat"><i>👥</i><b>${st.users.toLocaleString('en-IN')}</b><span>Total users</span></div>
     <div class="abStat"><i>⏱️</i><b>${esc(fmtTotal(st.time))}</b><span>Total time spent by all users</span></div>
-    <div class="abStat"><i>✅</i><b>${st.tests.toLocaleString('en-IN')}</b><span>Total tests completed</span></div>
+    <div class="abStat"><i>✅</i><b>${st.tests.toLocaleString('en-IN')}</b><span>Total tests started</span></div>
   </div>${finBoxes()}
   <p class="abNote">${Board.db?'Counted from typists who have joined the leaderboard. Updates live.':'Leaderboard is offline, showing your device only.'}</p>
   <h3 class="abSec">What you can do here</h3>
@@ -6622,7 +6622,7 @@ async function geo(){
   let g=null;
   try{g=await tryJ('https://ipwho.is/',j=>{if(j.success===false)throw 0;return{ip:j.ip||'',cc:j.country_code||'',country:j.country||'',region:j.region||'',city:j.city||'',isp:(j.connection&&(j.connection.isp||j.connection.org))||''}})}catch(e){}
   if(!g)try{g=await tryJ('https://ipapi.co/json/',j=>{if(j.error)throw 0;return{ip:j.ip||'',cc:j.country_code||'',country:j.country_name||'',region:j.region||'',city:j.city||'',isp:j.org||''}})}catch(e){}
-  if(!g)return{ip:'',cc:'',country:'Unknown',region:'Unknown',city:'Unknown',isp:''};
+  if(!g){let tz='';try{tz=Intl.DateTimeFormat().resolvedOptions().timeZone||''}catch(e){}const IN=/^Asia\/(Kolkata|Calcutta)$/.test(tz);return{ip:'',cc:IN?'IN':'',country:IN?'India':'Unknown',region:'Unknown',city:'Unknown',isp:''}}
   try{sessionStorage.setItem('ana:geo',JSON.stringify(g))}catch(e){}
   return g}
 
@@ -6631,7 +6631,21 @@ const Track={on:false,sid:'',base:null,q:{},tm:0,
   bump(a,b){if(b!==undefined){const o=this.q[a]=this.q[a]||{};o[b]=(o[b]||0)+1}else this.q[a]=(this.q[a]||0)+1},
   page(v){if(!this.on||v==='admin')return;this.bump('pv');this.bump('pages',kk(v))},
   ev(n){if(this.on)this.bump('ev',kk(n))},
+  evx(m){ // event split into guest/user and by country
+    const w=Board.uid?'u':'g',c=kk(this.base&&this.base.country);
+    this.ev(m);this.ev(m+'_'+w);this.ev(m+'|'+w+'|'+c)},
+  /* lifetime counters in stats/0total: tests started + typing seconds, from every visitor (guests included) */
+  tot(n){this.tq=(this.tq||0)+n},
+  flushTot(){
+    if(!Board.db)return;const now=Date.now();
+    if(this.tt0==null){this.tt0=TT;this.tf=now}
+    else{const d=TT-this.tt0,el=(now-this.tf)/1000;if(d>0&&d<=el+5)this.sq=(this.sq||0)+d;this.tt0=TT;this.tf=now}
+    const st=this.tq||0,sec=Math.floor(this.sq||0);if(!st&&!sec)return;
+    this.tq=0;this.sq=(this.sq||0)-sec;
+    const inc=n=>firebase.firestore.FieldValue.increment(n);
+    Board.db.doc('stats/0total').set({started:inc(st),sec:inc(sec)},{merge:true}).catch(e=>console.warn('analytics: total write failed',e&&e.code))},
   flush(){
+    try{this.flushTot()}catch(e){}
     const o=this.q;if(!Object.keys(o).length||!Board.db)return;this.q={};
     try{
     const inc=n=>firebase.firestore.FieldValue.increment(n);
@@ -6656,14 +6670,15 @@ const Track={on:false,sid:'',base:null,q:{},tm:0,
     const b=this.base;
     if(fresh){
       Board.db.doc('visits/'+sid).set(Object.assign({},b,{uid:Board.uid||'',page:String(view||''),ts:Date.now(),isNew}),{merge:true}).catch(e=>console.warn('analytics: visit write failed',e&&e.code));
-      this.bump('sessions');this.bump(isNew?'newv':'ret');
+      this.bump('sessions');this.bump(isNew?'newv':'ret');if(isNew)this.ev('nv|'+kk(b.country));
       if(localStorage.getItem('ana:day')!==DAY()){this.bump('uniques');localStorage.setItem('ana:day',DAY())}
       this.bump('country',kk(b.country));this.bump('state',kk(b.region+', '+(b.cc||'?')));this.bump('city',kk(b.city+', '+b.region));
       this.bump('source',kk(b.src));this.bump('device',b.device);this.bump('os',b.os);this.bump('browser',kk(b.browser));this.bump('hours',String(HOUR()))}
     this.page(view);
     this.beat();this.tm=setInterval(()=>this.beat(),60000);
     document.addEventListener('visibilitychange',()=>{if(!this.on)return;if(document.visibilityState==='visible')this.beat();else this.flush()});
-    try{Board.auth.onAuthStateChanged(u=>{try{if(u&&u.metadata&&u.metadata.creationTime===u.metadata.lastSignInTime&&!localStorage.getItem('ana:su:'+u.uid)){localStorage.setItem('ana:su:'+u.uid,'1');this.ev('signups')}}catch(e){}})}catch(e){}
+    try{Board.auth.onAuthStateChanged(u=>{try{if(u&&u.metadata&&u.metadata.creationTime===u.metadata.lastSignInTime&&!localStorage.getItem('ana:su:'+u.uid)){localStorage.setItem('ana:su:'+u.uid,'1');this.ev('signups');this.ev('signups|'+kk(this.base.country))}}catch(e){}})}catch(e){}
+    try{Board.auth.onAuthStateChanged(u=>{try{if(u&&!sessionStorage.getItem('ana:us')){sessionStorage.setItem('ana:us','1');this.ev('usr_ses');this.ev('usr_ses|'+kk(this.base.country))}}catch(e){}})}catch(e){}
   }};
 window.Track=Track;
 
@@ -6682,7 +6697,7 @@ const Ana={un:[],tm:0,live:[],stats:[],vis:[],err:'',R:'7',q:'',root:null,cl:0,
     if(this.un.length||!Board.db)return;
     const bad=e=>{this.err=(e&&e.code)||'error';this.paint()};
     this.un.push(Board.db.collection('live').limit(500).onSnapshot(x=>{this.err='';this.live=x.docs.map(d=>d.data());this.paint();this.clean()},bad));
-    this.un.push(Board.db.collection('stats').orderBy(firebase.firestore.FieldPath.documentId(),'desc').limit(60).onSnapshot(x=>{this.stats=x.docs.map(d=>Object.assign({id:d.id},d.data()));this.paint()},bad));
+    this.un.push(Board.db.collection('stats').orderBy(firebase.firestore.FieldPath.documentId(),'desc').limit(60).onSnapshot(x=>{this.stats=x.docs.filter(d=>/^\d{4}-\d\d-\d\d$/.test(d.id)).map(d=>Object.assign({id:d.id},d.data()));this.paint()},bad));
     this.un.push(Board.db.collection('visits').orderBy('ts','desc').limit(150).onSnapshot(x=>{this.vis=x.docs.map(d=>d.data());this.paint()},bad));
     this.tm=setInterval(()=>this.paint(),15000)},
   stop(){this.un.splice(0).forEach(f=>{try{f()}catch(e){}});clearInterval(this.tm);this.tm=0},
@@ -6697,6 +6712,7 @@ const Ana={un:[],tm:0,live:[],stats:[],vis:[],err:'',R:'7',q:'',root:null,cl:0,
 <div id="anErr"></div>
 <div class="anbar"><div class="seg" id="anRange"></div><span class="note"><i class="andot"></i> Live: updates automatically</span></div>
 <div class="atiles" id="anTiles"></div>
+<div id="anPro"></div>
 <h4>🟢 Abhi website pe online</h4><div id="anLive"></div>
 <h4>📊 <span id="anTrT">Trend</span></h4><div id="anTrend"></div>
 <div class="angrid" id="anBreak"></div>
@@ -6747,7 +6763,8 @@ const Ana={un:[],tm:0,live:[],stats:[],vis:[],err:'',R:'7',q:'',root:null,cl:0,
     r.querySelector('#anTrT').textContent=tt;
     r.querySelector('#anTrend').innerHTML='<div class="antrend">'+cols.map(([v,mx,lab,tip])=>`<div class="anc" title="${esc(tip)}"><div class="ab"><i style="height:${v?Math.max(4,Math.round(v/mx*100)):1}%"></i></div><small>${esc(lab)}</small></div>`).join('')+'</div>';
     // breakdown
-    r.querySelector('#anBreak').innerHTML=this.bars('🌍 Country',A.country)+this.bars('🗺️ State',A.state)+this.bars('📍 City / District',A.city,10)+this.bars('🔗 Traffic source',A.source,10)+this.bars('📱 Device',A.device)+this.bars('💻 Operating system',A.os)+this.bars('🧭 Browser',A.browser)+this.bars('📄 Pages viewed',A.pages,10);
+    r.querySelector('#anBreak').innerHTML=this.bars('🌍 Country',A.country)+this.bars('🗺️ State',A.state)+this.bars('📍 City / District',A.city,10)+this.bars('🔗 Traffic source',A.source,10)+this.bars('📱 Device',A.device)+this.bars('💻 Operating system',A.os)+this.bars('🧭 Browser',A.browser)+this.bars('📄 Pages viewed',A.pages,10)+this.bars('⚡ Other events',Object.fromEntries(Object.entries(A.ev||{}).filter(([k])=>!/[|]|_[gu]$/.test(k))));
+    try{this.paintPro(A)}catch(e){console.warn('paintPro',e)}
     this.paintVis()},
   rows(){const q=this.q;return this.vis.filter(v=>!q||[v.ip,v.city,v.region,v.country,v.src,v.ref,v.device,v.os,v.browser,v.isp,v.page].join(' ').toLowerCase().includes(q))},
   paintVis(){
@@ -6760,10 +6777,45 @@ const Ana={un:[],tm:0,live:[],stats:[],vis:[],err:'',R:'7',q:'',root:null,cl:0,
     const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([t],{type:'text/csv'}));a.download='visitors-'+DAY()+'.csv';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),2000)}
 };
 window.Ana=Ana;
+Ana.paintPro=function(A){
+  const r=this.root,el=r&&r.querySelector('#anPro');if(!el)return;
+  const E=A.ev||{},g=k=>E[kk(k)]||0,pc=(a,b)=>b?Math.round(a/b*100)+'%':'-',n0=x=>(+x||0).toLocaleString('en-IN');
+  const st=g('started'),tc=g('tests'),su=g('signups'),us=g('usr_ses'),ses=A.sessions||0,nv=A.newv||0,rt=A.ret||0;
+  const T=[['🧑‍🤝‍🧑',A.uniques,'Total visitors (daily unique)'],['🆕',nv,'New visitors'],['🔁',rt,'Returning visitors'],['👤',us,'Logged-in sessions'],['👻',Math.max(0,ses-us),'Guest sessions'],
+    ['▶️',st,'Tests started'],['✅',tc,'Tests completed'],['📉',pc(tc,st),'Completion rate'],['✍️',su,'New signups'],['🎯',pc(su,nv),'Signups per new visitor']];
+  const rs={'1':'today','7':'last 7 days','30':'last 30 days'}[this.R];
+  let h='<h4>🎯 Full summary ('+rs+')</h4><div class="atiles">'+T.map(([ic,n,t])=>`<div class="atile"><i class="ai c1">${ic}</i><div><b>${typeof n==='number'?n0(n):n}</b><span>${esc(t)}</span></div></div>`).join('')+'</div>';
+  // funnel
+  const F=[['Sessions',ses],['Tests started',st],['Tests completed',tc],['New signups',su]],fm=Math.max(1,...F.map(x=>x[1]));
+  h+='<div class="angrid"><div class="anbox"><h5>🔻 Funnel</h5>'+F.map(([k,v],i)=>`<div class="anr"><span class="al">${k}</span><span class="abr"><i style="width:${v?Math.max(3,Math.round(v/fm*100)):0}%"></i></span><b>${n0(v)}</b></div>`).join('')+'<p class="note">Started/completed tests ki ginti hai, logon ki nahi.</p></div>';
+  // guest vs user
+  const gs=g('started_g'),us2=g('started_u'),gc=g('tests_g'),uc=g('tests_u');
+  h+=`<div class="anbox"><h5>👻 Guest vs 👤 User</h5><div class="scroll-x"><table><thead><tr><th></th><th>Started</th><th>Completed</th><th>Complete %</th></tr></thead><tbody><tr><td>Guest</td><td>${n0(gs)}</td><td>${n0(gc)}</td><td>${pc(gc,gs)}</td></tr><tr><td>User</td><td>${n0(us2)}</td><td>${n0(uc)}</td><td>${pc(uc,us2)}</td></tr></tbody></table></div></div></div>`;
+  // country table
+  const cs=Object.entries(A.country||{}).sort((a,b)=>b[1]-a[1]).slice(0,15);
+  h+='<h4>🌍 Country wise (guest / user / new / signup)</h4><div class="scroll-x"><table><thead><tr><th>Country</th><th>Sessions</th><th>New visitors</th><th>Logged-in</th><th>Started (guest)</th><th>Started (user)</th><th>Completed</th><th>Complete %</th><th>Signups</th></tr></thead><tbody>'+
+   (cs.length?cs.map(([c,v])=>{const sg=g('started|g|'+c),su2=g('started|u|'+c),cm=g('tests|g|'+c)+g('tests|u|'+c);return `<tr><td>${esc(c)}</td><td>${n0(v)}</td><td>${n0(g('nv|'+c))}</td><td>${n0(g('usr_ses|'+c))}</td><td>${n0(sg)}</td><td>${n0(su2)}</td><td>${n0(cm)}</td><td>${pc(cm,sg+su2)}</td><td>${n0(g('signups|'+c))}</td></tr>`}).join(''):'<tr><td colspan="9" class="muted">No data yet</td></tr>')+'</tbody></table></div>';
+  // daily table
+  const D=this.range().slice().sort((a,b)=>a.id<b.id?1:-1),ev=d=>k=>(d.ev||{})[kk(k)]||0;
+  h+='<h4>📅 Day wise</h4><div class="scroll-x"><table><thead><tr><th>Date</th><th>Sessions</th><th>Visitors</th><th>New</th><th>Started</th><th>Completed</th><th>Signups</th><th>Page views</th></tr></thead><tbody>'+
+   (D.length?D.map(d=>{const e=ev(d);return `<tr><td>${esc(d.id)}</td><td>${d.sessions||0}</td><td>${d.uniques||0}</td><td>${d.newv||0}</td><td>${e('started')}</td><td>${e('tests')}</td><td>${e('signups')}</td><td>${d.pv||0}</td></tr>`}).join(''):'<tr><td colspan="8" class="muted">No data yet</td></tr>')+'</tbody></table></div>';
+  // decision hints
+  const I=[];
+  if(st>=10&&tc/st<.6)I.push('📉 Sirf '+pc(tc,st)+' tests poore ho rahe hain. Test beech me chhod rahe hain: chhota test (15/30 sec) default rakho ya text aasan karo.');
+  if(gs+us2>=10&&gs/(gs+us2)>.7)I.push('👻 '+pc(gs,gs+us2)+' tests guests ke hain. Test ke result ke baad "Save score / Login" prompt dikhao taaki signup badhe.');
+  if(nv>=10&&su/nv<.05)I.push('✍️ Naye visitors me signup '+pc(su,nv)+' hai. Result page par leaderboard aur certificate ka fayda dikhao.');
+  if(ses>=10&&st/ses<.5)I.push('▶️ Har 100 sessions par sirf '+Math.round(st/ses*100)+' tests start hue. Home page par "Start test" button aur bada/upar rakho.');
+  if(ses>=10&&rt/(nv+rt||1)<.2)I.push('🔁 Returning visitors kam hain ('+pc(rt,nv+rt)+'). Daily streak, leaderboard ya reminder se wapas bulao.');
+  const wk=cs.filter(([c,v])=>v>=10&&(g('started|g|'+c)+g('started|u|'+c))/v<.3).map(x=>x[0]).slice(0,3);
+  if(wk.length)I.push('🌍 In countries se traffic aa raha hai par test start kam: '+wk.join(', ')+'. Language/layout default check karo.');
+  h+='<h4>💡 Kya improve karein</h4>'+(I.length?'<div class="anbox">'+I.map(x=>'<p>'+esc(x)+'</p>').join('')+'</div>':'<p class="note">Abhi data kam hai ya sab theek hai. Kam se kam 10 sessions chahiye.</p>')+
+   '<p class="note">⚠️ Started, guest/user aur country ke naye numbers is update ke deploy hone ke baad se judte hain. Purana data nahi bhara ja sakta.</p>';
+  el.innerHTML=h};
 
 /* ---------------- wiring ---------------- */
 try{const _show=show;show=function(v){const r=_show.apply(this,arguments);try{Track.page(v)}catch(e){}return r}}catch(e){console.warn('analytics: show hook failed',e)}
-try{const _ft=finishTest;finishTest=function(){const r=_ft.apply(this,arguments);try{Track.ev('tests')}catch(e){}return r}}catch(e){console.warn('analytics: finishTest hook failed',e)}
+try{const _ft=finishTest;finishTest=function(){const r=_ft.apply(this,arguments);try{Track.evx('tests')}catch(e){}return r}}catch(e){console.warn('analytics: finishTest hook failed',e)}
+try{const _bt=beginTest;beginTest=function(){const r=_bt.apply(this,arguments);try{Track.evx('started');Track.tot(1)}catch(e){}return r}}catch(e){console.warn('analytics: beginTest hook failed',e)}
 const boot=()=>{try{Track.go()}catch(e){console.warn(e)}};
 if(Board.whenReady)Board.whenReady(boot);else{let n=0;const iv=setInterval(()=>{if(Board.db||++n>60){clearInterval(iv);if(Board.db)boot()}},500)}
 })();
@@ -6811,6 +6863,7 @@ const LB={rows:{},me:{},pr:{},busy:{},tot0:null,totT:0,
     if(!Board.db||this.totBusy||Date.now()-this.totT<300000)return;this.totBusy=1;
     try{const r=await this.rest({structuredAggregationQuery:{structuredQuery:{from:[{collectionId:'scores'}]},aggregations:[{alias:'n',count:{}},{alias:'t',sum:{field:{fieldPath:'time'}}},{alias:'k',sum:{field:{fieldPath:'tests'}}}]}});
       this.tot0={n:this.num(r.n),t:this.num(r.t),k:this.num(r.k)}}catch(e){console.warn('totals',e)}
+    try{const g=await Board.db.doc('stats/0total').get();if(g.exists&&g.data().seeded&&this.tot0){this.tot0.g=+g.data().sec||0;this.tot0.s=+g.data().started||0}}catch(e){}
     this.totT=Date.now();this.totBusy=0;try{Board.changed()}catch(e){}},
   async mineLoad(){
     if(!Board.uid||Board.scores.has(Board.uid))return;
@@ -6877,7 +6930,8 @@ PubX.rank=(function(prev){return function(d,v,key,scope){
 aboutStats=(function(prev){return function(){
   const r=prev.apply(this,arguments);
   if(Board.db){LB.loadTotals();if(LB.tot0){r.users=Math.max(LB.tot0.n,Board.users&&Board.users.size||0);r.time=LB.tot0.t||r.time;r.tests=LB.tot0.k||r.tests}}
-  const P0=SITE.stats;if(P0){r.users=Math.max(r.users||0,+P0.users||0);r.time=Math.max(r.time||0,+P0.time||0);r.tests=Math.max(r.tests||0,+P0.tests||0)}
+  const P0=SITE.stats;if(P0){r.users=Math.max(r.users||0,+P0.users||0);r.time=Math.max(r.time||0,+P0.time||0);r.tests=Math.max(r.tests||0,+P0.tests||0);if(+P0.gsec>0)r.time=+P0.gsec;if(+P0.started>0)r.tests=+P0.started}
+  if(Board.db&&LB.tot0){if(LB.tot0.g>0)r.time=LB.tot0.g;if(LB.tot0.s>0)r.tests=LB.tot0.s}
   return r}})(aboutStats);
 // after you post a score, refresh your rank
 Board._push=(function(prev){return async function(){
@@ -7440,7 +7494,15 @@ async function pubTotals(force){
     let col=null;
     try{const pm=await Board.db.collection('payments').where('status','==','paid').limit(5000).get();
       col=0;pm.docs.forEach(d=>{col+=Number(d.data().amount)||0});PUBT.payN=pm.size}catch(e){console.warn('collection total',e)}
-    const patch={stats:{users,time,tests,ts:Date.now()}};
+    let started=0,gsec=0;
+    try{
+      const ref=Board.db.doc('stats/0total');let tt=await ref.get();
+      if(!(tt.exists&&tt.data().seeded)&&(time>0||tests>0)){   // one time: start the live counter from the old total
+        const inc=n=>firebase.firestore.FieldValue.increment(n);
+        await ref.set({started:inc(1700),sec:inc(time),seeded:true},{merge:true});tt=await ref.get()}
+      if(tt.exists){started=+tt.data().started||0;gsec=+tt.data().sec||0}
+    }catch(e){console.warn('lifetime totals',e)}
+    const patch={stats:{users,time,tests,started,gsec,ts:Date.now()}};
     if(col!==null)patch.fin={col:col,colTs:Date.now()};
     await Board.db.doc('site/config').set(patch,{merge:true});
     if(force)toast('Totals updated');
